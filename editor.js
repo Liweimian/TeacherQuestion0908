@@ -332,7 +332,7 @@ document.querySelectorAll('[data-editor-action="add"]').forEach(button => button
 document.querySelector('[data-editor-action="deleted"]').addEventListener("click", () => openModal("deleted"));
 document.querySelector('[data-editor-action="preview"]').addEventListener("click", () => showToast("正在打开预览…"));
 document.querySelector('[data-editor-action="save"]').addEventListener("click", () => showToast("题单已保存"));
-document.querySelector('[data-editor-action="assign"]').addEventListener("click", () => showToast("正在进入布置流程…"));
+document.querySelector('[data-editor-action="assign"]').addEventListener("click", () => showToast("已发送到对话"));
 document.querySelector('[data-editor-action="print"]').addEventListener("click", () => showToast("正在准备打印…"));
 document.querySelector('[data-editor-action="download"]').addEventListener("click", () => showToast("正在生成可打印文件…"));
 

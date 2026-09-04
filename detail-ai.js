@@ -125,7 +125,7 @@ const rightPanelSectionState = {
   browseCollapsed: false
 };
 
-const HOME_FRAME_SRC = "./index.html?embed=1&v=20260825workspacetabs62";
+const HOME_FRAME_SRC = "./index.html?embed=1&v=20260904home-sync1";
 const SCHOOL_FRAME_SRC = "./school.html?embed=1&v=20260825workspacetabs61";
 const QUESTION_DRAG_MIME = "application/x-aiq-questions";
 const CANVAS_DRAG_MIME = "application/x-aiq-canvas";
@@ -3732,7 +3732,12 @@ function saveScoreSettings() {
 }
 
 function handleCanvasFooterAction(action) {
-  if (action === "assign") showToast("布置功能即将开放");
+  if (action === "assign") {
+    const title = stripEditorTitlePrefix(getCanvasDisplayTitle()) || "当前题单";
+    openAiAssistant();
+    setAiAssistantAttachment({ name: title });
+    showToast("已将当前题单发送到对话");
+  }
   else if (action === "print") printCanvasPreview();
   else if (action === "download") {
     showToast("正在生成可下载文件…");
@@ -4001,7 +4006,7 @@ function mountQuestionDraftToolbarActions(bar) {
   actions.innerHTML = `
     <button type="button" class="panel-action-btn panel-action-btn-compact panel-action-new-draft question-draft-new-action" data-question-draft-toolbar-action="new" aria-label="新建题单" title="新建题单"><i class="ri-add-line" aria-hidden="true"></i></button>
     <button type="button" class="panel-action-btn panel-action-btn-compact question-draft-expand-action" data-question-draft-toolbar-action="expand" aria-label="${expandLabel}" title="${expandLabel}"><i class="${expandIcon}" aria-hidden="true"></i></button>
-    <button type="button" class="panel-action-btn panel-action-btn-compact question-draft-collapse-action" data-question-draft-toolbar-action="collapse" aria-label="收起组题编辑区" title="收起组题编辑区"><i class="ri-arrow-left-double-line" aria-hidden="true"></i></button>`;
+    <button type="button" class="panel-action-btn panel-action-btn-compact question-draft-collapse-action" data-question-draft-toolbar-action="collapse" aria-label="收起组题编辑区" title="收起组题编辑区"><i class="ri-arrow-right-double-line" aria-hidden="true"></i></button>`;
   bar.appendChild(actions);
 }
 
@@ -5256,6 +5261,7 @@ function setCanvasManuallyCollapsed(value) {
 }
 
 function shouldCanvasStartCollapsed() {
+  if (document.body.classList.contains("index-page")) return true;
   return getCanvasCollapsePref() !== false;
 }
 
@@ -5902,8 +5908,8 @@ function applyHomeView() {
     }
   }
   if (shellActive) {
-    renderWorkspaceBreadcrumb("题目浏览区", browseMeta?.label || "首页");
-    document.title = `${browseMeta?.label || "首页"} · AI 试卷工作台`;
+    renderWorkspaceBreadcrumb("题目浏览区", browseMeta?.label || "题库首页");
+    document.title = `${browseMeta?.label || "题库首页"} · AI 试卷工作台`;
   } else if (assistantActive) {
     renderWorkspaceBreadcrumb("题目浏览区", "更多题源");
     document.title = "更多题源 · AI 试卷工作台";
@@ -6104,9 +6110,9 @@ function renderTabs() {
   const assistantActive = isAiAssistantViewActive();
   const activeBrowse = workspace.activeBrowseFilter;
   bar.innerHTML = `
-    <button class="doc-tab doc-tab-home doc-tab-pinned-home ${homeActive ? "active" : ""}" type="button" data-home-tab aria-label="首页">
+    <button class="doc-tab doc-tab-home doc-tab-pinned-home ${homeActive ? "active" : ""}" type="button" data-home-tab aria-label="题库首页">
       <i class="ri-home-4-line doc-tab-icon" aria-hidden="true"></i>
-      <span class="doc-tab-label">首页</span>
+      <span class="doc-tab-label">题库首页</span>
     </button>
     <div class="doc-tabs-scroll">
       ${workspace.browseTabs.map(filter => {
@@ -6516,8 +6522,14 @@ function bindEvents() {
           expand: selectedPanelEnlarged
         });
       } else if (action === "expand") {
-        if (selectedPanelEnlarged) restoreSplitWorkspaceView();
-        else openCanvasEditorTab();
+        if (selectedPanelEnlarged) {
+          restoreSplitWorkspaceView();
+        } else {
+          rightPanelSectionState.selectedCollapsed = false;
+          rightPanelSectionState.browseCollapsed = true;
+          openCanvasEditorTab();
+          renderSelectedContext();
+        }
       } else if (action === "collapse") {
         if (selectedPanelEnlarged) {
           restoreSplitWorkspaceView();
@@ -6586,6 +6598,13 @@ function bindEvents() {
   document.querySelector("#confirmQuestionDraftClose")?.addEventListener("click", confirmQuestionDraftClose);
 
   document.querySelector("#batchAddAllQuestions")?.addEventListener("click", batchAddAllQuestionsToSelected);
+  document.querySelector("#addPaperToConversation")?.addEventListener("click", () => {
+    const tab = getActiveTab();
+    const title = tab?.meta?.title || tab?.title || document.querySelector("#topicTitle")?.textContent?.trim() || "当前试卷";
+    openAiAssistant();
+    setAiAssistantAttachment({ name: title });
+    showToast(`已将《${title}》加入对话`);
+  });
 
   const paperMoreButton = document.querySelector("#paperMoreActions");
   const paperMoreMenu = document.querySelector("#paperMoreMenu");

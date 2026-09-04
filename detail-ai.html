@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./detail.css" />
   <link rel="stylesheet" href="./detail-ai.css?v=20260826workspacetabs119" />
     <link rel="stylesheet" href="./theme-workspace-v50.css?v=20260821workspace4" />
+    <link rel="stylesheet" href="./feixiang-c-library.css?v=20260904c34" />
     <style id="ai-panel-legacy-toggle-hide">
       #aiPanelExpand.legacy-hidden,
       #openAiPanel,
@@ -19,6 +20,26 @@
     </style>
   </head>
   <body class="ai-detail-page">
+    <aside class="fx-c-sidebar" aria-label="飞象老师主导航">
+      <div class="fx-c-demo">demo演示</div>
+      <a class="fx-c-logo" href="./index.html" aria-label="飞象老师首页"><span class="fx-c-logo-mark"><i class="ri-flashlight-fill"></i></span><strong>飞象老师</strong></a>
+      <button class="fx-c-new-task" type="button"><i class="ri-add-circle-line"></i><span>新任务</span></button>
+      <nav class="fx-c-primary-nav" aria-label="核心功能">
+        <a href="https://djxky.github.io/fx-community/"><i class="ri-team-line"></i><span>社区</span></a>
+        <a class="active" href="./detail-ai.html?workspaceView=home" aria-current="page"><i class="ri-book-open-line"></i><span>题库</span></a>
+        <button type="button"><i class="ri-sparkling-2-line"></i><span>教学技能</span></button>
+        <button type="button"><i class="ri-graduation-cap-line"></i><span>飞象学院</span></button>
+        <button type="button"><i class="ri-book-3-line"></i><span>我的知识库</span></button>
+      </nav>
+      <div class="fx-c-workspace">
+        <div class="fx-c-workspace-title"><span>本地工作区</span><i class="ri-more-line"></i></div>
+        <button type="button"><i class="ri-folder-3-line"></i><b>demo-workspace</b></button>
+        <button type="button"><i class="ri-add-line"></i><span>新任务</span></button>
+        <button type="button"><span>生成期中家长会材料</span><small>刚刚</small></button>
+        <button type="button"><span>飞象老师功能简介</span><small>1小时</small></button>
+      </div>
+      <button class="fx-c-profile" type="button"><span>J</span><b>Joyce22<small>剩余积分：909</small></b><i class="ri-smartphone-line"></i></button>
+    </aside>
     <div class="ai-workspace" id="aiWorkspace">
       <script>
         (function () {
@@ -42,7 +63,7 @@
           <strong id="breadcrumbLeaf">试卷详情</strong>
         </nav>
         <button type="button" class="panel-action-btn panel-action-btn-compact" id="topbarCollapseCanvas" hidden aria-label="收起" title="收起">
-          <i class="ri-arrow-left-double-line"></i><span>收起</span>
+          <i class="ri-arrow-right-double-line"></i><span>收起</span>
         </button>
         <button type="button" class="panel-action-btn panel-action-btn-compact browse-panel-collapse" id="collapseBrowsePanel" hidden aria-label="收起题目浏览区" title="收起题目浏览区">
           <span>收起</span><i class="ri-arrow-right-double-line"></i>
@@ -71,7 +92,7 @@
               <button type="button" class="panel-action-btn panel-action-btn-compact panel-action-new-draft" data-new-question-draft aria-label="新建题单" title="新建题单"><i class="ri-add-line"></i></button>
               <button type="button" class="panel-action-btn panel-action-btn-compact" id="enlargeSelectedPanel" aria-pressed="false">展开编辑</button>
               <button type="button" class="panel-action-btn panel-action-btn-compact" id="collapseSelectedPanel" aria-label="收起组题编辑区" title="收起组题编辑区">
-                <i class="ri-arrow-left-double-line"></i><span>收起</span>
+                <i class="ri-arrow-right-double-line"></i><span>收起</span>
               </button>
             </div>
           </header>
@@ -140,7 +161,7 @@
                 <i class="ri-save-3-line"></i><span id="createQuestionListLabel">保存</span>
               </button>
               <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="assign" disabled hidden>
-                <i class="ri-send-plane-line"></i><span>布置</span>
+                <i class="ri-chat-forward-line"></i><span>发送到对话</span>
               </button>
               <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="print" disabled hidden>
                 <i class="ri-printer-line"></i><span>打印</span>
@@ -194,7 +215,7 @@
 
           <section class="doc-workspace" aria-label="试卷预览">
             <div class="home-view" id="homeView" hidden>
-              <iframe id="homeFrame" class="home-view-frame" title="首页" src="about:blank"></iframe>
+              <iframe id="homeFrame" class="home-view-frame" title="题库首页" src="about:blank"></iframe>
             </div>
             <section class="ai-assistant-panel ai-assistant-workspace-view course-center" id="aiAssistantPanel" aria-label="更多题源" hidden>
               <div class="course-center-scroll">
@@ -263,7 +284,7 @@
                     </div>
                   </div>
                   <div class="course-center-library-links">
-                    <button type="button" data-add-library="home"><i class="ri-home-4-line"></i><span>首页</span></button>
+                    <button type="button" data-add-library="home"><i class="ri-home-4-line"></i><span>题库首页</span></button>
                     <button type="button" data-add-library="paper"><i class="ri-file-list-3-line"></i><span>试卷</span></button>
                     <button type="button" data-add-library="chapter"><i class="ri-book-open-line"></i><span>同步练习</span></button>
                     <button type="button" data-add-library="workbook"><i class="ri-book-shelf-line"></i><span>练习册</span></button>
@@ -317,6 +338,7 @@
                     <i class="ri-file-list-3-line"></i><span>使用整卷</span><i class="ri-arrow-down-s-line paper-action-chevron"></i>
                   </button>
                   <div class="paper-action-menu" id="paperMoreMenu" role="menu" hidden>
+                    <button type="button" id="addPaperToConversation" role="menuitem" data-help="将当前试卷作为参考资料加入对话" aria-label="加入对话：将当前试卷作为参考资料加入对话"><i class="ri-chat-forward-line"></i><span>加入对话</span></button>
                     <button type="button" id="batchAddAllQuestions" role="menuitem" data-help="将整套试卷题目加入当前题单，重复题目不会再次加入" aria-label="加入题单：将整套试卷题目加入当前题单，重复题目不会再次加入"><i class="ri-layout-left-line"></i><span>加入题单</span></button>
                     <button type="button" id="savePaperCopy" role="menuitem" data-help="复制当前试卷为新题单并进入编辑，原试卷保持不变" aria-label="编辑：复制当前试卷为新题单并进入编辑，原试卷保持不变"><i class="ri-file-copy-2-line"></i><span id="savePaperCopyLabel">编辑</span></button>
                     <div class="paper-action-menu-divider" role="separator"></div>
@@ -461,6 +483,6 @@
     </aside>
 
     <div id="toast" class="toast" role="status"></div>
-  <script src="./detail-ai.js?v=20260826workspacetabs119"></script>
+  <script src="./detail-ai.js?v=20260904workbench4"></script>
   </body>
 </html>

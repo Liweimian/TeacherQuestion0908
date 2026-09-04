@@ -319,6 +319,7 @@ const bankStats = { libraryTotal: 41140, paperTotal: 28460, practiceTotal: 12680
 let currentFilter = "all";
 let currentQuery = "";
 let homepageSearchScope = "all";
+const homepageScopeState = { region: "朝阳区", grade: "七年级上", subject: "数学" };
 const homepagePaperLaneLimit = 4;
 let aiDockObserver = null;
 let aiModalOpen = false;
@@ -765,7 +766,7 @@ const homepageFeaturedData = {
       homepagePaperItems.t14,
       homepagePaperItems.t66
     ],
-    sync: ["t40", "t42"],
+    sync: ["t40", "t42", "t9", "t41"],
     compilations: ["t54", "t56"]
   },
   adopted: {
@@ -791,7 +792,13 @@ const homepageFeaturedData = {
       homepagePaperItems.t76,
       homepagePaperItems.t77,
       homepagePaperItems.t78,
-      homepagePaperItems.t63
+      homepagePaperItems.t63,
+      homepagePaperItems.t73,
+      homepagePaperItems.t71,
+      homepagePaperItems.t64,
+      homepagePaperItems.t62,
+      homepagePaperItems.t59,
+      homepagePaperItems.t74
     ]
   }
 };
@@ -886,7 +893,7 @@ function homepagePaperCard(item, options = {}) {
     : unifyTags
       ? homepagePaperDisplayFacts[item.id]
       : null;
-  const facts = curatedFacts?.length
+  const facts = options.lane === "download" ? [] : curatedFacts?.length
     ? curatedFacts.slice(0, 2)
     : [
       ...(districtFact ? [districtFact] : []),
@@ -905,7 +912,7 @@ function homepagePaperCard(item, options = {}) {
   const detailTitle = homepagePaperDetailTitle(topic);
   return `
     <button class="home-paper-card${rank ? " is-ranked" : ""}" type="button" data-topic="${topic.id}" data-context="paper" data-detail-title="${escapeHomepageTitle(detailTitle)}" data-featured-paper-card data-paper-filters="${filters.join(" ")}" data-paper-types="${typeIds.join(" ")}">
-      ${rank ? `<span class="home-paper-rank${rank <= 3 ? " is-top" : ""}">${String(rank).padStart(2, "0")}</span>` : ""}
+      ${rank ? `<span class="home-paper-rank${rank <= 3 ? " is-top" : ""}">${rank}</span>` : ""}
       <span class="home-paper-copy">
         <span class="home-featured-resource-title"><b title="${escapeHomepageTitle(displayTitle)}">${displayTitle}</b></span>
         <span class="home-paper-meta-row">
@@ -937,12 +944,12 @@ function homepageCompactResource(topicId, options = {}) {
 
 function homepagePaperLane(mode, title, papers) {
   const icons = { latest: "ri-time-line", hot: "ri-fire-line", famous: "ri-building-4-line", download: "ri-bar-chart-2-line" };
-  const visiblePapers = papers.slice(0, homepagePaperLaneLimit);
+  const visiblePapers = papers.slice(0, mode === "download" ? 10 : homepagePaperLaneLimit);
   return `
     <section class="home-paper-lane is-${mode}" data-paper-lane="${mode}" aria-label="${title}">
       <header>
-        <h3><i class="${icons[mode] || "ri-file-list-3-line"}"></i>${title}</h3>
-        <button type="button" class="home-paper-lane-more" data-open-filter="paper">更多 <i class="ri-arrow-right-line"></i></button>
+        <div class="home-lane-heading"><h3><i class="${icons[mode] || "ri-file-list-3-line"}"></i>${title}</h3>${mode === "download" ? "<em>TOP 10</em><small>近 7 日教师使用热度</small>" : ""}</div>
+        <button type="button" class="home-paper-lane-more" data-open-filter="paper" ${mode === "download" ? "data-resource-entry=\"教师热用榜\"" : ""}>更多 <i class="ri-arrow-right-line"></i></button>
       </header>
       <div class="home-paper-lane-list">${visiblePapers.map((item, index) => homepagePaperCard(item, { lane:mode, rank: mode === "download" ? index + 1 : 0 })).join("")}</div>
       <div class="home-paper-lane-empty" role="status" ${visiblePapers.length ? "hidden" : ""}>当前暂无资源</div>
@@ -976,8 +983,30 @@ function homepageFeaturedPickCard(pick) {
     </button>`;
 }
 
+function homepageScopeSelectors() {
+  const option = (value, current) => `<option${value === current ? " selected" : ""}>${value}</option>`;
+  return `<div class="fx-library-filterbar" aria-label="当前教学范围">
+    <div class="fx-library-selectors">
+      <label aria-label="地区"><select id="regionSelect">${["朝阳区","海淀区","西城区","东城区"].map(value => option(value, homepageScopeState.region)).join("")}</select></label>
+      <label aria-label="年级"><select id="gradeSelect">${["七年级上","七年级下","八年级上","九年级上"].map(value => option(value, homepageScopeState.grade)).join("")}</select></label>
+      <label aria-label="学科"><select id="subjectSelect">${["数学","语文","英语","物理"].map(value => option(value, homepageScopeState.subject)).join("")}</select></label>
+    </div>
+  </div>`;
+}
+
+function homepageSearchBar() {
+  return `<section class="home-library-search" aria-label="搜索题库">
+    <form data-home-search-form>
+      <i class="ri-search-line"></i>
+      <input data-home-search-input type="search" autocomplete="off" placeholder="搜索知识点、试卷或学校，如：二次函数" />
+      <button type="submit">搜索</button>
+    </form>
+    <span><i class="ri-refresh-line"></i>已匹配 ${homepageScopeState.region} · ${homepageScopeState.grade} · ${homepageScopeState.subject} 资源</span>
+  </section>`;
+}
+
 function homepageFeaturedPanel() {
-  const featuredPicks = [
+  const featuredPool = [
     { kind: "paper", id: "t65" },
     { kind: "paper", id: "t73" },
     { kind: "paper", id: "t71" },
@@ -987,8 +1016,18 @@ function homepageFeaturedPanel() {
     { kind: "paper", id: "t2" },
     { kind: "special", id: "t1", title: "有理数符号运算 · 易错二练", tags: [{ label:"专题练习", className:"is-kind-special" }, { label:"易错巩固", className:"is-fit" }] },
     { kind: "paper", id: "t62" },
-    { kind: "paper", id: "t64" }
+    { kind: "paper", id: "t64" },
+    { kind: "paper", id: "t63" },
+    { kind: "paper", id: "t59" },
+    { kind: "paper", id: "t67" },
+    { kind: "paper", id: "t68" },
+    { kind: "special", id: "t23", title: "移项与符号 · 高频易错专练", tags: [{ label:"当前年级", className:"is-kind-special" }, { label:"高频易错", className:"is-fit" }] }
   ];
+  const scopeKey = `${homepageScopeState.region}${homepageScopeState.grade}${homepageScopeState.subject}`;
+  const scopeOffset = scopeKey === "朝阳区七年级上数学"
+    ? 0
+    : [...scopeKey].reduce((sum, char) => sum + char.charCodeAt(0), 0) % featuredPool.length;
+  const featuredPicks = [...featuredPool.slice(scopeOffset), ...featuredPool.slice(0, scopeOffset)].slice(0, 12);
   const famousPapers = [...homepageFeaturedData.famous.papers]
     .sort((a, b) => (byId[b.id]?.usage || 0) - (byId[a.id]?.usage || 0));
   const syncData = homepageFeaturedData.local;
@@ -1000,17 +1039,17 @@ function homepageFeaturedPanel() {
             <section class="home-recommend-module" aria-label="精选">
               <header>
                 <h3><i class="ri-star-smile-line"></i>精选</h3>
+                ${homepageScopeSelectors()}
               </header>
               <div class="home-recommend-grid">${featuredPicks.map(homepageFeaturedPickCard).join("")}</div>
             </section>
             ${homepagePaperLane("download", "教师热用榜", famousPapers)}
           </div>
         </section>
-        ${homepageAlbumResourceSection(true)}
         <section class="home-featured-sync home-featured-learning" aria-labelledby="home-sync-practice-title">
-          <header class="home-featured-subhead home-sync-shared-head"><div class="home-paper-title-line home-sync-title-line"><span id="home-sync-practice-title"><i class="ri-book-open-line"></i>同步练习</span></div><button type="button" class="home-paper-lane-more" data-open-filter="chapter">更多 <i class="ri-arrow-right-line"></i></button></header>
+          <header class="home-featured-subhead home-sync-shared-head"><div class="home-paper-title-line home-sync-title-line"><span id="home-sync-practice-title"><i class="ri-book-open-line"></i>同步练习</span><small>紧跟教材章节与课堂进度</small></div><button type="button" class="home-paper-lane-more" data-open-filter="chapter">更多 <i class="ri-arrow-right-line"></i></button></header>
           <div>
-            ${syncData.sync.map(id => homepageCompactResource(id, { type:"练习册", context:"series" })).join("")}
+            ${syncData.sync.map(id => homepageCompactResource(id, { type:"同步练习", context:"series" })).join("")}
             ${syncData.compilations.map(id => homepageCompactResource(id, { type:"考题整理", context:"paper" })).join("")}
           </div>
         </section>
@@ -1143,9 +1182,28 @@ function homepageResourceSections() {
 function homepageSeriesSection() {
   return `
     <div class="workspace-home">
+      ${homepageSearchBar()}
       ${homepageFeaturedResources()}
       ${homepageResourceSections()}
     </div>`;
+}
+
+function categoryViewShell(filter, content) {
+  const meta = {
+    paper: { title: "试卷", desc: "按考试类型、学年与地区筛选" },
+    chapter: { title: "同步练习", desc: "按教材章节和课堂进度查找" },
+    special: { title: "专题", desc: "聚合高频考点、易错题与能力训练" },
+    compilation: { title: "试题汇编", desc: "多卷去重、按考点重组的整套资源" },
+    workbook: { title: "同步资源", desc: "按教辅、教材版本与年份查找" }
+  }[filter] || { title: "题库", desc: "查找适合当前教学进度的资源" };
+  return `<div class="fx-category-page">
+    <header class="fx-category-head">
+      <button type="button" data-open-filter="all" aria-label="返回题库首页"><i class="ri-arrow-left-line"></i></button>
+      <div><h1>${meta.title}</h1><p>${meta.desc}</p></div>
+      <span>${homepageScopeState.region} · ${homepageScopeState.grade} · ${homepageScopeState.subject}</span>
+    </header>
+    ${content}
+  </div>`;
 }
 
 const feedTopicIds = ["t36","t37","t4","t6","t25","t41","t9","t18","t1","t16","t14","t35","t11","t23","t40","t3","t38","t39","t21","t2","t27","t10","t17","t33","t5","t8","t13","t15","t19","t20","t22","t24","t26","t28","t29","t30","t31","t32","t34","t42","t43","t44","t45","t46","t47","t48","t49","t50","t51"];
@@ -2188,13 +2246,14 @@ function bindWorkbookPaperPreview(root = document) {
 function render() {
   const defaultState = currentFilter === "all" && !currentQuery;
   const searchState = currentFilter === "all" && Boolean(currentQuery);
+  const categoryContent = defaultState || searchState
+    ? ""
+    : currentFilter === "workbook" ? seriesCategoryView() : categoryBrowserView(currentFilter);
   contentFeed.innerHTML = defaultState
     ? homepageFeed()
     : searchState
       ? homepageSearchView(currentQuery)
-      : currentFilter === "workbook"
-        ? seriesCategoryView()
-        : categoryBrowserView(currentFilter);
+      : categoryViewShell(currentFilter, categoryContent);
   emptyState.hidden = true;
   contentFeed.hidden = false;
   bindContentEvents();
@@ -2583,9 +2642,9 @@ function openDetailPage(url) {
 }
 
 function showAiDock(visible) {
-  const shouldShow = Boolean(visible) && !aiModalOpen;
   const dock = document.querySelector("#aiDock");
   const shell = document.querySelector(".ai-dock-shell");
+  const shouldShow = Boolean(visible) && !aiModalOpen && Boolean(dock && shell);
   if (dock) {
     dock.hidden = !shouldShow;
     dock.setAttribute("aria-hidden", String(!shouldShow));
@@ -2649,6 +2708,7 @@ renderBankStats();
 
 if (isEmbedded) {
   document.body.classList.add("is-embedded");
+  document.querySelector(".fx-c-sidebar")?.remove();
   document.addEventListener("click", event => {
     const brandHomeLink = event.target.closest(".site-header .brand-mark");
     if (brandHomeLink) {
@@ -2697,7 +2757,7 @@ window.addEventListener("scroll", () => {
   }
 }, { passive: true });
 
-document.querySelector("#filterChips").addEventListener("click", event => {
+document.querySelector("#filterChips")?.addEventListener("click", event => {
   const button = event.target.closest("[data-filter]");
   if (!button) return;
   if (isEmbedded) {
@@ -2709,6 +2769,18 @@ document.querySelector("#filterChips").addEventListener("click", event => {
 document.querySelector("#resetFilter").addEventListener("click", () => {
   if (isEmbedded) requestParentOpenFilter("all");
   else setMainFilter("all");
+});
+
+document.addEventListener("change", event => {
+  if (event.target.matches(".fx-library-selectors select")) {
+    homepageScopeState.region = document.querySelector("#regionSelect")?.value || homepageScopeState.region;
+    homepageScopeState.grade = document.querySelector("#gradeSelect")?.value || homepageScopeState.grade;
+    homepageScopeState.subject = document.querySelector("#subjectSelect")?.value || homepageScopeState.subject;
+    const scope = [homepageScopeState.region, homepageScopeState.grade, homepageScopeState.subject].join(" · ");
+    document.body.dataset.libraryScope = scope;
+    render();
+    showToast(`已为你切换到 ${homepageScopeState.grade}${homepageScopeState.subject} 资源`);
+  }
 });
 
 function bindAiForm(formSelector, inputSelector, addSelector, voiceSelector) {

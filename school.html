@@ -12,8 +12,29 @@
     <link rel="stylesheet" href="./theme-workspace-v50.css?v=20260820nav2" />
     <link rel="stylesheet" href="./home-revision-v51.css?v=20260820book2" />
   <link rel="stylesheet" href="./detail-ai.css?v=20260826workspacetabs113" />
+  <link rel="stylesheet" href="./feixiang-c-library.css?v=20260904c34" />
   </head>
   <body class="school-library-page">
+    <aside class="fx-c-sidebar" aria-label="飞象老师主导航">
+      <div class="fx-c-demo">demo演示</div>
+      <a class="fx-c-logo" href="./index.html" aria-label="飞象老师首页"><span class="fx-c-logo-mark"><i class="ri-flashlight-fill"></i></span><strong>飞象老师</strong></a>
+      <button class="fx-c-new-task" type="button"><i class="ri-add-circle-line"></i><span>新任务</span></button>
+      <nav class="fx-c-primary-nav" aria-label="核心功能">
+        <a href="https://djxky.github.io/fx-community/"><i class="ri-team-line"></i><span>社区</span></a>
+        <a class="active" href="./detail-ai.html?workspaceView=home" aria-current="page"><i class="ri-book-open-line"></i><span>题库</span></a>
+        <button type="button"><i class="ri-sparkling-2-line"></i><span>教学技能</span></button>
+        <button type="button"><i class="ri-graduation-cap-line"></i><span>飞象学院</span></button>
+        <button type="button"><i class="ri-book-3-line"></i><span>我的知识库</span></button>
+      </nav>
+      <div class="fx-c-workspace">
+        <div class="fx-c-workspace-title"><span>本地工作区</span><i class="ri-more-line"></i></div>
+        <button type="button"><i class="ri-folder-3-line"></i><b>demo-workspace</b></button>
+        <button type="button"><i class="ri-add-line"></i><span>新任务</span></button>
+        <button type="button"><span>生成期中家长会材料</span><small>刚刚</small></button>
+        <button type="button"><span>飞象老师功能简介</span><small>1小时</small></button>
+      </div>
+      <button class="fx-c-profile" type="button"><span>J</span><b>Joyce22<small>剩余积分：909</small></b><i class="ri-smartphone-line"></i></button>
+    </aside>
     <div class="ai-workspace selected-panel-collapsed" id="aiWorkspace">
       <script>
         (function () {
@@ -46,7 +67,7 @@
               <button type="button" class="panel-action-btn panel-action-btn-compact panel-action-new-draft" data-new-question-draft aria-label="新建题单" title="新建题单"><i class="ri-add-line"></i></button>
               <button type="button" class="panel-action-btn panel-action-btn-compact" id="enlargeSelectedPanel" aria-pressed="false">展开编辑</button>
               <button type="button" class="panel-action-btn panel-action-btn-compact" id="collapseSelectedPanel" aria-label="收起组题编辑区" title="收起组题编辑区">
-                <i class="ri-arrow-left-double-line"></i><span>收起</span>
+                <i class="ri-arrow-right-double-line"></i><span>收起</span>
               </button>
             </div>
           </header>
@@ -54,7 +75,7 @@
           <div id="aiSelectedContext" class="ai-selected-context">
             <p class="ai-selected-summary" id="aiSelectedSummary" hidden></p>
             <div id="aiSelectedPreview" class="ai-selected-preview"></div>
-            <div class="ai-selected-empty" id="aiSelectedEmpty"><strong>当前题单还没有题目</strong><span>请从右侧题目浏览区开始选题，选中的题目会自动加入这里</span></div>
+            <div class="ai-selected-empty" id="aiSelectedEmpty"><strong>当前题单还没有题目</strong><span>请从左侧题目浏览区开始选题，选中的题目会自动加入这里</span></div>
           </div>
           <div class="ai-canvas-studio" id="aiCanvasStudio" hidden>
             <p class="ai-canvas-save-hint" id="canvasEditorSaveHint" hidden><i class="ri-information-line"></i>完成后保存至我的资源，并清空本次组题</p>
@@ -113,7 +134,7 @@
                 <i class="ri-save-3-line"></i><span id="createQuestionListLabel">保存</span>
               </button>
               <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="assign" disabled hidden>
-                <i class="ri-send-plane-line"></i><span>布置</span>
+                <i class="ri-chat-forward-line"></i><span>发送到对话</span>
               </button>
               <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="print" disabled hidden>
                 <i class="ri-printer-line"></i><span>打印</span>
@@ -267,6 +288,6 @@
     <div id="schoolToast" class="school-toast" role="status" aria-live="polite"></div>
     <div id="toast" class="toast" role="status"></div>
     <script src="./school.js?v=20260825workspacetabs61"></script>
-  <script src="./detail-ai.js?v=20260826workspacetabs114"></script>
+  <script src="./detail-ai.js?v=20260904workbench4"></script>
   </body>
 </html>
