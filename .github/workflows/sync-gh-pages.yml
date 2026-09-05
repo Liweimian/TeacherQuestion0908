@@ -29,11 +29,12 @@ jobs:
             --exclude='node_modules' \
             --exclude='dist' \
             --exclude='public' \
-            --exclude='docs' \
             --exclude='package.json' \
             --exclude='package-lock.json' \
             --exclude='vite.config.js' \
             --exclude='README.md' \
+            --exclude='飞象老师.html' \
+            --exclude='飞象老师_files' \
             ./ public/
           touch public/.nojekyll
           test -f public/detail-ai.html

@@ -1,6 +1,9 @@
-# 飞象 AI 题库首页 Demo
+# 飞象老师 · 新任务组题 Demo
 
-面向教师的本地优质题单资源广场 Demo。
+面向教师的新任务对话 Demo，包含：
+
+- **新任务主页**（`new-task/`）：AI 组题、互动课件、配套练习双成果流程
+- **题库选题器**（`detail-ai.html?picker=1`）：从新任务内嵌打开，支持选题加入对话
 
 ## 本地运行
 
@@ -9,36 +12,30 @@ npm install
 npm run dev
 ```
 
-## 线上访问（推荐）
-
-GitHub Pages 的 **Deploy to GitHub Pages** 步骤长期失败，CDN 一直停留在旧版本（没有 `detail-ai.html`）。
-
-### 方案 A：Netlify（推荐，约 2 分钟）
-
-1. 打开 https://app.netlify.com/start
-2. 用 GitHub 登录，导入仓库 `Liweimian/AIQuestion0806`
-3. Build command 留空，Publish directory 填 **`.`**
-4. Deploy
-
-Netlify 会给一个 `https://xxx.netlify.app` 地址，内容与本地一致。
-
-### 方案 B：jsDelivr 临时预览（立即可用）
-
-- 首页：https://cdn.jsdelivr.net/gh/Liweimian/AIQuestion0806@gh-pages/index.html
-- AI 详情：https://cdn.jsdelivr.net/gh/Liweimian/AIQuestion0806@gh-pages/detail-ai.html?topic=t2&context=paper
-
-### 方案 C：继续用 GitHub Pages
-
-必须同时满足：
-
-1. **Settings → Pages → Source = GitHub Actions**（不能选 Deploy from a branch）
-2. **Settings → Actions → General → Workflow permissions = Read and write**
-3. Actions 里手动运行 **Deploy to GitHub Pages**
-
-若 `pages build and deployment` 的 deploy 步骤一直失败，请改用 Netlify。
+浏览器打开 `http://localhost:5173/`，会自动进入 `new-task/index.html`。
 
 ## 生产构建
 
 ```bash
 npm run build
+```
+
+## 发布到 GitHub Pages
+
+仓库已配置 GitHub Actions（`.github/workflows/`）：
+
+1. **Settings → Pages → Source** 选 **GitHub Actions**
+2. 推送 `main` 分支，或手动运行 **Deploy to GitHub Pages** / **Sync gh-pages branch**
+
+也可使用 Netlify：Publish directory 填 **`.`**（根目录静态托管）。
+
+## 目录结构
+
+```
+index.html              # 跳转到 new-task
+new-task/               # 新任务 Demo（今日主要改动）
+detail-ai.html/js/css   # 题库工作台 & 选题器 iframe
+detail.css              # 题库基础样式
+feixiang-c-library.css
+theme-workspace-v50.css
 ```

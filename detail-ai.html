@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="飞象题库 · AI 试卷工作台" />
     <title>AI 试卷工作台 · 飞象题库</title>
+    <script>if(new URLSearchParams(location.search).get('picker')==='1')document.documentElement.classList.add('question-picker-mode')</script>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" />
     <link rel="stylesheet" href="./detail.css" />
-  <link rel="stylesheet" href="./detail-ai.css?v=20260826workspacetabs119" />
-    <link rel="stylesheet" href="./theme-workspace-v50.css?v=20260821workspace4" />
+  <link rel="stylesheet" href="./detail-ai.css?v=20260905question-picker20" />
+    <link rel="stylesheet" href="./theme-workspace-v50.css?v=20260904resource-card-final1" />
     <link rel="stylesheet" href="./feixiang-c-library.css?v=20260904c34" />
     <style id="ai-panel-legacy-toggle-hide">
       #aiPanelExpand.legacy-hidden,
@@ -23,10 +24,11 @@
     <aside class="fx-c-sidebar" aria-label="飞象老师主导航">
       <div class="fx-c-demo">demo演示</div>
       <a class="fx-c-logo" href="./index.html" aria-label="飞象老师首页"><span class="fx-c-logo-mark"><i class="ri-flashlight-fill"></i></span><strong>飞象老师</strong></a>
-      <button class="fx-c-new-task" type="button"><i class="ri-add-circle-line"></i><span>新任务</span></button>
+      <a class="fx-c-new-task" href="./new-task/index.html"><i class="ri-add-circle-line"></i><span>新任务</span></a>
       <nav class="fx-c-primary-nav" aria-label="核心功能">
         <a href="https://djxky.github.io/fx-community/"><i class="ri-team-line"></i><span>社区</span></a>
         <a class="active" href="./detail-ai.html?workspaceView=home" aria-current="page"><i class="ri-book-open-line"></i><span>题库</span></a>
+        <a href="./detail-ai.html?mode=workbench&context=paper"><i class="ri-file-edit-line"></i><span>组题</span></a>
         <button type="button"><i class="ri-sparkling-2-line"></i><span>教学技能</span></button>
         <button type="button"><i class="ri-graduation-cap-line"></i><span>飞象学院</span></button>
         <button type="button"><i class="ri-book-3-line"></i><span>我的知识库</span></button>
@@ -34,7 +36,7 @@
       <div class="fx-c-workspace">
         <div class="fx-c-workspace-title"><span>本地工作区</span><i class="ri-more-line"></i></div>
         <button type="button"><i class="ri-folder-3-line"></i><b>demo-workspace</b></button>
-        <button type="button"><i class="ri-add-line"></i><span>新任务</span></button>
+        <button type="button" onclick="location.assign('./new-task/index.html')"><i class="ri-add-line"></i><span>新任务</span></button>
         <button type="button"><span>生成期中家长会材料</span><small>刚刚</small></button>
         <button type="button"><span>飞象老师功能简介</span><small>1小时</small></button>
       </div>
@@ -45,6 +47,10 @@
         (function () {
           var root = document.getElementById("aiWorkspace");
           if (!root) return;
+          if (new URLSearchParams(location.search).get("picker") === "1") {
+            root.classList.add("selected-panel-collapsed");
+            return;
+          }
           try {
             var saved = localStorage.getItem("feixiang-ai-canvas-panel-v2") || sessionStorage.getItem("feixiang-ai-canvas-panel-v2");
             root.classList.toggle("selected-panel-collapsed", saved === "1");
@@ -89,8 +95,6 @@
             </div>
             <div class="ai-section-head-actions">
               <button type="button" id="toggleSelectedAnswers" hidden>显示答案</button>
-              <button type="button" class="panel-action-btn panel-action-btn-compact panel-action-new-draft" data-new-question-draft aria-label="新建题单" title="新建题单"><i class="ri-add-line"></i></button>
-              <button type="button" class="panel-action-btn panel-action-btn-compact" id="enlargeSelectedPanel" aria-pressed="false">展开编辑</button>
               <button type="button" class="panel-action-btn panel-action-btn-compact" id="collapseSelectedPanel" aria-label="收起组题编辑区" title="收起组题编辑区">
                 <i class="ri-arrow-right-double-line"></i><span>收起</span>
               </button>
@@ -102,13 +106,17 @@
             <div id="aiSelectedPreview" class="ai-selected-preview"></div>
             <div class="ai-selected-empty" id="aiSelectedEmpty">
               <span>这里还没有题目</span>
-              <strong>到右边点「选用」，或用「更多题源」补充</strong>
+              <strong>到左边点「选用」，或用「我的」补充</strong>
             </div>
           </div>
           <div class="ai-canvas-studio" id="aiCanvasStudio" hidden>
             <div class="ai-canvas-studio-toolbar">
               <div class="ai-canvas-toolbar-group">
                 <span class="ai-canvas-toolbar-label">高级设置</span>
+                <button type="button" class="ai-canvas-chip workbench-source-chip" data-workbench-source="bank"><i class="ri-book-open-line"></i>题库加题</button>
+                <button type="button" class="ai-canvas-chip workbench-source-chip" data-workbench-source="upload"><i class="ri-upload-cloud-2-line"></i>上传本地文件</button>
+                <button type="button" class="ai-canvas-chip workbench-source-chip" data-workbench-source="ai"><i class="ri-sparkling-2-line"></i>AI 生成 / 改编</button>
+                <input id="workbenchLocalFile" type="file" hidden accept="image/*,.pdf,.doc,.docx" />
                 <button type="button" class="ai-canvas-chip is-active">五号</button>
                 <button type="button" class="ai-canvas-chip"><i class="ri-line-height-2"></i>1.5</button>
                 <button type="button" class="ai-canvas-chip"><i class="ri-indent-increase"></i>1.0</button>
@@ -160,14 +168,14 @@
               <button type="button" class="ai-selected-create" id="createQuestionList" disabled>
                 <i class="ri-save-3-line"></i><span id="createQuestionListLabel">保存</span>
               </button>
+              <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="download" disabled hidden>
+                <i class="ri-download-2-line"></i><span>下载</span>
+              </button>
               <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="assign" disabled hidden>
                 <i class="ri-chat-forward-line"></i><span>发送到对话</span>
               </button>
               <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="print" disabled hidden>
                 <i class="ri-printer-line"></i><span>打印</span>
-              </button>
-              <button type="button" class="ai-selected-preview-btn ai-canvas-wide-btn" data-canvas-action="download" disabled hidden>
-                <i class="ri-download-2-line"></i><span>下载</span>
               </button>
             </div>
           </footer>
@@ -217,61 +225,21 @@
             <div class="home-view" id="homeView" hidden>
               <iframe id="homeFrame" class="home-view-frame" title="题库首页" src="about:blank"></iframe>
             </div>
-            <section class="ai-assistant-panel ai-assistant-workspace-view course-center" id="aiAssistantPanel" aria-label="更多题源" hidden>
+            <section class="ai-assistant-panel ai-assistant-workspace-view course-center" id="aiAssistantPanel" aria-label="我的" hidden>
               <div class="course-center-scroll">
-                <header class="course-center-head">
-                  <div class="course-center-target"><span>添加到</span><strong id="courseCenterTarget">正在组题</strong></div>
-                  <button type="button" class="ai-assistant-close" id="aiAssistantClose" aria-label="关闭更多题源"><i class="ri-close-line"></i></button>
-                </header>
-
-                <section class="course-center-ai" aria-labelledby="courseCenterAiTitle">
-                  <div class="course-center-section-head">
-                    <div>
-                      <span class="course-center-section-icon"><i class="ri-sparkling-2-line"></i></span>
-                      <div><h2 id="courseCenterAiTitle">AI组题</h2><p>描述组题需求，快速生成可继续编辑的题单</p></div>
-                    </div>
-                  </div>
-                  <div class="course-center-composer">
-                    <div class="ai-assistant-composer">
-                      <div class="ai-assistant-input-wrap">
-                        <textarea id="aiAssistantInput" rows="2" placeholder="描述想要的题目、题型、数量和难度……"></textarea>
-                      </div>
-                      <button type="button" class="ai-assistant-send" id="aiAssistantSend" title="新建 AI 任务" aria-label="新建 AI 任务">
-                        <i class="ri-arrow-up-line"></i>
-                      </button>
-                    </div>
-                    <div class="ai-assistant-caps" aria-label="快捷任务">
-                      <span>快捷任务</span>
-                      <button type="button" class="ai-assistant-cap" data-ai-fill="帮我出5道七下一元一次方程的选择题，中等难度">AI组题</button>
-                      <button type="button" class="ai-assistant-cap" data-ai-fill="按期中难度组一套七年级数学卷，45 分钟">AI组卷</button>
-                      <button type="button" class="ai-assistant-cap" data-ai-fill="帮我找5道绝对值易错题，中等难度">按条件找题</button>
-                    </div>
-                    <div class="course-center-ai-history">
-                      <div class="course-center-subhead"><strong>历史组题</strong><button type="button" id="courseAiHistoryMore" hidden>查看更多 <i class="ri-arrow-down-s-line"></i></button></div>
-                      <div class="course-center-history-list" id="courseAiHistoryList"></div>
-                    </div>
-                  </div>
-                </section>
-
                 <section class="course-center-mine" aria-labelledby="courseCenterMineTitle">
                   <div class="course-center-section-head">
                     <div>
                       <span class="course-center-section-icon is-mine"><i class="ri-folder-user-line"></i></span>
-                      <div><h2 id="courseCenterMineTitle">我的内容</h2><p>管理我的创建、AI录题、收藏和下载记录</p></div>
+                      <div><h2 id="courseCenterMineTitle">我的内容</h2><p>管理我的创建、收藏和下载记录</p></div>
                     </div>
                     <label class="course-center-search"><i class="ri-search-line"></i><input id="courseCenterSearch" type="search" placeholder="搜索我的内容" autocomplete="off" /></label>
                   </div>
                   <nav class="course-center-tabs" aria-label="我的内容分类">
                     <button type="button" class="is-active" data-course-view="resources"><i class="ri-file-list-3-line"></i>我的创建 <span id="courseResourceCount">0</span></button>
-                    <button type="button" data-course-view="recordings"><i class="ri-file-upload-line"></i>AI录题 <span id="courseRecordingCount">0</span></button>
                     <button type="button" data-course-view="favorites"><i class="ri-star-line"></i>我的收藏 <span id="courseFavoriteCount">0</span></button>
-                    <button type="button" data-course-view="downloads"><i class="ri-download-cloud-2-line"></i>最近下载 <span id="courseDownloadCount">0</span></button>
+                    <button type="button" data-course-view="downloads"><i class="ri-download-cloud-2-line"></i>我的下载 <span id="courseDownloadCount">0</span></button>
                   </nav>
-                  <div class="course-recording-tools" id="courseRecordingTools" hidden>
-                    <div><span class="course-center-section-icon is-recording"><i class="ri-scan-2-line"></i></span><div><strong>上传文件录题</strong><p>支持图片、PDF 和 Word，识别后可继续校对编辑</p></div></div>
-                    <button type="button" class="course-recording-upload" id="aiAssistantAttach"><i class="ri-upload-cloud-2-line"></i>上传文件</button>
-                    <input type="file" id="aiAssistantFile" hidden accept="image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-                  </div>
                   <div class="course-center-list" id="courseCenterList" aria-live="polite"></div>
                   <nav class="course-center-pagination" id="courseCenterPagination" aria-label="我的创建分页" hidden></nav>
                 </section>
@@ -287,10 +255,10 @@
                     <button type="button" data-add-library="home"><i class="ri-home-4-line"></i><span>题库首页</span></button>
                     <button type="button" data-add-library="paper"><i class="ri-file-list-3-line"></i><span>试卷</span></button>
                     <button type="button" data-add-library="chapter"><i class="ri-book-open-line"></i><span>同步练习</span></button>
-                    <button type="button" data-add-library="workbook"><i class="ri-book-shelf-line"></i><span>练习册</span></button>
-                    <button type="button" data-add-library="school"><i class="ri-node-tree"></i><span>章节/知识点选题</span></button>
+                    <button type="button" data-add-library="special"><i class="ri-focus-3-line"></i><span>专题</span></button>
                   </div>
                 </section>
+
               </div>
             </section>
             <header class="ai-compose-docbar" id="aiComposeDocbar" hidden>
@@ -340,7 +308,6 @@
                   <div class="paper-action-menu" id="paperMoreMenu" role="menu" hidden>
                     <button type="button" id="addPaperToConversation" role="menuitem" data-help="将当前试卷作为参考资料加入对话" aria-label="加入对话：将当前试卷作为参考资料加入对话"><i class="ri-chat-forward-line"></i><span>加入对话</span></button>
                     <button type="button" id="batchAddAllQuestions" role="menuitem" data-help="将整套试卷题目加入当前题单，重复题目不会再次加入" aria-label="加入题单：将整套试卷题目加入当前题单，重复题目不会再次加入"><i class="ri-layout-left-line"></i><span>加入题单</span></button>
-                    <button type="button" id="savePaperCopy" role="menuitem" data-help="复制当前试卷为新题单并进入编辑，原试卷保持不变" aria-label="编辑：复制当前试卷为新题单并进入编辑，原试卷保持不变"><i class="ri-file-copy-2-line"></i><span id="savePaperCopyLabel">编辑</span></button>
                     <div class="paper-action-menu-divider" role="separator"></div>
                     <button type="button" id="favoritePaper" role="menuitem"><i class="ri-star-line"></i><span id="favoritePaperLabel">收藏</span></button>
                     <button type="button" data-action="download" role="menuitem"><i class="ri-download-2-line"></i><span>下载</span></button>
@@ -483,6 +450,6 @@
     </aside>
 
     <div id="toast" class="toast" role="status"></div>
-  <script src="./detail-ai.js?v=20260904workbench4"></script>
+  <script src="./detail-ai.js?v=20260905picker-export1"></script>
   </body>
 </html>

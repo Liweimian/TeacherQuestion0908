@@ -7,10 +7,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: resolve(import.meta.dirname, "index.html"),
-        detailAi: resolve(import.meta.dirname, "detail-ai.html"),
-        school: resolve(import.meta.dirname, "school.html"),
-        editor: resolve(import.meta.dirname, "editor.html"),
-        myResources: resolve(import.meta.dirname, "my-resources.html"),
+        newTask: resolve(import.meta.dirname, "new-task/index.html"),
       },
     },
   },

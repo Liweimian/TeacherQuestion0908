@@ -32,11 +32,12 @@ jobs:
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='dist' \
-            --exclude='docs' \
             --exclude='package.json' \
             --exclude='package-lock.json' \
             --exclude='vite.config.js' \
             --exclude='README.md' \
+            --exclude='飞象老师.html' \
+            --exclude='飞象老师_files' \
             ./ _site/
           touch _site/.nojekyll
           test -f _site/detail-ai.html

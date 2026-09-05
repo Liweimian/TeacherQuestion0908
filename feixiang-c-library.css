@@ -83,6 +83,7 @@ body.ai-detail-page {
 .fx-c-logo strong { font-size: 19px; font-weight: 850; letter-spacing: -.04em; }
 
 .fx-c-new-task {
+  text-decoration: none;
   min-height: 40px;
   display: flex;
   align-items: center;
