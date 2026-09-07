@@ -179,7 +179,7 @@
           <h1>开始一份新题单</h1>
           <p>从空白题单开始，也可以直接选题、导入试卷，或使用 AI 组题。</p>
           <div class="wb2-start-grid">
-            ${starterCard('blank', 'blank', '空白题单', '自己添加、编辑和编排题目', '不使用 AI')}
+            ${starterCard('blank', 'blank', '空白题单', '自己添加、编辑和编排题目')}
             ${starterCard('bank', 'bank', '从官方题库挑题', '按知识点、题型和难度筛选')}
             ${starterCard('upload', 'upload', '上传文件或图片', '导入 Word、PDF 或试卷照片')}
             ${starterCard('knowledge', 'knowledge', '从我的知识库', '从个人收藏、校本资源和历史题单中复用')}
