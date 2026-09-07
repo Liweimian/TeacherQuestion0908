@@ -290,7 +290,7 @@
         ${sourceCard('knowledge', 'knowledge', '我的知识库', '从个人收藏、校本资源和历史题单中快速复用已沉淀内容')}
       </div></div>
       <section class="wb2-add-ai">
-        <div class="wb2-add-ai-head"><span>${icons.sparkle}</span><div><h3>AI 协助添加</h3><p>输入组题要求，或选中左侧题目进行补题、改编和检查</p></div></div>
+        <div class="wb2-add-ai-head"><span>${icons.sparkle}</span><div><h3>AI 组题</h3><p>输入组题要求，或选中左侧题目进行补题、改编和检查</p></div></div>
         <div class="wb2-ai-suggestions"><button type="button" data-ai-prompt="添加两道小数乘法易错题">加两道易错题</button><button type="button" data-ai-prompt="补充三道基础巩固题">补充基础题</button><button type="button" data-ai-prompt="检查知识点覆盖并补题">检查并补题</button></div>
         <div class="wb2-ai-composer">${selectedQuestion ? `<div class="wb2-ai-context-card"><span>${icons.blank}</span><b>第 ${selectedIndex + 1} 题</b><button type="button" data-action="clear-question-context" aria-label="移除第 ${selectedIndex + 1} 题">×</button></div>` : ''}<textarea id="wb2AiInput" placeholder="${selectedQuestion ? '针对第 ' + (selectedIndex + 1) + ' 题输入修改要求……' : '例如：补充3道五年级小数乘法基础题……'}"></textarea><button class="wb2-ai-send" type="button" data-action="ai-send" aria-label="发送">${icons.up}</button></div>
         <small>提交后将打开“生成过程”，题目生成完成后自动加入左侧画布</small>
