@@ -1327,7 +1327,7 @@
     deps.conversationView.classList.remove('home-screen')
     hideComposerQuickChips()
     deps.taskHeader.querySelector('h1').textContent = title || '组题 · 未命名练习'
-    deps.taskHeader.querySelector('span').textContent = 'demo演示 · 左侧记录过程，右侧直接改题'
+    deps.taskHeader.querySelector(':scope > div > span').textContent = 'demo演示 · 左侧记录过程，右侧直接改题'
     deps.replayButton.hidden = true
     if (!deps.skillRow?.querySelector('[data-context="组题"]')) deps.addContext('组题')
     deps.composerInput.placeholder = emptyHints
@@ -1407,7 +1407,7 @@
       deps.setActiveTask('question-composition')
       deps.conversationView.classList.remove('home-screen')
       deps.taskHeader.querySelector('h1').textContent = '组题 · 未命名练习'
-      deps.taskHeader.querySelector('span').textContent = 'demo演示 · 左侧记录过程，右侧直接改题'
+      deps.taskHeader.querySelector(':scope > div > span').textContent = 'demo演示 · 左侧记录过程，右侧直接改题'
       deps.replayButton.hidden = true
       deps.resetPreview()
       showComposerQuickChips()
@@ -1435,10 +1435,11 @@
     deps.setActiveTask('question-composition')
     deps.conversationView.classList.remove('home-screen')
     deps.taskHeader.querySelector('h1').textContent = '组题'
-    deps.taskHeader.querySelector('span').textContent = 'demo演示 · 左侧选方式或对话，题单生成后在右侧编辑'
+    deps.taskHeader.querySelector(':scope > div > span').textContent = 'demo演示 · 左侧选方式或对话，题单生成后在右侧编辑'
     deps.replayButton.hidden = true
     hideComposerQuickChips()
     if (!deps.skillRow?.querySelector('[data-context="组题"]')) deps.addContext('组题')
+    enterAiComposeWorkspace()
     deps.resetPreview()
     deps.composerInput.placeholder = '例如：帮我出一份西城区五上数学期末卷；或描述你想加的题'
     deps.messageColumn.innerHTML = ''
@@ -1563,7 +1564,7 @@
     deps.setActiveTask('question-composition')
     deps.conversationView.classList.remove('home-screen')
     deps.taskHeader.querySelector('h1').textContent = '我的题单'
-    deps.taskHeader.querySelector('span').textContent = 'demo演示 · 题单是对话的产物，不是独立工作台'
+    deps.taskHeader.querySelector(':scope > div > span').textContent = 'demo演示 · 题单是对话的产物，不是独立工作台'
     deps.replayButton.hidden = true
     deps.resetPreview()
     deps.clearComposerContext?.()
@@ -1687,6 +1688,23 @@
     paperActive = true
   }
 
+  function enterAiComposeWorkspace() {
+    document.body.classList.add('ai-compose-workspace')
+    const subtitle = deps.taskHeader.querySelector(':scope > div > span')
+    if (subtitle) subtitle.textContent = ''
+    let back = document.getElementById('aiComposeBackButton')
+    if (!back) {
+      back = document.createElement('button')
+      back.id = 'aiComposeBackButton'
+      back.className = 'ai-compose-back'
+      back.type = 'button'
+      back.setAttribute('aria-label', '返回')
+      back.innerHTML = '<span aria-hidden="true">←</span> 返回'
+      back.addEventListener('click', () => deps.showBlankTask?.())
+      deps.taskHeader.prepend(back)
+    }
+  }
+
   function startPaperComposition(text, instant = false) {
     deps.stopPlayback()
     clearCoursewareTimer()
@@ -1696,11 +1714,12 @@
     deps.setActiveTask('question-composition')
     deps.conversationView.classList.remove('home-screen')
     deps.taskHeader.querySelector('h1').textContent = '组题 · 西城区五上数学期末卷'
-    deps.taskHeader.querySelector('span').textContent = 'demo演示 · 推理过程在对话里，题单在右侧可编辑'
+    deps.taskHeader.querySelector(':scope > div > span').textContent = 'demo演示 · 推理过程在对话里，题单在右侧可编辑'
     deps.replayButton.hidden = true
     deps.resetPreview()
     deps.clearComposerContext?.()
     deps.addContext('组题')
+    enterAiComposeWorkspace()
 
     loadExamPaper()
 
@@ -2023,7 +2042,7 @@
     deps.setActiveTask(fromNewTask ? 'blank' : 'courseware-demo')
     deps.conversationView.classList.remove('home-screen')
     deps.taskHeader.querySelector('h1').textContent = fromNewTask ? '生成新的互动课件' : '生成小学5年级 正方体和长方体的互动课件'
-    deps.taskHeader.querySelector('span').textContent = fromNewTask ? '新任务 · 根据当前输入生成' : 'demo演示 · 基于真实任务还原 · 不调用 API'
+    deps.taskHeader.querySelector(':scope > div > span').textContent = fromNewTask ? '新任务 · 根据当前输入生成' : 'demo演示 · 基于真实任务还原 · 不调用 API'
     deps.replayButton.hidden = fromNewTask
     deps.resetPreview()
     deps.clearComposerContext?.()
@@ -2117,6 +2136,8 @@
       selectedQuestionId = null
       insertAnchorId = null
       document.body.classList.remove('composition-mode')
+      document.body.classList.remove('ai-compose-workspace')
+      document.getElementById('aiComposeBackButton')?.remove()
       hideComposerQuickChips()
       deps.setQuestionFocus?.(null)
       clearComposeTimer()

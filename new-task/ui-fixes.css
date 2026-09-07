@@ -223,6 +223,19 @@ body.composition-mode .practice-word-page h1{order:2;margin:10px 0 0;font-size:1
 .practice-word-q:hover .practice-drag-handle{background:#edf6f1;color:#087a55}
 .practice-word-q.dragging .practice-drag-handle{cursor:grabbing}
 body.composition-mode .practice-word-page .practice-word-header h1{font-size:15px!important;font-weight:600;letter-spacing:.02em}
+
+/* AI 组题确认后进入独立工作区，返回时恢复新任务首页。 */
+body.ai-compose-workspace .app-shell{grid-template-columns:minmax(0,1fr)}
+body.ai-compose-workspace .app-shell>.sidebar{display:none}
+body.ai-compose-workspace .demo-badge{display:none}
+body.ai-compose-workspace .app-shell.preview-open .conversation{flex:0 1 36%;width:36%}
+body.ai-compose-workspace .app-shell.preview-open .preview-pane{width:64%;min-width:0;flex:0 0 64%}
+body.ai-compose-workspace .task-header{justify-content:flex-start;gap:12px;padding-left:16px}
+body.ai-compose-workspace .task-header>div{min-width:0}
+body.ai-compose-workspace .task-header>div>span{display:none}
+body.ai-compose-workspace .task-header #replayButton{margin-left:auto}
+.ai-compose-back{height:34px;display:inline-flex;align-items:center;gap:6px;flex:none;padding:0 11px!important;border-color:#d8e2dd!important;color:#315548!important;font-weight:650}
+.ai-compose-back span{display:inline!important;margin:0!important;color:inherit!important;font-size:15px!important;line-height:1}
 .practice-word-footer{display:none}
 .practice-word-page{min-height:0}
 .practice-word-stack{gap:10px}

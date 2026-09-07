@@ -620,8 +620,8 @@
     $('#knowledgePanel').hidden=true
     $('#knowledgePanel').classList.remove('loaded')
     $('#knowledgePanel').classList.remove('plain-panel')
-    if(task!=='question-workbench-v2')window.FxQuestionWorkbenchV2?.close()
-    $$('.product-entry').forEach(item=>item.classList.toggle('active',item.id==='questionWorkbench2Entry'&&task==='question-workbench-v2'))
+    if(!['question-workbench-v2','question-workbench-smart'].includes(task))window.FxQuestionWorkbenchV2?.close()
+    $$('.product-entry').forEach(item=>item.classList.toggle('active',(item.id==='questionWorkbench2Entry'&&task==='question-workbench-v2')||(item.id==='questionWorkbenchSmartEntry'&&task==='question-workbench-smart')))
     $('#conversationView').classList.remove('skill-library-screen')
     $('#conversationView').classList.remove('has-home-cases')
     $('.skill-detail-overlay')?.remove()
@@ -725,7 +725,17 @@
     openFiles=[]
     activeFile=null
     renderPreview()
-    window.FxQuestionWorkbenchV2?.open()
+    window.FxQuestionWorkbenchV2?.open({variant:'classic'})
+  }
+
+  function openQuestionWorkbenchSmart(){
+    window.FxPracticeDemo?.resetPaperState?.()
+    stopPlayback()
+    setActiveTask('question-workbench-smart')
+    openFiles=[]
+    activeFile=null
+    renderPreview()
+    window.FxQuestionWorkbenchV2?.open({variant:'smart'})
   }
 
   function openTeachingSkill(skillName){
@@ -764,6 +774,8 @@
   function showBlankTask() {
     stopPlayback(); setActiveTask('blank')
     window.FxPracticeDemo?.resetPaperState?.()
+    document.body.classList.remove('ai-compose-workspace')
+    $('#aiComposeBackButton')?.remove()
     $('#conversationView').classList.remove('skill-library-screen')
     $('.skill-detail-overlay')?.remove()
     $('#knowledgePanel').hidden=true;$('#knowledgeEntry').classList.remove('active')
@@ -1312,6 +1324,7 @@
   $('#knowledgeEntry').addEventListener('click',showKnowledgeBase)
   $('#teachingSkillsEntry').addEventListener('click',showTeachingSkillsPage)
   $('#questionWorkbench2Entry').addEventListener('click',openQuestionWorkbench2)
+  $('#questionWorkbenchSmartEntry').addEventListener('click',openQuestionWorkbenchSmart)
   window.addEventListener('fx-question-workbench-v2-exit',showBlankTask)
   $$('.task-item,.recent-demo').forEach(item=>item.addEventListener('click',()=>{const id=item.dataset.task;if(id==='meeting')startMeetingPlayback(false);else if(id==='courseware-demo')window.FxPracticeDemo?.startCoursewareDemo(false);else if(id==='blank')showBlankTask();else showSimpleTask(id)}))
   composerInput.addEventListener('input',()=>{
@@ -1415,6 +1428,7 @@
     setActiveSkillChip,
     syncComposerSkillToPreview,
     renderAddMenu,
+    showBlankTask,
     sendButton,
     messageColumn,
     conversationView: $('#conversationView'),

@@ -1,5 +1,9 @@
 (() => {
-  const STORAGE_KEY = 'feixiang-question-workbench-v2-drafts'
+  const STORAGE_KEYS = {
+    classic: 'feixiang-question-workbench-v2-drafts',
+    smart: 'feixiang-question-workbench-smart-drafts',
+  }
+  const SMART_GUIDE_KEY = 'feixiang-question-workbench-smart-plus-guide-seen'
   const $ = (selector, root = document) => root.querySelector(selector)
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
@@ -52,6 +56,13 @@
     { id: 'paper-4', title: '五年级数学期末综合测试', subject: '数学', grade: '五年级', paperType: '期末', meta: '区级题库 · 6题 · 40分钟', questions: [...bankQuestions].reverse() },
   ]
 
+  const knowledgeResources = [
+    { id: 'knowledge-1', title: '小数乘除法错题集', type: '收藏题集', meta: '18 题 · 五年级上册', tone: 'mint', questionIds: ['b1', 'b2', 'b4'] },
+    { id: 'knowledge-2', title: '2025 年西城区期末卷', type: '历史试卷', meta: '26 题 · 区级题库', tone: 'sand', questionIds: ['b2', 'b3', 'b5', 'b6'] },
+    { id: 'knowledge-3', title: '长方体互动课件配套题', type: '校本资源', meta: '课件资源 · 6 道配套题', tone: 'blue', questionIds: ['b3', 'b4'] },
+    { id: 'knowledge-4', title: '五年级计算每日练', type: '收藏题集', meta: '12 题 · 最近更新', tone: 'mint', questionIds: ['b1', 'b2', 'b6'] },
+  ]
+
   const demoProjects = [
     { id: 'demo-1', title: '有理数单元测试卷', subject: '七年级 · 数学', count: 12, status: '未完成', time: '今天 10:24', tone: 'mint' },
     { id: 'demo-2', title: '五年级上册期末练习', subject: '五年级 · 数学', count: 26, status: '已完成', time: '昨天 16:08', tone: 'blue' },
@@ -67,6 +78,8 @@
   let root
   let activeDraft
   let activeTool = 'add'
+  let classicOpenTools = []
+  let smartOpenTools = []
   let sourceView = 'overview'
   let aiProcess = null
   let activity = []
@@ -79,13 +92,23 @@
   let bankSelectedPaperId = ''
   let bankPaperDetailId = ''
   let bankSearchQuery = ''
+  let knowledgeSelectedIds = []
+  let knowledgeSearchQuery = ''
+  let knowledgeType = '全部类型'
   let draggedQuestionId = ''
   let selectedQuestionId = ''
   let homeProjectTab = 'mine'
+  let workbenchVariant = 'classic'
+  let smartInsertOpen = false
+  let smartInsertMode = ''
+  let smartInsertIndex = 0
+  let smartAiStatus = ''
+  let smartGuideVisible = false
+  let smartProfessionalOpen = false
 
   function readDrafts() {
     try {
-      const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      const value = JSON.parse(localStorage.getItem(STORAGE_KEYS[workbenchVariant]) || '[]')
       return Array.isArray(value) ? value : []
     } catch {
       return []
@@ -97,7 +120,7 @@
     activeDraft.updatedAt = Date.now()
     const drafts = readDrafts().filter((item) => item.id !== activeDraft.id)
     drafts.unshift(activeDraft)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 12)))
+    localStorage.setItem(STORAGE_KEYS[workbenchVariant], JSON.stringify(drafts.slice(0, 12)))
     const state = $('#wb2SaveState', root)
     if (state) state.innerHTML = '<span></span>正在保存'
     window.clearTimeout(saveTimer)
@@ -254,29 +277,28 @@
         if (paper) return `<div class="wb2-paper-detail">
           <div class="wb2-paper-detail-head"><button type="button" data-action="paper-list" aria-label="返回试卷列表">${icons.back}</button><div><span>${escapeHtml(paper.paperType)}</span><h2>${escapeHtml(paper.title)}</h2><p>${escapeHtml(paper.subject)} · ${escapeHtml(paper.grade)} · ${escapeHtml(paper.meta)}</p></div></div>
           <div class="wb2-paper-detail-summary"><b>试卷内容</b><span>共 ${paper.questions.length} 题</span></div>
-          <div class="wb2-paper-preview">${paper.questions.map((question, index) => `<article><em>${index + 1}</em><div><span>${escapeHtml(question.type)} · ${escapeHtml(question.knowledge)}</span><p>${escapeHtml(question.text)}</p></div><b>${Number(question.score || 0)} 分</b></article>`).join('')}</div>
-          <div class="wb2-panel-footer"><span>${paper.questions.length} 题 · 可整套加入</span><button class="wb2-primary-button" type="button" data-action="add-paper-detail" data-paper-id="${paper.id}">整套加入题单</button></div>
+          <div class="wb2-paper-preview">${paper.questions.map((question, index) => `<label><input type="checkbox" data-paper-question value="${question.id}" ${bankSelectedIds.includes(question.id) ? 'checked' : ''}><em>${index + 1}</em><div><span>${escapeHtml(question.type)} · ${escapeHtml(question.knowledge)}</span><p>${escapeHtml(question.text)}</p></div><b>${Number(question.score || 0)} 分</b></label>`).join('')}</div>
+          <div class="wb2-panel-footer"><div class="wb2-footer-selection"><label><input id="wb2PaperDetailSelectAll" type="checkbox" ${bankSelectedIds.length === paper.questions.length ? 'checked' : ''}>全选</label><span id="wb2PaperDetailCount">已选 ${bankSelectedIds.length} 题</span></div><button class="wb2-primary-button" type="button" data-action="add-paper-selection" data-paper-id="${paper.id}">加入题单</button></div>
         </div>`
       }
-      return `<div class="wb2-bank-search-top"><button type="button" data-source="overview" aria-label="返回添加题目">${icons.back}</button><label class="wb2-bank-keyword">${icons.search}<input id="wb2BankSearch" type="search" value="${escapeHtml(bankSearchQuery)}" placeholder="搜索题目或试卷"></label></div>
+      return `<div class="wb2-bank-search-top no-back"><label class="wb2-bank-keyword">${icons.search}<input id="wb2BankSearch" type="search" value="${escapeHtml(bankSearchQuery)}" placeholder="搜索题目或试卷"></label></div>
         <div class="wb2-bank-mode"><button class="${bankBrowseMode === 'question' ? 'active' : ''}" type="button" data-bank-mode="question">按单题</button><button class="${bankBrowseMode === 'paper' ? 'active' : ''}" type="button" data-bank-mode="paper" ${pickerTarget.mode === 'replace' ? 'disabled' : ''}>按套卷</button></div>
         ${bankBrowseMode === 'question' ? `<div class="wb2-bank-search-row">
           <label class="wb2-bank-knowledge"><select id="wb2BankKnowledge" aria-label="知识点"><option>全部知识点</option><optgroup label="数与代数"><option>小数乘法</option><option>小数除法</option><option>简易方程</option><option>分段计费</option></optgroup><optgroup label="图形与几何"><option>多边形面积</option></optgroup><optgroup label="统计与概率"><option>可能性</option></optgroup></select></label>
         </div>
-        <div class="wb2-selection-head">${pickerTarget.mode === 'replace' ? '<span>请选择 1 道题</span>' : `<label><input id="wb2BankSelectAll" type="checkbox" ${bankSelectedIds.length === bankQuestions.length ? 'checked' : ''}>全选当前结果</label>`}<span id="wb2BankVisibleCount">共 ${bankQuestions.length} 题</span></div>
+        <div class="wb2-selection-head">${pickerTarget.mode === 'replace' ? '<span>请选择 1 道题</span>' : '<span>题目列表</span>'}<span id="wb2BankVisibleCount">共 ${bankQuestions.length} 题</span></div>
         <div class="wb2-structured-list">${bankQuestions.map((question) => `<label class="wb2-structured-item" data-bank-row data-knowledge="${escapeHtml(question.knowledge)}" data-search="${escapeHtml(`${question.type} ${question.knowledge} ${question.difficulty} ${question.text}`.toLowerCase())}"><input type="checkbox" data-bank-question value="${question.id}" ${bankSelectedIds.includes(question.id) ? 'checked' : ''}><span><span class="wb2-structured-tags"><em>${escapeHtml(question.type)}</em><em>${escapeHtml(question.knowledge)}</em><em>${escapeHtml(question.difficulty)}</em></span><b>${escapeHtml(question.text)}</b>${question.options?.length ? `<small>${escapeHtml(question.options.slice(0, 2).join('　'))}</small>` : ''}</span></label>`).join('')}</div>
-        <div class="wb2-panel-footer"><span id="wb2BankCount">已选 ${bankSelectedIds.length} 题</span><button class="wb2-primary-button" type="button" data-action="add-bank">${pickerTarget.mode === 'replace' ? '确认换题' : '加入题单'}</button></div>` : `<div class="wb2-bank-filters wb2-paper-filters"><label><span>学科</span><select id="wb2PaperSubject"><option>全部学科</option><option>数学</option><option>语文</option><option>英语</option></select></label><label><span>年级</span><select id="wb2PaperGrade"><option>全部年级</option><option>五年级</option><option>六年级</option><option>七年级</option></select></label><label><span>类型</span><select id="wb2PaperType"><option>全部类型</option><option>单元检测</option><option>期中</option><option>期末</option><option>专项练习</option></select></label></div>
+        <div class="wb2-panel-footer"><div class="wb2-footer-selection">${pickerTarget.mode === 'replace' ? '' : `<label><input id="wb2BankSelectAll" type="checkbox" ${bankSelectedIds.length === bankQuestions.length ? 'checked' : ''}>全选</label>`}<span id="wb2BankCount">已选 ${bankSelectedIds.length} 题</span></div><button class="wb2-primary-button" type="button" data-action="add-bank">${pickerTarget.mode === 'replace' ? '确认换题' : '加入题单'}</button></div>` : `<div class="wb2-bank-filters wb2-paper-filters"><label><span>学科</span><select id="wb2PaperSubject"><option>全部学科</option><option>数学</option><option>语文</option><option>英语</option></select></label><label><span>年级</span><select id="wb2PaperGrade"><option>全部年级</option><option>五年级</option><option>六年级</option><option>七年级</option></select></label><label><span>类型</span><select id="wb2PaperType"><option>全部类型</option><option>单元检测</option><option>期中</option><option>期末</option><option>专项练习</option></select></label></div>
         <div class="wb2-paper-result-head"><span>试卷列表</span><em id="wb2PaperVisibleCount">共 ${bankPapers.length} 套</em></div>
-        <div class="wb2-paper-pick-list">${bankPapers.map((paper) => `<article class="wb2-paper-pick" data-paper-card data-subject="${escapeHtml(paper.subject)}" data-grade="${escapeHtml(paper.grade)}" data-paper-type="${escapeHtml(paper.paperType)}" data-search="${escapeHtml(`${paper.title} ${paper.subject} ${paper.grade} ${paper.paperType}`.toLowerCase())}"><label title="选择整套试卷"><input type="radio" name="wb2BankPaper" data-bank-paper value="${paper.id}" ${bankSelectedPaperId === paper.id ? 'checked' : ''}></label><button type="button" data-paper-detail="${paper.id}"><span class="wb2-paper-pick-icon">${icons.blank}</span><span><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.subject)} · ${escapeHtml(paper.grade)} · ${escapeHtml(paper.paperType)} · ${escapeHtml(paper.meta)}</small></span><em>${icons.chevron}</em></button></article>`).join('')}</div>
-        <div class="wb2-panel-footer"><span id="wb2PaperCount">${bankSelectedPaperId ? `已选 1 套 · ${bankPapers.find((item) => item.id === bankSelectedPaperId)?.questions.length || 0} 题` : '未选择试卷'}</span><button class="wb2-primary-button" type="button" data-action="add-paper">整套加入题单</button></div>`}`
+        <div class="wb2-paper-pick-list">${bankPapers.map((paper) => `<article class="wb2-paper-pick wb2-paper-pick-open" data-paper-card data-subject="${escapeHtml(paper.subject)}" data-grade="${escapeHtml(paper.grade)}" data-paper-type="${escapeHtml(paper.paperType)}" data-search="${escapeHtml(`${paper.title} ${paper.subject} ${paper.grade} ${paper.paperType}`.toLowerCase())}"><button type="button" data-paper-detail="${paper.id}"><span class="wb2-paper-pick-icon">${icons.blank}</span><span><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.subject)} · ${escapeHtml(paper.grade)} · ${escapeHtml(paper.paperType)} · ${escapeHtml(paper.meta)}</small></span><em>${icons.chevron}</em></button></article>`).join('')}</div>`}`
     }
     if (sourceView === 'knowledge') {
-      return `<div class="wb2-tool-head"><button type="button" data-source="overview">${icons.back}</button><div><h2>从我的知识库复用</h2><p>使用已沉淀的练习和教学资料</p></div></div>
-        <div class="wb2-knowledge-list">
-          <button type="button" data-action="add-knowledge"><span class="mint">练</span><span><b>小数乘除法错题集</b><small>18 题 · 五年级上册</small></span><em>选用</em></button>
-          <button type="button" data-action="add-knowledge"><span class="sand">卷</span><span><b>2025 年西城区期末卷</b><small>26 题 · 区级题库</small></span><em>选用</em></button>
-          <button type="button" data-action="add-knowledge"><span class="blue">课</span><span><b>长方体互动课件</b><small>可按课件内容生成配套练习</small></span><em>选用</em></button>
-        </div>`
+      const selectedCount = knowledgeSelectedIds.length
+      return `${workbenchVariant === 'classic' ? '<div class="wb2-tool-head"><div><h2>从我的知识库复用</h2><p>浏览个人收藏、校本资源和历史题单</p></div></div>' : ''}
+        <div class="wb2-knowledge-toolbar"><label>${icons.search}<input id="wb2KnowledgeSearch" type="search" value="${escapeHtml(knowledgeSearchQuery)}" placeholder="搜索知识库内容"></label><select id="wb2KnowledgeType" aria-label="内容类型"><option ${knowledgeType === '全部类型' ? 'selected' : ''}>全部类型</option><option ${knowledgeType === '收藏题集' ? 'selected' : ''}>收藏题集</option><option ${knowledgeType === '历史试卷' ? 'selected' : ''}>历史试卷</option><option ${knowledgeType === '校本资源' ? 'selected' : ''}>校本资源</option></select></div>
+        <div class="wb2-selection-head"><span>内容列表</span><span id="wb2KnowledgeVisibleCount">共 ${knowledgeResources.length} 项</span></div>
+        <div class="wb2-knowledge-browser-list">${knowledgeResources.map((item) => `<label class="wb2-knowledge-browser-item" data-knowledge-resource data-type="${escapeHtml(item.type)}" data-search="${escapeHtml(`${item.title} ${item.type} ${item.meta}`.toLowerCase())}"><input type="checkbox" data-knowledge-select value="${item.id}" ${knowledgeSelectedIds.includes(item.id) ? 'checked' : ''}><span class="${item.tone}">${item.type === '历史试卷' ? '卷' : item.type === '校本资源' ? '校' : '练'}</span><span><b>${escapeHtml(item.title)}</b><small>${escapeHtml(item.type)} · ${escapeHtml(item.meta)}</small></span><em>${item.questionIds.length} 题</em></label>`).join('')}</div>
+        <div class="wb2-panel-footer"><div class="wb2-footer-selection"><label><input id="wb2KnowledgeSelectAll" type="checkbox">全选</label><span id="wb2KnowledgeCount">已选 ${selectedCount} 项</span></div><button class="wb2-primary-button" type="button" data-action="add-knowledge">加入题单</button></div>`
     }
     if (sourceView === 'manual') {
       return `<div class="wb2-tool-head"><button type="button" data-source="overview">${icons.back}</button><div><h2>手动录入题目</h2><p>新题将添加到题单末尾</p></div></div>
@@ -293,14 +315,14 @@
         <div class="wb2-add-ai-head"><span>${icons.sparkle}</span><div><h3>AI 组题</h3><p>输入组题要求，或选中左侧题目进行补题、改编和检查</p></div></div>
         <div class="wb2-ai-suggestions"><button type="button" data-ai-prompt="添加两道小数乘法易错题">加两道易错题</button><button type="button" data-ai-prompt="补充三道基础巩固题">补充基础题</button><button type="button" data-ai-prompt="检查知识点覆盖并补题">检查并补题</button></div>
         <div class="wb2-ai-composer">${selectedQuestion ? `<div class="wb2-ai-context-card"><span>${icons.blank}</span><b>第 ${selectedIndex + 1} 题</b><button type="button" data-action="clear-question-context" aria-label="移除第 ${selectedIndex + 1} 题">×</button></div>` : ''}<textarea id="wb2AiInput" placeholder="${selectedQuestion ? '针对第 ' + (selectedIndex + 1) + ' 题输入修改要求……' : '例如：补充3道五年级小数乘法基础题……'}"></textarea><button class="wb2-ai-send" type="button" data-action="ai-send" aria-label="发送">${icons.up}</button></div>
-        <small>提交后将打开“生成过程”，题目生成完成后自动加入左侧画布</small>
+        <small>空白题单会直接加入；已有题目时，将先确认候选题再加入</small>
       </section>`
   }
 
   function uploadPanelMarkup() {
     const session = uploadSession || { status: 'empty', fileName: '' }
     if (session.status === 'empty') {
-      return `<div class="wb2-tool-head"><div><h2>上传文件或图片</h2><p>上传后将在此处拆分为结构化题目</p></div></div>
+      return `${workbenchVariant === 'classic' ? '<div class="wb2-tool-head"><div><h2>上传文件或图片</h2><p>上传后将在此处拆分为结构化题目</p></div></div>' : ''}
         <div class="wb2-dropzone" id="wb2Dropzone"><span>${icons.upload}</span><b>拖入文件，或点击上传</b><p>支持 Word、PDF、JPG 和 PNG</p><button type="button" data-action="choose-file">选择文件</button></div>
         <div class="wb2-upload-tip"><b>先校对，再加入题单</b><p>系统会识别题干、选项、答案和知识点；你可以单选或全选后加入。</p></div>`
     }
@@ -315,30 +337,59 @@
     const allAvailableSelected = availableIds.length > 0 && availableIds.every((id) => selectedIds.includes(id))
     return `<div class="wb2-tool-head"><div><h2>文件解析结果</h2><p>${escapeHtml(session.fileName)} · 已识别 ${questions.length} 题</p></div><button type="button" data-action="choose-file" aria-label="重新上传">${icons.upload}</button></div>
       <div class="wb2-upload-summary"><span>${icons.check}</span><div><b>结构化完成</b><small>请检查题型和题干，选择后加入题单</small></div></div>
-      <div class="wb2-selection-head"><label><input id="wb2UploadSelectAll" type="checkbox" ${allAvailableSelected ? 'checked' : ''} ${availableIds.length ? '' : 'disabled'}>全选未加入题目</label><span>共 ${questions.length} 题</span></div>
+      <div class="wb2-selection-head"><span>识别结果</span><span>共 ${questions.length} 题</span></div>
       <div class="wb2-structured-list">${questions.map((question) => { const added = addedIds.includes(question.id); const checked = (session.selectedIds || []).includes(question.id); return `<label class="wb2-structured-item ${added ? 'added' : ''}"><input type="checkbox" data-upload-question value="${question.id}" ${checked ? 'checked' : ''} ${added ? 'disabled' : ''}><span><span class="wb2-structured-tags"><em>${escapeHtml(question.type)}</em><em>${escapeHtml(question.knowledge)}</em><em>${escapeHtml(question.difficulty)}</em>${added ? '<em class="is-added">已加入</em>' : ''}</span><b>${escapeHtml(question.text)}</b>${question.options?.length ? `<small>${escapeHtml(question.options.slice(0, 2).join('　'))}</small>` : ''}</span></label>` }).join('')}</div>
-      <div class="wb2-panel-footer"><span id="wb2UploadCount">已选 ${(session.selectedIds || []).length} 题</span><button class="wb2-primary-button" type="button" data-action="add-upload">加入题单</button></div>`
+      <div class="wb2-panel-footer"><div class="wb2-footer-selection"><label><input id="wb2UploadSelectAll" type="checkbox" ${allAvailableSelected ? 'checked' : ''} ${availableIds.length ? '' : 'disabled'}>全选</label><span id="wb2UploadCount">已选 ${(session.selectedIds || []).length} 题</span></div><button class="wb2-primary-button" type="button" data-action="add-upload">加入题单</button></div>`
   }
 
   function aiProcessPanelMarkup() {
     const process = aiProcess || { prompt: '', status: 'running', completed: 0 }
+    const reviewQuestions = process.questions || []
+    const reviewSelectedIds = process.selectedIds || []
+    const isReview = process.status === 'review'
+    const isAdapt = process.mode === 'adapt'
+    const isReplace = process.mode === 'replace'
     const steps = [
       ['理解组题要求', '识别年级、知识点、题量与难度'],
       ['检索候选题目', '从题库中匹配并去除重复题目'],
       ['校验题单结构', '检查题型比例、难度和知识点覆盖'],
       ['加入题单画布', '保留题目来源并生成可编辑内容'],
     ]
+    const history = activeDraft?.aiHistory || []
     return `<div class="wb2-process-panel">
-      <div class="wb2-tool-head"><div><h2>AI 生成过程</h2><p>${process.status === 'done' ? '题目已加入画布，可以继续编辑' : '正在处理，本页可随时切回添加题目'}</p></div></div>
+      ${history.length ? `<section class="wb2-ai-history"><div class="wb2-ai-history-title"><b>历史 AI 组题记录</b><span>${history.length} 条</span></div>${history.map((item) => `<article><span>${icons.sparkle}</span><div><small>${escapeHtml(item.label || 'AI组题')} · ${escapeHtml(item.time || '刚刚')}</small><p>${escapeHtml(item.prompt || 'AI 组题')}</p><em>${escapeHtml(item.result || '已完成')}</em></div></article>`).join('')}</section>` : ''}
+      <div class="wb2-tool-head"><div><h2>${isReview ? (isReplace ? '选择替换题目' : isAdapt ? '选择改编题目' : '确认生成题目') : 'AI 生成过程'}</h2><p>${isReview ? (isReplace ? '已找出多道相似题，选择一道替换当前题目' : isAdapt ? 'AI 已生成多道变式题，可选择一题或多题加入题单' : '题单中已有内容，请确认需要加入的题目') : process.status === 'done' ? '题目已加入画布，可以继续输入新的组题要求' : '正在处理，本页可随时切回添加题目'}</p></div></div>
       <section class="wb2-process-request"><span>${icons.sparkle}</span><div><small>本次要求</small><p>${escapeHtml(process.prompt || 'AI 组题')}</p></div></section>
       <div class="wb2-process-steps">${steps.map((step, index) => {
         const done = index < process.completed
         const running = index === process.completed && process.status !== 'done'
         return `<article class="${done ? 'done' : running ? 'running' : ''}"><span>${done ? icons.check : running ? '<i></i>' : index + 1}</span><div><b>${step[0]}</b><small>${step[1]}</small></div><em>${done ? '完成' : running ? '进行中' : '等待'}</em></article>`
       }).join('')}</div>
-      ${process.status === 'done' ? `<section class="wb2-process-result">${icons.check}<div><b>${escapeHtml(process.result || '已生成题目并加入画布')}</b><p>你可以直接修改题干，或使用换题、AI改编和删除。</p></div></section>` : '<div class="wb2-process-loading"><i></i><span>正在生成候选题目，请稍候……</span></div>'}
-      <button class="wb2-process-back" type="button" data-tool="add">继续添加题目</button>
+      ${isReview ? `<div class="wb2-upload-summary"><span>${icons.check}</span><div><b>已生成 ${reviewQuestions.length} 道${isAdapt ? '改编题' : '候选题'}</b><small>${isAdapt ? '请选择需要保留的变式题，再加入题单' : '默认全部选中，可以取消不需要的题目后再加入'}</small></div></div>
+        <div class="wb2-selection-head"><span>候选题目</span><span>共 ${reviewQuestions.length} 题</span></div>
+        <div class="wb2-structured-list">${reviewQuestions.map((question) => `<label class="wb2-structured-item"><input type="checkbox" data-ai-question value="${question.id}" ${reviewSelectedIds.includes(question.id) ? 'checked' : ''}><span><span class="wb2-structured-tags"><em>${escapeHtml(question.type)}</em><em>${escapeHtml(question.knowledge)}</em><em>${escapeHtml(question.difficulty)}</em></span><b>${escapeHtml(question.text)}</b>${question.options?.length ? `<small>${escapeHtml(question.options.slice(0, 2).join('　'))}</small>` : ''}</span></label>`).join('')}</div>
+        <div class="wb2-ai-sticky"><div class="wb2-panel-footer wb2-ai-selection-footer"><div class="wb2-footer-selection">${isReplace ? '' : `<label><input id="wb2AiSelectAll" type="checkbox" ${reviewQuestions.length && reviewSelectedIds.length === reviewQuestions.length ? 'checked' : ''}>全选</label>`}<span id="wb2AiCount">已选 ${reviewSelectedIds.length} 题</span></div><button class="wb2-primary-button" type="button" data-action="add-ai-review">${isReplace ? '确认换题' : '加入题单'}</button></div>${aiFollowupComposerMarkup()}</div>` : process.status === 'done' ? `<section class="wb2-process-result">${icons.check}<div><b>${escapeHtml(process.result || '已生成题目并加入画布')}</b><p>你可以继续在下方输入新的组题或调整要求。</p></div></section><div class="wb2-ai-sticky wb2-ai-sticky-single">${aiFollowupComposerMarkup()}</div>` : '<div class="wb2-process-loading"><i></i><span>正在生成候选题目，请稍候……</span></div>'}
     </div>`
+  }
+
+  function aiFollowupComposerMarkup() {
+    const selectedIndex = activeDraft?.questions?.findIndex((item) => item.id === selectedQuestionId) ?? -1
+    return `<div class="wb2-ai-followup">${selectedIndex >= 0 ? `<div class="wb2-ai-followup-context"><span>${icons.blank}</span><b>第 ${selectedIndex + 1} 题</b><button type="button" data-action="clear-question-context" aria-label="移除第 ${selectedIndex + 1} 题">×</button></div>` : ''}<div class="wb2-ai-followup-input"><textarea id="wb2AiInput" rows="1" placeholder="${selectedIndex >= 0 ? `针对第 ${selectedIndex + 1} 题继续输入要求……` : '继续输入要求，例如：再简单一点，换一个生活情境……'}"></textarea><button class="wb2-ai-send" type="button" data-action="ai-send" aria-label="发送">${icons.up}</button></div></div>`
+  }
+
+  function archiveAiProcess() {
+    if (!activeDraft || !aiProcess || aiProcess.status === 'running') return
+    const history = activeDraft.aiHistory || (activeDraft.aiHistory = [])
+    if (history.some((item) => item.id === aiProcess.id)) return
+    const labels = { adapt: 'AI改编', replace: '换题' }
+    history.push({
+      id: aiProcess.id,
+      label: labels[aiProcess.mode] || 'AI组题',
+      prompt: aiProcess.prompt,
+      result: aiProcess.result,
+      time: '刚刚',
+    })
+    if (history.length > 12) history.splice(0, history.length - 12)
   }
 
   function activityPanelMarkup() {
@@ -346,7 +397,153 @@
     return `<div class="wb2-tool-head"><div><h2>操作记录</h2><p>本次题单的添加和修改记录</p></div></div><div class="wb2-activity-list">${items.map((item, index) => `<div><span>${index ? '' : icons.check}</span><p><b>${escapeHtml(item.text)}</b><small>${escapeHtml(item.time)}</small></p></div>`).join('')}</div>`
   }
 
+  function smartQuestionMarkup(question, index) {
+    return `<article class="wb2-smart-question" data-smart-question="${escapeHtml(question.id)}">
+      <span class="wb2-smart-question-number">${index + 1}</span>
+      <div><div class="wb2-smart-question-meta"><span>${escapeHtml(question.type || '题目')}</span><span>${escapeHtml(question.knowledge || '自定义')}</span></div><div class="wb2-smart-question-text" contenteditable="true" data-question-text="${escapeHtml(question.id)}">${escapeHtml(question.text || '请输入题目内容……')}</div>${question.options?.length ? `<div class="wb2-smart-question-options">${question.options.map((option) => `<span>${escapeHtml(option)}</span>`).join('')}</div>` : ''}</div>
+      <div class="wb2-smart-question-tools"><button type="button" data-question-replace="${escapeHtml(question.id)}" aria-label="更换第 ${index + 1} 题" title="换题">${icons.replace}</button><button type="button" data-question-adapt="${escapeHtml(question.id)}" aria-label="AI改编第 ${index + 1} 题" title="AI改编">${icons.sparkle}</button><button class="danger" type="button" data-smart-delete="${escapeHtml(question.id)}" aria-label="删除第 ${index + 1} 题" title="删除">${icons.trash}</button></div>
+    </article>`
+  }
+
+  function smartInsertMarkup() {
+    if (smartAiStatus === 'generating') {
+      return `<section class="wb2-smart-inline wb2-smart-generating"><span>${icons.sparkle}</span><div><b>正在生成题目</b><small>正在理解要求并组织题目，完成后会插入当前文档</small></div><i></i></section>`
+    }
+    if (smartInsertMode === 'ai') {
+      return `<form class="wb2-smart-inline wb2-smart-ai" id="wb2SmartAiForm"><div><span>${icons.sparkle}</span><b>AI 组题</b><button type="button" data-smart-action="close-insert" aria-label="关闭">×</button></div><textarea id="wb2SmartAiInput" rows="2" placeholder="描述年级、知识点、题量和难度……"></textarea><button type="submit">生成并插入</button></form>`
+    }
+    if (smartInsertMode === 'bank' || smartInsertMode === 'knowledge') {
+      const bank = smartInsertMode === 'bank'
+      return `<section class="wb2-smart-inline wb2-smart-source-preview"><div><span>${bank ? icons.bank : icons.knowledge}</span><div><b>${bank ? '从官方题库添加' : '从我的知识库添加'}</b><small>${bank ? '按知识点挑选题目并插入当前文档' : '复用收藏题目、校本资源或历史题单'}</small></div><button type="button" data-smart-action="close-insert" aria-label="关闭">×</button></div><button type="button" data-smart-action="insert-sample" data-smart-source="${smartInsertMode}">${bank ? '选择示例题并插入' : '选择知识库内容并插入'}</button></section>`
+    }
+    if (smartInsertMode === 'upload') {
+      return `<section class="wb2-smart-inline wb2-smart-source-preview"><div><span>${icons.upload}</span><div><b>上传文件或图片</b><small>支持 Word、PDF、JPG 和 PNG，识别后插入当前文档</small></div><button type="button" data-smart-action="close-insert" aria-label="关闭">×</button></div><button type="button" data-smart-action="choose-smart-file">选择文件</button></section>`
+    }
+    return ''
+  }
+
+  function smartSourceOptionsMarkup(index, professional = false) {
+    const suffix = professional ? '，添加到文档末尾' : ''
+    return `<button type="button" data-smart-insert="bank" data-smart-index="${index}"><span>${icons.bank}</span><span><b>官方题库</b><small>从题库挑选题目${suffix}</small></span></button><button type="button" data-smart-insert="upload" data-smart-index="${index}"><span>${icons.upload}</span><span><b>上传文件或图片</b><small>识别并拆分试卷${suffix}</small></span></button><button type="button" data-smart-insert="knowledge" data-smart-index="${index}"><span>${icons.knowledge}</span><span><b>我的知识库</b><small>复用已沉淀内容${suffix}</small></span></button><button type="button" data-smart-insert="ai" data-smart-index="${index}"><span>${icons.sparkle}</span><span><b>AI 组题</b><small>描述要求生成题目${suffix}</small></span></button>`
+  }
+
+  function smartInsertAnchorMarkup(index, options = {}) {
+    const active = index === smartInsertIndex
+    const classes = ['wb2-smart-insert-anchor', options.empty ? 'empty' : '', options.end ? 'end' : '', active ? 'current' : '', active && (smartInsertMode || smartAiStatus) ? 'expanded' : '', options.empty && smartGuideVisible ? 'guided' : ''].filter(Boolean).join(' ')
+    return `<div class="${classes}" data-smart-anchor="${index}">
+      <button class="wb2-smart-plus ${active && smartInsertOpen ? 'active' : ''}" type="button" data-smart-action="toggle-insert" data-smart-index="${index}" data-tooltip="添加题目" aria-label="添加题目" aria-haspopup="menu" aria-expanded="${active && smartInsertOpen}">${icons.plus}</button>
+      ${options.empty && smartGuideVisible ? '<span class="wb2-smart-first-guide">添加第一道题</span>' : ''}
+      ${active && smartInsertOpen ? `<div class="wb2-smart-insert-menu" role="menu">${smartSourceOptionsMarkup(index)}</div>` : ''}
+      ${active && !smartInsertOpen ? smartInsertMarkup() : ''}
+    </div>`
+  }
+
+  function smartProfessionalPanelMarkup() {
+    const isOverview = activeTool === 'add' && sourceView === 'overview'
+    const content = isOverview
+      ? `<div class="wb2-smart-source-overview"><p>选择一种内容来源，选中的内容会插入当前目标位置。</p>${sourceCard('bank', 'bank', '官方题库', '浏览单题或整套试卷，支持筛选、多选和预览')}${sourceCard('upload', 'upload', '上传文件或图片', '解析 Word、PDF 或试卷照片，校对后选择题目')}${sourceCard('knowledge', 'knowledge', '我的知识库', '搜索个人收藏、校本资源和历史题单')}${sourceCard('ai', 'sparkle', 'AI 组题', '描述组题要求，生成后插入当前目标位置')}</div>`
+      : activeTool === 'upload'
+        ? uploadPanelMarkup()
+        : activeTool === 'ai'
+          ? (aiProcess ? aiProcessPanelMarkup() : smartAiToolMarkup())
+        : sourcePanelMarkup()
+    const count = activeDraft?.questions?.length || 0
+    const target = count === 0 ? '题单开头' : smartInsertIndex >= count ? '题单末尾' : `第 ${smartInsertIndex} 题后`
+    return `<aside class="wb2-smart-professional-panel">
+      <header><small>添加位置：${target}</small><button type="button" data-smart-action="toggle-professional" aria-label="关闭添加题目面板">×</button></header>
+      <nav class="wb2-tool-tabs wb2-smart-tool-tabs"><button class="wb2-tool-tab-main ${isOverview ? 'active' : ''}" type="button" data-smart-tool="add">${icons.plus}添加题目</button>${smartToolTabsMarkup()}</nav>
+      <div class="wb2-smart-professional-content wb2-tool-content ${isOverview ? 'wb2-smart-professional-overview' : ''}">${content}</div>
+    </aside>`
+  }
+
+  function smartAiToolMarkup() {
+    return `<section class="wb2-add-ai wb2-smart-ai-tool">
+      <div class="wb2-add-ai-head"><span>${icons.sparkle}</span><div><h3>AI 组题</h3><p>描述年级、知识点、题量和难度，生成后插入当前目标位置</p></div></div>
+      <div class="wb2-ai-suggestions"><button type="button" data-ai-prompt="添加两道小数乘法易错题">加两道易错题</button><button type="button" data-ai-prompt="补充三道基础巩固题">补充基础题</button><button type="button" data-ai-prompt="检查知识点覆盖并补题">检查并补题</button></div>
+      <div class="wb2-ai-composer"><textarea id="wb2AiInput" placeholder="例如：补充3道五年级小数乘法基础题……"></textarea><button class="wb2-ai-send" type="button" data-action="ai-send" aria-label="发送">${icons.up}</button></div>
+    </section>`
+  }
+
+  function activateSmartTool(tool) {
+    if (!['add', 'activity'].includes(tool)) smartOpenTools = [tool, ...smartOpenTools.filter((item) => item !== tool)]
+    activeTool = tool
+    if (tool === 'add') sourceView = 'overview'
+    if (tool === 'bank') sourceView = 'bank'
+    if (tool === 'knowledge') sourceView = 'knowledge'
+  }
+
+  function smartToolTabsMarkup() {
+    const labels = {
+      bank: `${icons.bank}${pickerTarget.mode === 'replace' ? '换题' : '官方题库'}`,
+      upload: `${icons.upload}${uploadSession?.status === 'done' ? '文件解析' : uploadSession?.status === 'parsing' ? '解析中' : '上传文件'}`,
+      knowledge: `${icons.knowledge}我的知识库`,
+      ai: `${icons.sparkle}AI组题`,
+    }
+    return smartOpenTools.filter((tool) => labels[tool]).map((tool) => `<span class="wb2-tool-tab ${activeTool === tool ? 'active' : ''}"><button class="wb2-tool-tab-main" type="button" data-smart-tool="${tool}">${labels[tool]}</button><button class="wb2-tool-tab-close" type="button" data-close-smart-tool="${tool}" aria-label="关闭${tool === 'bank' ? '官方题库' : tool === 'knowledge' ? '我的知识库' : tool === 'upload' ? '上传文件' : 'AI组题'}标签">×</button></span>`).join('')
+  }
+
+  function activateClassicTool(tool) {
+    if (!['add', 'activity'].includes(tool)) {
+      classicOpenTools = [tool, ...classicOpenTools.filter((item) => item !== tool)]
+    }
+    activeTool = tool
+    if (tool === 'add') sourceView = 'overview'
+    if (tool === 'bank') sourceView = 'bank'
+    if (tool === 'knowledge') sourceView = 'knowledge'
+  }
+
+  function classicToolTabsMarkup() {
+    const available = classicOpenTools.filter((tool) => {
+      if (tool === 'upload') return Boolean(uploadSession)
+      if (tool === 'process') return Boolean(aiProcess)
+      return ['bank', 'knowledge'].includes(tool)
+    })
+    const labels = {
+      bank: `${icons.bank}${pickerTarget.mode === 'replace' ? '换题' : '官方题库'}`,
+      upload: `${icons.upload}${uploadSession?.status === 'done' ? '文件解析' : uploadSession?.status === 'parsing' ? '解析中' : '上传文件'}`,
+      knowledge: `${icons.knowledge}我的知识库`,
+      process: `${icons.sparkle}AI组题`,
+    }
+    return available.map((tool) => `<span class="wb2-tool-tab ${activeTool === tool ? 'active' : ''}"><button class="wb2-tool-tab-main" type="button" data-tool="${tool}">${labels[tool]}</button><button class="wb2-tool-tab-close" type="button" data-close-tool="${tool}" aria-label="关闭${tool === 'bank' ? '官方题库' : tool === 'knowledge' ? '我的知识库' : tool === 'upload' ? '上传文件' : 'AI组题'}标签">×</button></span>`).join('')
+  }
+
+  function renderSmartEditor() {
+    const meta = draftMeta()
+    const draftTitle = activeDraft.title || '未命名题单'
+    const titleSize = Math.min(Math.max([...draftTitle].length, 6), 22)
+    const questions = activeDraft.questions || []
+    root.dataset.view = 'smart-editor'
+    root.dataset.variant = 'smart'
+    root.innerHTML = `<header class="wb2-topbar wb2-editor-topbar wb2-smart-topbar">
+      <button class="wb2-back-home" type="button" data-action="exit" aria-label="返回飞象老师首页">${icons.back}<span class="wb2-brand-mark">${icons.sparkle}</span></button>
+      <div class="wb2-title-stack"><div class="wb2-title-line"><input id="wb2DraftTitle" size="${titleSize}" value="${escapeHtml(draftTitle)}" aria-label="题单名称"><div class="wb2-doc-stats"><span>${meta.count} 题</span><span>${meta.score || '--'} 分</span><span>${meta.minutes} 分钟</span></div></div><span id="wb2SaveState">${icons.check}已自动保存</span></div>
+      <div class="wb2-topbar-spacer"></div>
+      <button class="wb2-secondary-button wb2-smart-professional-toggle ${smartProfessionalOpen ? 'active' : ''}" type="button" data-smart-action="toggle-professional" aria-expanded="${smartProfessionalOpen}">${icons.tune}添加题目</button>
+      <button class="wb2-primary-button" type="button" data-action="download">${icons.download}下载</button>
+      <button class="wb2-secondary-button" type="button" data-action="share">${icons.share || icons.up}分享</button>
+    </header>
+    <main class="wb2-smart-workspace">
+      <article class="wb2-smart-document">
+        <input class="wb2-smart-title" id="wb2SmartTitle" value="${escapeHtml(draftTitle)}" aria-label="文档标题" placeholder="未命名题单">
+        <div class="wb2-smart-question-list">${questions.length ? questions.map((question, index) => `${smartQuestionMarkup(question, index)}${smartInsertAnchorMarkup(index + 1, { end: index === questions.length - 1 })}`).join('') : smartInsertAnchorMarkup(0, { empty: true, end: true })}</div>
+      </article>
+    </main>
+    ${smartProfessionalOpen ? smartProfessionalPanelMarkup() : ''}
+    <input id="wb2FileInput" type="file" accept=".doc,.docx,.pdf,.png,.jpg,.jpeg" hidden>
+    <input id="wb2SmartFileInput" type="file" accept=".doc,.docx,.pdf,.png,.jpg,.jpeg" hidden>
+    <div class="wb2-toast" id="wb2Toast" role="status"></div>`
+    if (smartProfessionalOpen && sourceView === 'bank' && activeTool === 'bank' && !bankPaperDetailId) {
+      if (bankBrowseMode === 'paper') syncPaperFilters()
+      else syncBankQuestionFilters()
+    }
+    if (smartProfessionalOpen && sourceView === 'knowledge' && activeTool === 'knowledge') syncKnowledgeFilters()
+  }
+
   function renderEditor() {
+    if (workbenchVariant === 'smart') {
+      renderSmartEditor()
+      return
+    }
     const meta = draftMeta()
     const draftTitle = activeDraft.title || '未命名题单'
     const titleSize = Math.min(Math.max([...draftTitle].length, 6), 22)
@@ -364,30 +561,50 @@
         <div class="wb2-canvas-scroll">${paperMarkup()}</div>
       </main>
       <aside class="wb2-tools-panel">
-        <nav class="wb2-tool-tabs"><button class="${activeTool === 'add' ? 'active' : ''}" type="button" data-tool="add">${icons.plus}添加题目</button>${uploadSession ? `<button class="${activeTool === 'upload' ? 'active' : ''}" type="button" data-tool="upload">${icons.upload}${uploadSession.status === 'empty' ? '上传文件' : uploadSession.status === 'done' ? '文件解析' : '解析中'}</button>` : ''}${aiProcess ? `<button class="${activeTool === 'process' ? 'active' : ''}" type="button" data-tool="process">${icons.sparkle}${aiProcess.status === 'done' ? '生成结果' : '生成中'}</button>` : ''}<button class="${activeTool === 'activity' ? 'active' : ''}" type="button" data-tool="activity">${icons.list}记录</button></nav>
+        <nav class="wb2-tool-tabs"><button class="wb2-tool-tab-main ${activeTool === 'add' ? 'active' : ''}" type="button" data-tool="add">${icons.plus}添加题目</button>${classicToolTabsMarkup()}<button class="wb2-tool-tab-main ${activeTool === 'activity' ? 'active' : ''}" type="button" data-tool="activity">${icons.list}记录</button></nav>
         <div class="wb2-tool-content ${activeTool === 'add' && sourceView === 'overview' ? 'wb2-tool-content-overview' : ''}">${activeTool === 'upload' ? uploadPanelMarkup() : activeTool === 'process' ? aiProcessPanelMarkup() : activeTool === 'activity' ? activityPanelMarkup() : sourcePanelMarkup()}</div>
       </aside>
     </div>
     <input id="wb2FileInput" type="file" accept=".doc,.docx,.pdf,.png,.jpg,.jpeg" hidden>
     <div class="wb2-toast" id="wb2Toast" role="status"></div>`
-    if (sourceView === 'bank' && activeTool === 'add' && !bankPaperDetailId) {
+    if (sourceView === 'bank' && activeTool === 'bank' && !bankPaperDetailId) {
       if (bankBrowseMode === 'paper') syncPaperFilters()
       else syncBankQuestionFilters()
     }
+    if (sourceView === 'knowledge' && activeTool === 'knowledge') syncKnowledgeFilters()
   }
 
   function newDraft(mode = 'blank', template) {
     const titles = { practice: '15分钟随堂练习', unit: '小数乘除法单元检测', final: '五年级数学期末试卷', courseware: '长方体配套练习' }
     const templateQuestions = template ? bankQuestions.slice(0, template === 'final' ? 6 : 3).map(cloneQuestion) : []
     activeDraft = { id: makeId(), title: titles[template] || '未命名题单', subject: '五年级 · 数学', questions: templateQuestions, createdAt: Date.now(), updatedAt: Date.now() }
-    activeTool = mode === 'upload' ? 'upload' : 'add'
+    activeTool = workbenchVariant === 'classic' && ['bank', 'upload', 'knowledge'].includes(mode) ? mode : 'add'
+    classicOpenTools = workbenchVariant === 'classic' && ['bank', 'upload', 'knowledge'].includes(mode) ? [mode] : []
+    smartOpenTools = workbenchVariant === 'smart' && ['bank', 'upload', 'knowledge', 'ai'].includes(mode) ? [mode] : []
     sourceView = mode === 'bank' ? 'bank' : mode === 'knowledge' ? 'knowledge' : 'overview'
     aiProcess = null
     selectedQuestionId = ''
+    bankBrowseMode = 'question'
+    bankSelectedIds = []
+    bankSelectedPaperId = ''
+    bankPaperDetailId = ''
     bankSearchQuery = ''
+    pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
+    knowledgeSelectedIds = []
+    knowledgeSearchQuery = ''
+    knowledgeType = '全部类型'
     uploadSession = mode === 'upload' ? { status: 'empty', fileName: '', questions: [] } : null
     activity = []
     uploadedFile = ''
+    smartInsertOpen = false
+    smartInsertMode = ''
+    smartInsertIndex = 0
+    smartAiStatus = ''
+    smartProfessionalOpen = workbenchVariant === 'smart' && ['bank', 'upload', 'knowledge', 'ai'].includes(mode)
+    if (smartProfessionalOpen) {
+      activeTool = mode
+      pickerTarget = { mode: 'smart-insert', afterId: '' }
+    }
     addActivity(template ? `已从「${titles[template]}」模板创建` : '已创建新题单')
     persistDraft()
     renderEditor()
@@ -400,11 +617,67 @@
       $('#wb2HomeAiInput', root)?.focus()
       return
     }
+    if (workbenchVariant === 'smart') {
+      newDraft('ai')
+      const editorInput = $('#wb2AiInput', root)
+      if (!editorInput) return
+      editorInput.value = request
+      handleAiSend()
+      return
+    }
     newDraft('ai')
     const editorInput = $('#wb2AiInput', root)
     if (!editorInput) return
     editorInput.value = request
     handleAiSend()
+  }
+
+  function dismissSmartGuide() {
+    smartGuideVisible = false
+    try { localStorage.setItem(SMART_GUIDE_KEY, '1') } catch {}
+  }
+
+  function insertSmartQuestionsAtTarget(questions, message) {
+    if (!activeDraft || !questions?.length) return
+    const insertAt = Math.min(Math.max(smartInsertIndex, 0), activeDraft.questions.length)
+    const inserted = questions.map(cloneQuestion)
+    activeDraft.questions.splice(insertAt, 0, ...inserted)
+    smartInsertIndex = insertAt + inserted.length
+    smartInsertOpen = false
+    smartInsertMode = ''
+    dismissSmartGuide()
+    persistDraft(message || `已插入 ${inserted.length} 道题`)
+    renderEditor()
+    showToast(message || `已插入 ${inserted.length} 道题`)
+  }
+
+  function addSmartQuestions(source) {
+    if (!activeDraft) return
+    const questions = source === 'knowledge' ? bankQuestions.slice(3, 5) : bankQuestions.slice(0, 2)
+    insertSmartQuestionsAtTarget(questions, source === 'knowledge' ? '已从我的知识库插入 2 道题' : '已从官方题库插入 2 道题')
+  }
+
+  function runSmartAi(prompt) {
+    const request = String(prompt || '').trim()
+    if (!request || !activeDraft) return
+    const draftId = activeDraft.id
+    const insertAt = Math.min(Math.max(smartInsertIndex, 0), activeDraft.questions.length)
+    smartInsertOpen = false
+    smartInsertMode = 'ai'
+    smartAiStatus = 'generating'
+    addActivity(`AI 需求：${request}`)
+    dismissSmartGuide()
+    renderEditor()
+    window.setTimeout(() => {
+      if (workbenchVariant !== 'smart' || activeDraft?.id !== draftId || root?.hidden) return
+      activeDraft.questions.splice(insertAt, 0, ...bankQuestions.slice(0, 3).map(cloneQuestion))
+      smartInsertIndex = insertAt + 3
+      smartAiStatus = ''
+      smartInsertMode = ''
+      persistDraft('AI 已生成并插入 3 道题')
+      renderEditor()
+      showToast('AI 已插入 3 道题')
+    }, 760)
   }
 
   function openProject(id) {
@@ -415,11 +688,26 @@
       activeDraft = { id: makeId(), title: demo.title, subject: demo.subject, questions: bankQuestions.slice(0, Math.min(6, demo.count)).map(cloneQuestion), createdAt: Date.now(), updatedAt: Date.now() }
     }
     activeTool = 'add'
+    classicOpenTools = []
+    smartOpenTools = []
     sourceView = 'overview'
+    bankBrowseMode = 'question'
+    bankSelectedIds = []
+    bankSelectedPaperId = ''
+    bankPaperDetailId = ''
+    bankSearchQuery = ''
+    pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
+    knowledgeSelectedIds = []
+    knowledgeSearchQuery = ''
+    knowledgeType = '全部类型'
     selectedQuestionId = ''
     aiProcess = null
     uploadSession = null
     activity = [{ text: '已恢复最近编辑状态', time: '刚刚' }]
+    smartInsertIndex = activeDraft.questions?.length || 0
+    smartInsertOpen = false
+    smartInsertMode = ''
+    smartProfessionalOpen = false
     renderEditor()
   }
 
@@ -433,6 +721,7 @@
 
   function addQuestions(questions, message) {
     activeDraft.questions.push(...questions.map(cloneQuestion))
+    if (workbenchVariant === 'smart') smartInsertIndex = activeDraft.questions.length
     persistDraft(message || `已添加 ${questions.length} 道题`)
     renderEditor()
     showToast(message || `已加入 ${questions.length} 道题`)
@@ -457,38 +746,140 @@
   }
 
   function requestQuestionPicker(target = {}) {
-    pickerTarget = { mode: target.mode || 'append', afterId: target.afterId || '' }
+    const requestedMode = target.mode || 'append'
+    pickerTarget = { mode: workbenchVariant === 'smart' && requestedMode !== 'replace' ? 'smart-insert' : requestedMode, afterId: target.afterId || '' }
     if (pickerTarget.mode === 'replace') bankBrowseMode = 'question'
     bankSelectedIds = []
     bankSelectedPaperId = ''
     bankPaperDetailId = ''
-    activeTool = 'add'
+    if (workbenchVariant === 'classic') activateClassicTool('bank')
+    else {
+      activateSmartTool('bank')
+      smartProfessionalOpen = true
+    }
     sourceView = 'bank'
     renderEditor()
+  }
+
+  function startQuestionReplacement(questionId) {
+    if (!activeDraft) return
+    const sourceIndex = activeDraft.questions.findIndex((item) => item.id === questionId)
+    const sourceQuestion = activeDraft.questions[sourceIndex]
+    if (!sourceQuestion) return
+    const candidates = bankQuestions
+      .filter((item) => item.id !== sourceQuestion.id)
+      .slice(0, 6)
+      .map(cloneQuestion)
+    archiveAiProcess()
+    aiProcess = {
+      id: makeId('process'),
+      mode: 'replace',
+      targetId: questionId,
+      prompt: `为第 ${sourceIndex + 1} 题寻找同知识点、难度相近的替换题`,
+      status: 'review',
+      completed: 4,
+      result: `已找到 ${candidates.length} 道替换候选题`,
+      questions: candidates,
+      selectedIds: [],
+    }
+    if (workbenchVariant === 'classic') activateClassicTool('process')
+    else {
+      activateSmartTool('ai')
+      smartProfessionalOpen = true
+      smartInsertIndex = sourceIndex + 1
+    }
+    addActivity(`已为第 ${sourceIndex + 1} 题找到 ${candidates.length} 道换题候选`)
+    renderEditor()
+    showToast(`已找到 ${candidates.length} 道候选题，请选择替换`)
   }
 
   function addPickedQuestions(selection = []) {
     if (!activeDraft) return
     const questions = normalizePickedQuestions(selection)
     if (!questions.length) return
+    if (workbenchVariant === 'smart' && pickerTarget.mode === 'smart-insert') {
+      insertSmartQuestionsAtTarget(questions, `已从官方题库插入 ${questions.length} 道题`)
+      sourceView = 'bank'
+      pickerTarget = { mode: 'smart-insert', afterId: '' }
+      return
+    }
     const targetIndex = activeDraft.questions.findIndex((item) => item.id === pickerTarget.afterId)
     if (pickerTarget.mode === 'replace' && targetIndex >= 0) {
       activeDraft.questions.splice(targetIndex, 1, questions[0])
       persistDraft('已从题库替换 1 道题')
-      sourceView = 'overview'
+      sourceView = 'bank'
+      pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
       renderEditor()
       showToast('题目已替换')
     } else if (pickerTarget.mode === 'insert' && targetIndex >= 0) {
       activeDraft.questions.splice(targetIndex + 1, 0, ...questions)
       persistDraft(`已在第 ${targetIndex + 1} 题后加入 ${questions.length} 道题`)
-      sourceView = 'overview'
+      sourceView = workbenchVariant === 'classic' ? 'bank' : 'overview'
+      pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
       renderEditor()
       showToast(`已加入 ${questions.length} 道题`)
     } else {
-      sourceView = 'overview'
+      sourceView = workbenchVariant === 'classic' ? 'bank' : 'overview'
       addQuestions(questions, `已从题库加入 ${questions.length} 道题`)
     }
-    pickerTarget = { mode: 'append', afterId: '' }
+    pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
+  }
+
+  function startQuestionAdaptation(questionId) {
+    if (!activeDraft) return
+    const sourceIndex = activeDraft.questions.findIndex((item) => item.id === questionId)
+    const sourceQuestion = activeDraft.questions[sourceIndex]
+    if (!sourceQuestion) return
+    const draftId = activeDraft.id
+    const processId = makeId('process')
+    archiveAiProcess()
+    aiProcess = {
+      id: processId,
+      mode: 'adapt',
+      targetId: questionId,
+      prompt: `AI 改编第 ${sourceIndex + 1} 题`,
+      status: 'running',
+      completed: 1,
+      result: '',
+      questions: [],
+      selectedIds: [],
+    }
+    if (workbenchVariant === 'classic') activateClassicTool('process')
+    else {
+      activateSmartTool('ai')
+      smartProfessionalOpen = true
+      smartInsertIndex = sourceIndex + 1
+      smartAiStatus = 'generating'
+    }
+    addActivity(`正在 AI 改编第 ${sourceIndex + 1} 题`)
+    renderEditor()
+    window.setTimeout(() => {
+      if (!aiProcess || aiProcess.id !== processId || activeDraft?.id !== draftId || root?.hidden) return
+      aiProcess.completed = 2
+      renderEditor()
+    }, 260)
+    window.setTimeout(() => {
+      if (!aiProcess || aiProcess.id !== processId || activeDraft?.id !== draftId || root?.hidden) return
+      aiProcess.completed = 3
+      renderEditor()
+    }, 480)
+    window.setTimeout(() => {
+      if (!aiProcess || aiProcess.id !== processId || activeDraft?.id !== draftId || root?.hidden) return
+      const variants = [
+        { suffix: '（变式一：调整数据）', difficulty: sourceQuestion.difficulty || '基础' },
+        { suffix: '（变式二：更换情境）', difficulty: '中等' },
+        { suffix: '（变式三：提高难度）', difficulty: '提高' },
+      ].map((variant) => cloneQuestion({ ...sourceQuestion, text: `${sourceQuestion.text}${variant.suffix}`, difficulty: variant.difficulty }))
+      aiProcess.status = 'review'
+      aiProcess.completed = 4
+      aiProcess.questions = variants
+      aiProcess.selectedIds = []
+      aiProcess.result = '已生成 3 道改编题，等待选择'
+      smartAiStatus = ''
+      persistDraft(`AI 已生成第 ${sourceIndex + 1} 题的 3 道改编题`)
+      renderEditor()
+      showToast('已生成 3 道改编题，请选择后加入')
+    }, 700)
   }
 
   function handleAiSend() {
@@ -497,30 +888,57 @@
     if (!text) return
     const draftId = activeDraft?.id
     const processId = makeId('process')
-    aiProcess = { id: processId, prompt: text, status: 'running', completed: 1, result: '' }
-    activeTool = 'process'
+    const smartInsertAt = workbenchVariant === 'smart'
+      ? Math.min(Math.max(smartInsertIndex, 0), activeDraft?.questions?.length || 0)
+      : -1
+    const autoInsert = (activeDraft?.questions?.length || 0) === 0
+    archiveAiProcess()
+    aiProcess = { id: processId, prompt: text, status: 'running', completed: 1, result: '', autoInsert, questions: [], selectedIds: [] }
+    if (workbenchVariant === 'classic') activateClassicTool('process')
+    else {
+      activateSmartTool('ai')
+      smartProfessionalOpen = true
+      smartAiStatus = 'generating'
+    }
     addActivity(`AI 需求：${text}`)
     renderEditor()
     window.setTimeout(() => {
       if (!aiProcess || aiProcess.id !== processId || activeDraft?.id !== draftId || root?.hidden) return
       aiProcess.completed = 2
-      if (activeTool === 'process') renderEditor()
+      if ((workbenchVariant === 'classic' && activeTool === 'process') || (workbenchVariant === 'smart' && activeTool === 'ai')) renderEditor()
     }, 260)
     window.setTimeout(() => {
       if (!aiProcess || aiProcess.id !== processId || activeDraft?.id !== draftId || root?.hidden) return
       aiProcess.completed = 3
-      if (activeTool === 'process') renderEditor()
+      if ((workbenchVariant === 'classic' && activeTool === 'process') || (workbenchVariant === 'smart' && activeTool === 'ai')) renderEditor()
     }, 500)
     window.setTimeout(() => {
-      if (!activeDraft || activeDraft.id !== draftId || !root || root.hidden || root.dataset.view !== 'editor') return
+      if (!activeDraft || activeDraft.id !== draftId || !root || root.hidden || !['editor', 'smart-editor'].includes(root.dataset.view)) return
       if (!aiProcess || aiProcess.id !== processId) return
-      activeDraft.questions.push(...bankQuestions.slice(0, 3).map(cloneQuestion))
-      aiProcess.status = 'done'
+      const generated = bankQuestions.slice(0, 3).map(cloneQuestion)
       aiProcess.completed = 4
-      aiProcess.result = '已生成 3 道候选题并加入题单'
-      persistDraft('AI 已添加 3 道候选题')
-      renderEditor()
-      showToast('AI 已添加 3 道题')
+      smartAiStatus = ''
+      if ((activeDraft.questions?.length || 0) === 0) {
+        if (workbenchVariant === 'smart') {
+          activeDraft.questions.splice(smartInsertAt, 0, ...generated)
+          smartInsertIndex = smartInsertAt + generated.length
+        } else {
+          activeDraft.questions.push(...generated)
+        }
+        aiProcess.status = 'done'
+        aiProcess.result = '题单原为空白，已自动加入 3 道生成题目'
+        persistDraft('AI 已自动加入 3 道题')
+        renderEditor()
+        showToast('AI 已自动加入 3 道题')
+      } else {
+        aiProcess.status = 'review'
+        aiProcess.questions = generated
+        aiProcess.selectedIds = generated.map((question) => question.id)
+        aiProcess.result = '已生成 3 道候选题，等待确认'
+        persistDraft('AI 已生成 3 道候选题，等待确认')
+        renderEditor()
+        showToast('已生成候选题，请确认后加入')
+      }
     }, 720)
   }
 
@@ -531,7 +949,8 @@
     const draftId = activeDraft?.id
     const sessionId = makeId('upload')
     uploadSession = { id: sessionId, status: 'parsing', fileName: file.name, questions: [], selectedIds: [], addedIds: [] }
-    activeTool = 'upload'
+    if (workbenchVariant === 'classic') activateClassicTool('upload')
+    else activeTool = 'upload'
     addActivity(`已选择文件：${file.name}`)
     renderEditor()
     window.setTimeout(() => {
@@ -580,15 +999,34 @@
         || (grade !== '全部年级' && card.dataset.grade !== grade)
         || (type !== '全部类型' && card.dataset.paperType !== type)
         || Boolean(query && !(card.dataset.search || '').includes(query))
-      if (card.hidden) $('input', card).checked = false
     })
-    const selected = $('[data-bank-paper]:checked', root)
-    bankSelectedPaperId = selected?.value || ''
     const visibleCount = cards.filter((card) => !card.hidden).length
     const label = $('#wb2PaperVisibleCount', root)
     if (label) label.textContent = `共 ${visibleCount} 套`
-    const selectedLabel = $('#wb2PaperCount', root)
-    if (selectedLabel && !bankSelectedPaperId) selectedLabel.textContent = '未选择试卷'
+  }
+
+  function syncKnowledgeFilters() {
+    const query = ($('#wb2KnowledgeSearch', root)?.value || knowledgeSearchQuery).trim().toLowerCase()
+    const type = $('#wb2KnowledgeType', root)?.value || knowledgeType
+    const rows = $$('[data-knowledge-resource]', root)
+    rows.forEach((row) => {
+      row.hidden = (type !== '全部类型' && row.dataset.type !== type)
+        || Boolean(query && !(row.dataset.search || '').includes(query))
+      if (row.hidden) $('[data-knowledge-select]', row).checked = false
+    })
+    const visibleInputs = rows.filter((row) => !row.hidden).map((row) => $('[data-knowledge-select]', row)).filter(Boolean)
+    knowledgeSelectedIds = $$('[data-knowledge-select]:checked', root).map((input) => input.value)
+    const count = $('#wb2KnowledgeCount', root)
+    if (count) count.textContent = `已选 ${knowledgeSelectedIds.length} 项`
+    const visibleCount = $('#wb2KnowledgeVisibleCount', root)
+    if (visibleCount) visibleCount.textContent = `共 ${visibleInputs.length} 项`
+    const selectAll = $('#wb2KnowledgeSelectAll', root)
+    if (selectAll) {
+      const checked = visibleInputs.filter((input) => input.checked).length
+      selectAll.checked = visibleInputs.length > 0 && checked === visibleInputs.length
+      selectAll.indeterminate = checked > 0 && checked < visibleInputs.length
+      selectAll.disabled = visibleInputs.length === 0
+    }
   }
 
   function ensureRoot() {
@@ -616,23 +1054,163 @@
       if (template) { newDraft('blank', template.dataset.template); return }
       const project = event.target.closest('[data-project]')
       if (project) { openProject(project.dataset.project); return }
-      const bankMode = event.target.closest('[data-bank-mode]')
-      if (bankMode && !bankMode.disabled) { bankBrowseMode = bankMode.dataset.bankMode; bankPaperDetailId = ''; renderEditor(); return }
-      const paperDetail = event.target.closest('[data-paper-detail]')
-      if (paperDetail) { bankPaperDetailId = paperDetail.dataset.paperDetail; renderEditor(); return }
-      const tool = event.target.closest('[data-tool]')
-      if (tool) { activeTool = tool.dataset.tool; renderEditor(); return }
-      const source = event.target.closest('[data-source]')
-      if (source) {
-        activeTool = 'add'
-        if (source.dataset.source === 'bank') { requestQuestionPicker(); return }
-        if (source.dataset.source === 'upload') {
-          uploadSession = uploadSession || { status: 'empty', fileName: '', questions: [] }
-          activeTool = 'upload'
+      const smartAction = event.target.closest('[data-smart-action]')
+      if (smartAction && workbenchVariant === 'smart') {
+        const action = smartAction.dataset.smartAction
+        if (smartAiStatus === 'generating' && ['toggle-insert', 'toggle-professional'].includes(action)) {
+          showToast('AI 正在生成，请稍候')
+          return
+        }
+        if (action === 'toggle-insert') {
+          smartInsertIndex = Number(smartAction.dataset.smartIndex || 0)
+          dismissSmartGuide()
+          smartInsertOpen = !smartInsertOpen
+          if (smartInsertOpen) smartInsertMode = ''
           renderEditor()
           return
         }
-        if (source.dataset.source === 'overview') pickerTarget = { mode: 'append', afterId: '' }
+        if (action === 'toggle-professional') {
+          smartProfessionalOpen = !smartProfessionalOpen
+          smartInsertOpen = false
+          smartInsertMode = ''
+          if (smartProfessionalOpen) {
+            smartInsertIndex = activeDraft?.questions?.length || 0
+            activeTool = 'add'
+            sourceView = 'overview'
+            pickerTarget = { mode: 'smart-insert', afterId: '' }
+          }
+          renderEditor()
+          return
+        }
+        if (action === 'close-insert') {
+          smartInsertOpen = false
+          smartInsertMode = ''
+          smartAiStatus = ''
+          renderEditor()
+          return
+        }
+        if (action === 'insert-sample') {
+          addSmartQuestions(smartAction.dataset.smartSource)
+          return
+        }
+        if (action === 'choose-smart-file') {
+          const fileInput = $('#wb2SmartFileInput', root)
+          if (fileInput) { fileInput.value = ''; fileInput.click() }
+          return
+        }
+      }
+      const smartInsert = event.target.closest('[data-smart-insert]')
+      if (smartInsert && workbenchVariant === 'smart') {
+        if (smartAiStatus === 'generating') {
+          showToast('AI 正在生成，请稍候')
+          return
+        }
+        smartInsertIndex = Number(smartInsert.dataset.smartIndex ?? activeDraft?.questions?.length ?? 0)
+        dismissSmartGuide()
+        smartInsertOpen = false
+        const source = smartInsert.dataset.smartInsert
+        smartProfessionalOpen = true
+        smartInsertMode = ''
+        pickerTarget = { mode: 'smart-insert', afterId: '' }
+        if (source === 'bank') {
+          bankSelectedIds = []
+          bankSelectedPaperId = ''
+          bankPaperDetailId = ''
+        } else if (source === 'upload') {
+          uploadSession = uploadSession || { status: 'empty', fileName: '', questions: [] }
+        }
+        activateSmartTool(source)
+        renderEditor()
+        if (source === 'ai') window.setTimeout(() => $('#wb2AiInput', root)?.focus(), 0)
+        return
+      }
+      const smartDelete = event.target.closest('[data-smart-delete]')
+      if (smartDelete && workbenchVariant === 'smart' && activeDraft) {
+        if (smartAiStatus === 'generating') {
+          showToast('AI 正在生成，请稍候')
+          return
+        }
+        const index = activeDraft.questions.findIndex((item) => item.id === smartDelete.dataset.smartDelete)
+        if (index >= 0) {
+          activeDraft.questions.splice(index, 1)
+          if (index < smartInsertIndex) smartInsertIndex -= 1
+          smartInsertIndex = Math.min(Math.max(smartInsertIndex, 0), activeDraft.questions.length)
+          persistDraft(`已删除第 ${index + 1} 题`)
+          renderEditor()
+          showToast('题目已删除')
+        }
+        return
+      }
+      const bankMode = event.target.closest('[data-bank-mode]')
+      if (bankMode && !bankMode.disabled) { bankBrowseMode = bankMode.dataset.bankMode; bankPaperDetailId = ''; renderEditor(); return }
+      const paperDetail = event.target.closest('[data-paper-detail]')
+      if (paperDetail) {
+        bankPaperDetailId = paperDetail.dataset.paperDetail
+        const paper = bankPapers.find((item) => item.id === bankPaperDetailId)
+        bankSelectedIds = paper ? paper.questions.map((item) => item.id) : []
+        renderEditor()
+        return
+      }
+      const closeTool = event.target.closest('[data-close-tool]')
+      if (closeTool && workbenchVariant === 'classic') {
+        const toolName = closeTool.dataset.closeTool
+        classicOpenTools = classicOpenTools.filter((item) => item !== toolName)
+        if (toolName === 'bank') bankPaperDetailId = ''
+        if (activeTool === toolName) {
+          activeTool = 'add'
+          sourceView = 'overview'
+        }
+        renderEditor()
+        return
+      }
+      const closeSmartTool = event.target.closest('[data-close-smart-tool]')
+      if (closeSmartTool && workbenchVariant === 'smart') {
+        const toolName = closeSmartTool.dataset.closeSmartTool
+        smartOpenTools = smartOpenTools.filter((item) => item !== toolName)
+        if (activeTool === toolName) {
+          activeTool = 'add'
+          sourceView = 'overview'
+        }
+        renderEditor()
+        return
+      }
+      const smartTool = event.target.closest('[data-smart-tool]')
+      if (smartTool && workbenchVariant === 'smart') {
+        activateSmartTool(smartTool.dataset.smartTool)
+        renderEditor()
+        return
+      }
+      const tool = event.target.closest('[data-tool]')
+      if (tool) {
+        if (workbenchVariant === 'classic') activateClassicTool(tool.dataset.tool)
+        else activeTool = tool.dataset.tool
+        renderEditor()
+        return
+      }
+      const source = event.target.closest('[data-source]')
+      if (source) {
+        if (source.dataset.source === 'bank') { requestQuestionPicker(); return }
+        if (source.dataset.source === 'upload') {
+          uploadSession = uploadSession || { status: 'empty', fileName: '', questions: [] }
+          if (workbenchVariant === 'classic') activateClassicTool('upload')
+          else activateSmartTool('upload')
+          renderEditor()
+          return
+        }
+        if (source.dataset.source === 'ai' && workbenchVariant === 'smart') {
+          activateSmartTool('ai')
+          renderEditor()
+          window.setTimeout(() => $('#wb2AiInput', root)?.focus(), 0)
+          return
+        }
+        if (source.dataset.source === 'overview') {
+          pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
+          activeTool = 'add'
+        } else if (workbenchVariant === 'classic') {
+          activateClassicTool(source.dataset.source)
+        } else {
+          activateSmartTool(source.dataset.source)
+        }
         sourceView = source.dataset.source
         renderEditor()
         return
@@ -663,29 +1241,30 @@
       const addAfter = event.target.closest('[data-question-add]')
       if (addAfter) { requestQuestionPicker({ mode: 'insert', afterId: addAfter.dataset.questionAdd }); return }
       const replace = event.target.closest('[data-question-replace]')
-      if (replace) { requestQuestionPicker({ mode: 'replace', afterId: replace.dataset.questionReplace }); return }
+      if (replace) { startQuestionReplacement(replace.dataset.questionReplace); return }
       const adapt = event.target.closest('[data-question-adapt]')
-      if (adapt && activeDraft) {
-        const index = activeDraft.questions.findIndex((item) => item.id === adapt.dataset.questionAdapt)
-        const question = activeDraft.questions[index]
-        if (question) {
-          question.text = `${question.text.replace(/（AI变式）$/, '')}（AI变式）`
-          question.difficulty = question.difficulty === '基础' ? '中等' : question.difficulty
-          aiProcess = { id: makeId('process'), prompt: `AI 改编第 ${index + 1} 题`, status: 'done', completed: 4, result: `第 ${index + 1} 题已改编：保留原知识点，调整了设问与难度` }
-          activeTool = 'process'
-          persistDraft(`AI 已改编第 ${index + 1} 题`)
-          renderEditor()
-          showToast(`第 ${index + 1} 题已完成 AI 改编`)
-        }
-        return
-      }
+      if (adapt && activeDraft) { startQuestionAdaptation(adapt.dataset.questionAdapt); return }
       const selectedQuestion = event.target.closest('.wb2-question')
       if (selectedQuestion && activeDraft) {
         const id = selectedQuestion.dataset.questionId
         if (event.target.matches('[contenteditable]') && selectedQuestionId === id) return
         selectedQuestionId = id
-        activeTool = 'add'
-        sourceView = 'overview'
+        if (classicOpenTools.includes('process') && aiProcess) activeTool = 'process'
+        else {
+          activeTool = 'add'
+          sourceView = 'overview'
+        }
+        renderEditor()
+        window.setTimeout(() => $('#wb2AiInput', root)?.focus(), 0)
+        return
+      }
+      const selectedSmartQuestion = event.target.closest('.wb2-smart-question')
+      if (selectedSmartQuestion && activeDraft && !event.target.closest('button')) {
+        selectedQuestionId = selectedSmartQuestion.dataset.smartQuestion
+        if (smartOpenTools.includes('ai') && aiProcess) {
+          activeTool = 'ai'
+          smartProfessionalOpen = true
+        }
         renderEditor()
         window.setTimeout(() => $('#wb2AiInput', root)?.focus(), 0)
         return
@@ -693,34 +1272,35 @@
       const actionNode = event.target.closest('[data-action]')
       const action = actionNode?.dataset.action
       if (!action) return
-      if (action === 'exit') { api.close(); window.dispatchEvent(new CustomEvent('fx-question-workbench-v2-exit')); return }
-      if (action === 'home') { persistDraft(); renderHome(); return }
+      if (action === 'exit') { archiveAiProcess(); persistDraft(); api.close(); window.dispatchEvent(new CustomEvent('fx-question-workbench-v2-exit')); return }
+      if (action === 'home') {
+        archiveAiProcess()
+        persistDraft()
+        smartProfessionalOpen = false
+        smartInsertOpen = false
+        smartInsertMode = ''
+        renderHome()
+        return
+      }
       if (action === 'choose-file') { const fileInput = $('#wb2FileInput', root); if (fileInput) { fileInput.value = ''; fileInput.click() } return }
-      if (action === 'paper-list') { bankPaperDetailId = ''; renderEditor(); return }
+      if (action === 'paper-list') { bankPaperDetailId = ''; bankSelectedIds = []; renderEditor(); return }
       if (action === 'add-bank') {
         const ids = [...bankSelectedIds]
         if (!ids.length) { showToast('请先选择题目'); return }
         const selection = bankQuestions.filter((item) => ids.includes(item.id)).map((question) => ({ question: { ...question, stem: question.text } }))
-        addPickedQuestions(selection)
         bankSelectedIds = []
-        return
-      }
-      if (action === 'add-paper') {
-        const id = bankSelectedPaperId
-        const paper = bankPapers.find((item) => item.id === id)
-        if (!paper) { showToast('请先选择一套试卷'); return }
-        const selection = paper.questions.map((question) => ({ question: { ...question, stem: question.text }, sourceTitle: paper.title }))
         addPickedQuestions(selection)
-        bankSelectedPaperId = ''
         return
       }
-      if (action === 'add-paper-detail') {
+      if (action === 'add-paper-selection') {
         const paper = bankPapers.find((item) => item.id === actionNode.dataset.paperId)
         if (!paper) return
-        const selection = paper.questions.map((question) => ({ question: { ...question, stem: question.text }, sourceTitle: paper.title }))
-        addPickedQuestions(selection)
+        const selected = paper.questions.filter((question) => bankSelectedIds.includes(question.id))
+        if (!selected.length) { showToast('请先选择需要加入的题目'); return }
+        const selection = selected.map((question) => ({ question: { ...question, stem: question.text }, sourceTitle: paper.title }))
         bankPaperDetailId = ''
-        bankSelectedPaperId = ''
+        bankSelectedIds = []
+        addPickedQuestions(selection)
         return
       }
       if (action === 'add-upload') {
@@ -729,10 +1309,57 @@
         if (!questions.length) { showToast('请先选择题目'); return }
         uploadSession.addedIds = [...new Set([...(uploadSession.addedIds || []), ...ids])]
         uploadSession.selectedIds = []
-        addQuestions(questions, `已从「${uploadSession.fileName}」加入 ${questions.length} 道题`)
+        if (workbenchVariant === 'smart') insertSmartQuestionsAtTarget(questions, `已从「${uploadSession.fileName}」插入 ${questions.length} 道题`)
+        else addQuestions(questions, `已从「${uploadSession.fileName}」加入 ${questions.length} 道题`)
         return
       }
-      if (action === 'add-knowledge') { addQuestions(bankQuestions.slice(3, 5), '已从知识库加入 2 道题'); return }
+      if (action === 'add-knowledge') {
+        const resources = knowledgeResources.filter((item) => knowledgeSelectedIds.includes(item.id))
+        if (!resources.length) { showToast('请先选择知识库内容'); return }
+        const questionIds = [...new Set(resources.flatMap((item) => item.questionIds))]
+        const questions = questionIds.map((id) => bankQuestions.find((item) => item.id === id)).filter(Boolean)
+        knowledgeSelectedIds = []
+        if (workbenchVariant === 'smart') insertSmartQuestionsAtTarget(questions, `已从我的知识库插入 ${questions.length} 道题`)
+        else addQuestions(questions, `已从我的知识库加入 ${questions.length} 道题`)
+        return
+      }
+      if (action === 'add-ai-review') {
+        const ids = [...(aiProcess?.selectedIds || [])]
+        const questions = (aiProcess?.questions || []).filter((item) => ids.includes(item.id))
+        if (!questions.length) { showToast('请先选择需要加入的题目'); return }
+        if (aiProcess?.mode === 'replace') {
+          const targetIndex = activeDraft.questions.findIndex((item) => item.id === aiProcess.targetId)
+          if (targetIndex < 0) { showToast('原题已不存在，请重新选择'); return }
+          activeDraft.questions.splice(targetIndex, 1, cloneQuestion(questions[0]))
+          aiProcess.status = 'done'
+          aiProcess.selectedIds = []
+          aiProcess.result = `第 ${targetIndex + 1} 题已完成替换`
+          persistDraft(`已通过 AI 组题替换第 ${targetIndex + 1} 题`)
+          renderEditor()
+          showToast('题目已替换')
+          return
+        }
+        if (aiProcess?.mode === 'adapt') {
+          const targetIndex = activeDraft.questions.findIndex((item) => item.id === aiProcess.targetId)
+          const insertAt = targetIndex >= 0 ? targetIndex + 1 : activeDraft.questions.length
+          const inserted = questions.map(cloneQuestion)
+          activeDraft.questions.splice(insertAt, 0, ...inserted)
+          if (workbenchVariant === 'smart') smartInsertIndex = insertAt + inserted.length
+          aiProcess.status = 'done'
+          aiProcess.selectedIds = []
+          aiProcess.result = `已选择并加入 ${inserted.length} 道改编题`
+          persistDraft(`已在原题后加入 ${inserted.length} 道 AI 改编题`)
+          renderEditor()
+          showToast(`已加入 ${inserted.length} 道改编题`)
+          return
+        }
+        aiProcess.status = 'done'
+        aiProcess.selectedIds = []
+        aiProcess.result = `已确认并加入 ${questions.length} 道 AI 生成题目`
+        if (workbenchVariant === 'smart') insertSmartQuestionsAtTarget(questions, `已加入 ${questions.length} 道 AI 生成题目`)
+        else addQuestions(questions, `已加入 ${questions.length} 道 AI 生成题目`)
+        return
+      }
       if (action === 'ai-send') { handleAiSend(); return }
       if (action === 'clear-question-context') { selectedQuestionId = ''; renderEditor(); return }
       if (action === 'save-knowledge') { persistDraft('已保存到我的知识库'); showToast('已保存到我的知识库'); return }
@@ -749,6 +1376,11 @@
         else syncBankQuestionFilters()
         return
       }
+      if (event.target.id === 'wb2KnowledgeSearch') {
+        knowledgeSearchQuery = event.target.value
+        syncKnowledgeFilters()
+        return
+      }
       if (event.target.id === 'wb2ProjectSearch') {
         const query = event.target.value.trim().toLowerCase()
         $$('[data-project-search]', root).forEach((item) => { item.hidden = !item.dataset.projectSearch.includes(query) })
@@ -758,11 +1390,23 @@
         activeDraft.title = event.target.value || '未命名题单'
         const title = $('#wb2PaperTitle', root)
         if (title) title.value = activeDraft.title
+        const smartTitle = $('#wb2SmartTitle', root)
+        if (smartTitle) smartTitle.value = activeDraft.title
         event.target.size = Math.min(Math.max([...activeDraft.title].length, 6), 22)
         persistDraft('已修改题单名称')
         return
       }
       if (event.target.id === 'wb2PaperTitle' && activeDraft) {
+        activeDraft.title = event.target.value || '未命名题单'
+        const title = $('#wb2DraftTitle', root)
+        if (title) {
+          title.value = activeDraft.title
+          title.size = Math.min(Math.max([...activeDraft.title].length, 6), 22)
+        }
+        persistDraft('已修改题单名称')
+        return
+      }
+      if (event.target.id === 'wb2SmartTitle' && activeDraft) {
         activeDraft.title = event.target.value || '未命名题单'
         const title = $('#wb2DraftTitle', root)
         if (title) {
@@ -780,6 +1424,20 @@
 
     root.addEventListener('change', (event) => {
       if (event.target.id === 'wb2FileInput') handleFiles(event.target.files)
+      if (event.target.id === 'wb2SmartFileInput' && workbenchVariant === 'smart') {
+        const file = event.target.files?.[0]
+        if (!file || !activeDraft) return
+        const insertAt = Math.min(Math.max(smartInsertIndex, 0), activeDraft.questions.length)
+        activeDraft.questions.splice(insertAt, 0, ...bankQuestions.slice(0, 2).map(cloneQuestion))
+        smartInsertIndex = insertAt + 2
+        smartInsertMode = ''
+        smartInsertOpen = false
+        dismissSmartGuide()
+        persistDraft(`已从「${file.name}」识别并插入 2 道题`)
+        renderEditor()
+        showToast('文件已识别并插入 2 道题')
+        return
+      }
       if (event.target.id === 'wb2BankSelectAll') {
         $$('[data-bank-row]', root).filter((row) => !row.hidden).forEach((row) => {
           const input = $('[data-bank-question]', row)
@@ -809,11 +1467,19 @@
       if (event.target.matches('#wb2PaperSubject,#wb2PaperGrade,#wb2PaperType')) {
         syncPaperFilters()
       }
-      if (event.target.matches('[data-bank-paper]')) {
-        const paper = bankPapers.find((item) => item.id === event.target.value)
-        bankSelectedPaperId = paper?.id || ''
-        const label = $('#wb2PaperCount', root)
-        if (label) label.textContent = paper ? `已选 1 套 · ${paper.questions.length} 题` : '未选择试卷'
+      if (event.target.id === 'wb2PaperDetailSelectAll') {
+        $$('[data-paper-question]', root).forEach((input) => { input.checked = event.target.checked })
+      }
+      if (event.target.matches('[data-paper-question],#wb2PaperDetailSelectAll')) {
+        const inputs = $$('[data-paper-question]', root)
+        bankSelectedIds = inputs.filter((input) => input.checked).map((input) => input.value)
+        const label = $('#wb2PaperDetailCount', root)
+        if (label) label.textContent = `已选 ${bankSelectedIds.length} 题`
+        const selectAll = $('#wb2PaperDetailSelectAll', root)
+        if (selectAll && event.target !== selectAll) {
+          selectAll.checked = inputs.length > 0 && bankSelectedIds.length === inputs.length
+          selectAll.indeterminate = bankSelectedIds.length > 0 && bankSelectedIds.length < inputs.length
+        }
       }
       if (event.target.id === 'wb2UploadSelectAll') {
         $$('[data-upload-question]:not(:disabled)', root).forEach((input) => { input.checked = event.target.checked })
@@ -830,15 +1496,54 @@
           selectAll.indeterminate = count > 0 && count < inputs.length
         }
       }
+      if (event.target.id === 'wb2KnowledgeSelectAll') {
+        $$('[data-knowledge-resource]', root).filter((row) => !row.hidden).forEach((row) => {
+          const input = $('[data-knowledge-select]', row)
+          if (input) input.checked = event.target.checked
+        })
+      }
+      if (event.target.matches('[data-knowledge-select],#wb2KnowledgeSelectAll')) syncKnowledgeFilters()
+      if (event.target.id === 'wb2AiSelectAll') {
+        $$('[data-ai-question]', root).forEach((input) => { input.checked = event.target.checked })
+      }
+      if (event.target.matches('[data-ai-question],#wb2AiSelectAll')) {
+        const inputs = $$('[data-ai-question]', root)
+        if (aiProcess?.mode === 'replace' && event.target.matches('[data-ai-question]') && event.target.checked) {
+          inputs.forEach((input) => { if (input !== event.target) input.checked = false })
+        }
+        if (aiProcess) aiProcess.selectedIds = inputs.filter((input) => input.checked).map((input) => input.value)
+        const count = aiProcess?.selectedIds?.length || 0
+        const label = $('#wb2AiCount', root)
+        if (label) label.textContent = `已选 ${count} 题`
+        const selectAll = $('#wb2AiSelectAll', root)
+        if (selectAll && event.target !== selectAll) {
+          selectAll.checked = inputs.length > 0 && count === inputs.length
+          selectAll.indeterminate = count > 0 && count < inputs.length
+        }
+      }
+      if (event.target.id === 'wb2KnowledgeType') {
+        knowledgeType = event.target.value
+        syncKnowledgeFilters()
+      }
     })
 
     root.addEventListener('keydown', (event) => {
+      if (event.target.id === 'wb2SmartAiInput' && event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+        event.preventDefault()
+        runSmartAi(event.target.value)
+        return
+      }
       if (event.target.id !== 'wb2HomeAiInput' || event.key !== 'Enter' || event.shiftKey || event.isComposing) return
       event.preventDefault()
       startAiDraftFromHome(event.target.value)
     })
 
     root.addEventListener('submit', (event) => {
+      if (event.target.id === 'wb2SmartAiForm') {
+        event.preventDefault()
+        runSmartAi($('#wb2SmartAiInput', root)?.value)
+        return
+      }
       if (event.target.id === 'wb2HomeAiForm') {
         event.preventDefault()
         startAiDraftFromHome($('#wb2HomeAiInput', root)?.value)
@@ -909,11 +1614,41 @@
   }
 
   const api = {
-    open() {
+    open(options = {}) {
       ensureRoot()
+      workbenchVariant = options.variant === 'smart' ? 'smart' : 'classic'
+      activeDraft = null
+      activeTool = 'add'
+      classicOpenTools = []
+      smartOpenTools = []
+      sourceView = 'overview'
+      bankBrowseMode = 'question'
+      bankSelectedIds = []
+      bankSelectedPaperId = ''
+      bankPaperDetailId = ''
+      bankSearchQuery = ''
+      pickerTarget = { mode: workbenchVariant === 'smart' ? 'smart-insert' : 'append', afterId: '' }
+      knowledgeSelectedIds = []
+      knowledgeSearchQuery = ''
+      knowledgeType = '全部类型'
+      aiProcess = null
+      uploadSession = null
+      selectedQuestionId = ''
+      smartInsertOpen = false
+      smartInsertMode = ''
+      smartInsertIndex = 0
+      smartAiStatus = ''
+      smartProfessionalOpen = false
+      try {
+        smartGuideVisible = workbenchVariant === 'smart' && !localStorage.getItem(SMART_GUIDE_KEY)
+      } catch {
+        smartGuideVisible = workbenchVariant === 'smart'
+      }
+      root.dataset.variant = workbenchVariant
       document.body.classList.add('fx-question-workbench-v2-open')
       root.hidden = false
-      renderHome()
+      if (workbenchVariant === 'smart') newDraft('blank')
+      else renderHome()
     },
     close() {
       if (!root) return
