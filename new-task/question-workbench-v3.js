@@ -304,6 +304,7 @@
     const answerShown = revealedAnswerIds.has(question.id)
     const answerText = questionAnswerText(question)
     const adapting = (adaptRequest?.inline && adaptRequest.source.id === question.id) || adaptPicker?.source.id === question.id
+    const canDeletePersonal = importWorkspaceView === 'library' && questionSource === 'personal' && personalQuestions.some((item) => item.id === question.id)
     return `<article class="wb3-qcard ${addedIndex ? 'added' : ''} ${answerShown ? 'answer-open' : ''} ${adapting ? 'adapting' : ''}" data-qid="${question.id}">
       ${addedIndex ? `<span class="wb3-added-status">已加入 · 第 ${addedIndex} 题</span>` : ''}
       <span>
@@ -317,6 +318,7 @@
         ${answerShown ? `<span class="wb3-qcard-answer"><b>参考答案</b>${escapeHtml(answerText)}</span>` : ''}
       </span>
       <span class="wb3-qcard-actions">
+        ${canDeletePersonal ? `<button type="button" class="delete" data-delete-personal-question="${question.id}" title="从我的题库删除" aria-label="从我的题库删除">${icons.trash}</button>` : ''}
         <button type="button" class="answer" data-quick-answer="${question.id}" title="${answerShown ? '收起答案' : '显示答案'}" aria-label="${answerShown ? '收起答案' : '显示答案'}">答</button>
         <button type="button" class="adapt" data-quick-adapt="${question.id}" title="AI 改编" aria-label="AI 改编">${icons.sparkle}</button>
         <button type="button" data-quick-add="${question.id}" title="${addedIndex ? '取消选用' : '选用题目'}" aria-label="${addedIndex ? '取消选用' : '选用题目'}">${addedIndex ? icons.check : icons.plus}</button>
@@ -1175,6 +1177,18 @@
 
       const quickAdd = event.target.closest('[data-quick-add]')
       if (quickAdd) { toggleQuestionFromBank(quickAdd.dataset.quickAdd); return }
+
+      const deletePersonal = event.target.closest('[data-delete-personal-question]')
+      if (deletePersonal) {
+        const id = deletePersonal.dataset.deletePersonalQuestion
+        personalQuestions = personalQuestions.filter((question) => question.id !== id)
+        revealedAnswerIds.delete(id)
+        if (adaptRequest?.source?.id === id) adaptRequest = null
+        if (adaptPicker?.source?.id === id) adaptPicker = null
+        render()
+        showToast('已从“我的题库”删除')
+        return
+      }
 
       const quickAnswer = event.target.closest('[data-quick-answer]')
       if (quickAnswer) {

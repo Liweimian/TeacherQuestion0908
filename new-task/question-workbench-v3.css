@@ -589,6 +589,8 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 }
 .wb3-qcard-actions button.adapt { color: #6b61c8; border-color: #c9c3ea; }
 .wb3-qcard-actions button.answer { color: #4f7565; }
+.wb3-qcard-actions button.delete { color: #9b625e; border-color: #e1c9c6; }
+.wb3-qcard-actions button.delete:hover { color: #8b3f39; border-color: #d7aaa5; background: #fff5f4; }
 .wb3-inline-adapt { position: relative; z-index: 2; max-width: 560px; margin-top: 8px; padding: 8px 9px; border: 1px solid #b9d8c9; border-radius: 9px; background: #f6fbf8; }
 .wb3-inline-adapt.results { max-width: none; }
 .wb3-inline-adapt > header { display: flex; align-items: center; gap: 8px; }
