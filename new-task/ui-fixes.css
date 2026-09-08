@@ -179,7 +179,7 @@ body.composition-mode .practice-word-page h1{order:2;margin:10px 0 0;font-size:1
 .practice-sheet-add-menu button{height:32px!important;padding:0 9px!important;border:0!important;background:transparent!important;color:#42554c;text-align:left;font-size:11px!important}
 .practice-sheet-add-menu button:hover{background:#edf6f1!important;color:#087a55}
 
-.practice-sheet-toolbar{position:sticky;z-index:7;top:0;display:flex;align-items:center;gap:6px;margin:0 2px 3px;padding:7px 9px;border:1px solid #e0e7e3;border-radius:10px;background:rgba(255,255,255,.96);box-shadow:0 5px 18px rgba(28,55,44,.08);backdrop-filter:blur(8px)}
+.practice-sheet-toolbar{position:sticky;z-index:7;top:0;display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:0 2px 3px;padding:7px 9px;border:1px solid #e0e7e3;border-radius:10px;background:rgba(255,255,255,.96);box-shadow:0 5px 18px rgba(28,55,44,.08);backdrop-filter:blur(8px)}
 .practice-sheet-toolbar>button,.practice-sheet-toolbar .practice-sheet-add>button{position:relative;width:auto!important;height:32px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#42554c;cursor:pointer;font-size:12px;white-space:nowrap}
 .practice-sheet-toolbar>button>span,.practice-sheet-toolbar .practice-sheet-add>button>span{font-size:15px;line-height:1}
 .practice-sheet-toolbar>button:hover,.practice-sheet-toolbar .practice-sheet-add>button:hover{background:#edf6f1;color:#087a55}
@@ -187,7 +187,7 @@ body.composition-mode .practice-word-page h1{order:2;margin:10px 0 0;font-size:1
 .practice-sheet-toolbar>button.primary{background:transparent;color:#087a55}
 .practice-sheet-toolbar>button.primary:hover{background:#edf6f1;color:#087a55}
 .practice-sheet-toolbar-divider{width:1px;height:18px;flex:none;background:#e2eae6}
-.practice-sheet-meta{margin-left:auto;color:#819087;font-size:11px;white-space:nowrap}
+.practice-sheet-meta{margin-right:auto;color:#819087;font-size:11px;white-space:nowrap}
 .practice-sheet-toolbar .practice-tool-button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .practice-sheet-toolbar .practice-tool-button b{font-size:12px;font-weight:500;line-height:1}
 .preview-body.practice-preview .practice-sheet-shell{gap:0}
@@ -239,3 +239,12 @@ body.ai-compose-workspace .task-header #replayButton{margin-left:auto}
 .practice-word-footer{display:none}
 .practice-word-page{min-height:0}
 .practice-word-stack{gap:10px}
+
+.home-workbench-links{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;width:min(820px,calc(100% - 52px));margin:0 auto 18px;padding:0 26px}
+.home-workbench-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:16px 18px;border:1px solid #dce6e1;border-radius:14px;background:#fff;color:#20312a;text-decoration:none;box-shadow:0 8px 24px rgba(24,50,40,.05)}
+.home-workbench-card:hover{border-color:#91bea9;box-shadow:0 10px 28px rgba(24,50,40,.08)}
+.home-workbench-card b{grid-column:1;font-size:16px}
+.home-workbench-card small{grid-column:1;color:#788780;font-size:12px;line-height:1.5}
+.home-workbench-card>span{grid-row:1/span 2;align-self:center;color:#087a55;font-size:13px;font-weight:650;white-space:nowrap}
+.home-workbench-card--new{border-color:#cfe4d8;background:linear-gradient(180deg,#fbfefc 0%,#f3faf6 100%)}
+@media (max-width:900px){.home-workbench-links{grid-template-columns:1fr}}

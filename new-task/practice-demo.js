@@ -983,7 +983,7 @@
         : `<div class="practice-card-list" id="practiceCardList">${questionCardsMarkup()}</div>`
     const toolbar = isEmpty
       ? ''
-      : `<div class="practice-sheet-toolbar"><div class="practice-sheet-add"><button class="practice-tool-button" data-sheet-add-toggle title="添加题目"><span aria-hidden="true">＋</span><b>加题</b></button><div class="practice-sheet-add-menu"><button data-sheet-add="bank">从题目资源选择</button><button data-sheet-add="knowledge">从我的知识库引用</button></div></div><button class="practice-tool-button primary" data-save-knowledge title="保存到我的知识库"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5zM8 4v6h8V4M8 20v-6h8v6"/></svg><b>保存</b></button><button class="practice-tool-button" data-export-student title="下载"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M5 19h14"/></svg><b>下载</b></button><span class="practice-sheet-meta">${questions.length}题 · ${score}分 · 约${minutes}分钟</span></div>`
+      : `<div class="practice-sheet-toolbar"><span class="practice-sheet-meta">${questions.length}题 · ${score}分 · 约${minutes}分钟</span><button class="practice-tool-button" data-open-workbench-edit title="进入组题工作台编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg><b>编辑</b></button><button class="practice-tool-button" data-export-student title="下载"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M5 19h14"/></svg><b>下载</b></button></div>`
     return `<div class="practice-sheet-shell${isEmpty ? ' practice-sheet-shell--empty' : ''}">${toolbar}${body}</div>`
   }
 
@@ -1082,6 +1082,55 @@
 
   function bindSheetActions(root) {
     const addWrap = root.querySelector('.practice-sheet-add')
+    root.querySelector('[data-open-workbench-edit]')?.addEventListener('click', () => {
+      const draftId = `draft-ai-record-${Date.now()}`
+      const now = Date.now()
+      const draft = {
+        id: draftId,
+        title: paper?.title || paper?.docTitle || 'AI录题试卷',
+        subject: '五年级 · 数学',
+        curriculumKey: '小学数学',
+        source: 'ai-record-edit',
+        createdAt: now,
+        updatedAt: now,
+        questions: questions.map((question, index) => ({
+          id: `sheet-ai-record-${now}-${index + 1}`,
+          sourceId: `ai-record-${question.bankId || question.id || index + 1}`,
+          status: 'confirmed',
+          source: 'ai-record',
+          curriculum: '小学数学',
+          hasAnswer: Boolean(question.answer || question.analysis),
+          type: question.type?.endsWith('题') ? question.type : `${question.type || '解答'}题`,
+          knowledge: question.knowledge || '综合应用',
+          difficulty: question.tag === '基础' ? '较易' : question.tag === '易错' ? '提高' : '中等',
+          score: Number(question.score || (question.type === '解答' ? 3 : 2)),
+          text: question.title || question.text || '',
+          options: question.options ? [...question.options] : undefined,
+          answer: question.answer || '',
+          analysis: question.analysis || '',
+        })),
+      }
+      try {
+        const storageKey = 'feixiang-question-workbench-v3-drafts'
+        const drafts = JSON.parse(localStorage.getItem(storageKey) || '[]').filter((item) => item.id !== draftId)
+        drafts.unshift(draft)
+        localStorage.setItem(storageKey, JSON.stringify(drafts.slice(0, 20)))
+        localStorage.setItem('feixiang-question-workbench-v3-active-draft', draftId)
+        sessionStorage.setItem(`feixiang-question-workbench-v3-ai-handoff:${draftId}`, JSON.stringify({
+          title: draft.title,
+          prompt: examPrompt,
+          createdAt: '刚刚',
+          plan: {
+            count: draft.questions.length,
+            types: '选择、填空、计算、解答',
+            difficulty: '基础为主，难度递进',
+            knowledge: '五年级上学期数学核心知识点',
+            minutes: estimateMinutes(),
+          },
+        }))
+      } catch { /* 页面仍可跳转，由工作台创建空白草稿兜底 */ }
+      window.location.href = `./workbench.html?draft=${encodeURIComponent(draftId)}&source=ai-compose`
+    })
     root.querySelector('[data-sheet-add-toggle]')?.addEventListener('click', (event) => {
       event.stopPropagation()
       closeAddMenus(root)
@@ -1530,7 +1579,7 @@
         <h3>新建一份题单</h3>
         <form class="paper-new-input" id="paperNewForm">
           <input id="paperNewInput" placeholder="例如：帮我出一份北京市西城区小学数学5年级上期末考试试卷" autocomplete="off">
-          <button type="submit">生成</button>
+          <button type="submit" disabled>生成</button>
         </form>
         <div class="paper-new-sources">${sourceCards
           .map(
@@ -1573,10 +1622,18 @@
     deps.messageColumn.innerHTML = paperListMarkup()
 
     const form = document.getElementById('paperNewForm')
+    const paperInput = document.getElementById('paperNewInput')
+    const paperSubmit = form?.querySelector('button[type="submit"]')
+    const syncPaperSubmit = () => {
+      if (paperSubmit) paperSubmit.disabled = !(paperInput?.value || '').trim()
+    }
+    paperInput?.addEventListener('input', syncPaperSubmit)
+    syncPaperSubmit()
     form?.addEventListener('submit', (event) => {
       event.preventDefault()
-      const value = document.getElementById('paperNewInput').value.trim()
-      startPaperComposition(value || examPrompt)
+      const value = (paperInput?.value || '').trim()
+      if (!value) return
+      startPaperComposition(value)
     })
     deps.messageColumn.querySelectorAll('[data-paper-source]').forEach((button) => {
       button.addEventListener('click', () => {

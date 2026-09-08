@@ -299,9 +299,10 @@
 
   function syncSendReady() {
     const hasText = Boolean(composerInput.value.trim())
-    const hasGroupSkill = Boolean(skillRow?.querySelector('[data-context="组题"]'))
     const hasPending = pendingPickerSelection.length > 0 || Boolean(pendingUploadFile) || Boolean(pendingContextFile)
-    sendButton.classList.toggle('ready', hasText || hasPending || hasGroupSkill)
+    const canSend = hasText || hasPending
+    sendButton.classList.toggle('ready', canSend)
+    sendButton.disabled = !canSend
   }
 
   function clearPendingAttachments() {
@@ -620,8 +621,10 @@
     $('#knowledgePanel').hidden=true
     $('#knowledgePanel').classList.remove('loaded')
     $('#knowledgePanel').classList.remove('plain-panel')
-    if(!['question-workbench-v2','question-workbench-smart'].includes(task))window.FxQuestionWorkbenchV2?.close()
-    $$('.product-entry').forEach(item=>item.classList.toggle('active',(item.id==='questionWorkbench2Entry'&&task==='question-workbench-v2')||(item.id==='questionWorkbenchSmartEntry'&&task==='question-workbench-smart')))
+    if(task!=='question-workbench')window.FxQuestionWorkbenchV3?.close()
+    $$('.product-entry').forEach(item=>{
+      item.classList.remove('active')
+    })
     $('#conversationView').classList.remove('skill-library-screen')
     $('#conversationView').classList.remove('has-home-cases')
     $('.skill-detail-overlay')?.remove()
@@ -683,7 +686,7 @@
     $('[data-close-case]',overlay).addEventListener('click',()=>overlay.remove())
     $('[data-case-favorite]',overlay).addEventListener('click',event=>{const button=event.currentTarget;button.classList.toggle('active');button.textContent=button.classList.contains('active')?'♥':'♡'})
     $('[data-maximize-case]',overlay).addEventListener('click',event=>{overlay.classList.toggle('maximized');const button=event.currentTarget,active=overlay.classList.contains('maximized');button.textContent=active?'↙':'↗';button.setAttribute('aria-label',active?'退出最大化':'最大化预览')})
-    $('[data-make-same]',overlay).addEventListener('click',()=>{overlay.remove();showBlankTask();activateSkill(skill);composerInput.value=practiceCasePrompt(item);sendButton.classList.add('ready');composerInput.focus()})
+    $('[data-make-same]',overlay).addEventListener('click',()=>{overlay.remove();showBlankTask();activateSkill(skill);composerInput.value=practiceCasePrompt(item);syncSendReady();composerInput.focus()})
     overlay.addEventListener('click',event=>{if(event.target===overlay)overlay.remove()})
   }
 
@@ -718,24 +721,14 @@
     window.FxPracticeDemo?.startComposeEntry(true)
   }
 
-  function openQuestionWorkbench2(){
+  function openQuestionWorkbenchPage(){
     window.FxPracticeDemo?.resetPaperState?.()
     stopPlayback()
-    setActiveTask('question-workbench-v2')
+    setActiveTask('question-workbench')
     openFiles=[]
     activeFile=null
     renderPreview()
-    window.FxQuestionWorkbenchV2?.open({variant:'classic'})
-  }
-
-  function openQuestionWorkbenchSmart(){
-    window.FxPracticeDemo?.resetPaperState?.()
-    stopPlayback()
-    setActiveTask('question-workbench-smart')
-    openFiles=[]
-    activeFile=null
-    renderPreview()
-    window.FxQuestionWorkbenchV2?.open({variant:'smart'})
+    window.FxQuestionWorkbenchV3?.open()
   }
 
   function openTeachingSkill(skillName){
@@ -1111,7 +1104,7 @@
     renderHomeCases(skill)
     const preset=teachingSkillPrompts[skill]||(skill==='AI组题命题 Demo 1'?questionPrompt1:skill==='AI组题命题 Demo 2'?questionPrompt2:learningDemoPrompts[skill])
     composerInput.placeholder='描述你要完成的教学任务'
-    if(preset){composerInput.value=preset;sendButton.classList.add('ready');composerInput.focus()}
+    if(preset){composerInput.value=preset;syncSendReady();composerInput.focus()}
     addMenu.hidden=true
   }
 
@@ -1190,36 +1183,27 @@
     questionPickerIntent = intent
     addMenu.hidden=true
     if(!questionPickerFrame.src)questionPickerFrame.src='../detail-ai.html?workspaceView=home&picker=1&source=new-task'
-    const workbenchV2=intent==='workbench-v2'
-    questionPicker.classList.toggle('question-picker--workbench-v2',workbenchV2)
-    $('#questionPickerTitle').textContent=workbenchV2?'从题库添加题目':'从题库加入当前对话'
-    $('.question-picker-header p').textContent=workbenchV2?'支持按单题挑选，也可以选择整套试卷':'选择试卷、同步练习或专题中的题目'
-    questionPickerConfirm.textContent=workbenchV2?'加入题单':'加入对话'
-    if(workbenchV2)clearQuestionPickerSelection()
+    questionPicker.classList.remove('question-picker--workbench-v2')
+    $('#questionPickerTitle').textContent='从题库加入当前对话'
+    $('.question-picker-header p').textContent='选择试卷、同步练习或专题中的题目'
+    questionPickerConfirm.textContent='加入对话'
     questionPicker.hidden=false
     document.body.classList.add('question-picker-open')
     clearInterval(questionPickerTimer)
     questionPickerTimer=setInterval(refreshQuestionPickerCount,400)
-    questionPickerFrame.addEventListener('load',()=>{if(workbenchV2)clearQuestionPickerSelection();else refreshQuestionPickerCount()},{once:true})
+    questionPickerFrame.addEventListener('load',()=>refreshQuestionPickerCount(),{once:true})
   }
   function closeQuestionPicker(){
     questionPicker.hidden=true
     document.body.classList.remove('question-picker-open')
     clearInterval(questionPickerTimer)
   }
-  $('#questionPickerCancel').addEventListener('click',()=>{if(questionPickerIntent==='workbench-v2')clearQuestionPickerSelection();closeQuestionPicker()})
-  window.addEventListener('fx-question-workbench-v2-open-picker',()=>openQuestionPicker('workbench-v2'))
+  $('#questionPickerCancel').addEventListener('click',()=>closeQuestionPicker())
   questionPickerConfirm.addEventListener('click',()=>{
     const rawSelection=collectPickerSelection()
     const count=rawSelection.length||selectedQuestionCount()
     if(!count){closeQuestionPicker();composerInput.focus();return}
     const selection=normalizePickerSelection(rawSelection,count)
-    if (questionPickerIntent === 'workbench-v2') {
-      window.FxQuestionWorkbenchV2?.addPickedQuestions?.(selection,{ count })
-      clearQuestionPickerSelection()
-      closeQuestionPicker()
-      return
-    }
     if (questionPickerIntent === 'sheet') {
       window.FxPracticeDemo.onQuestionsPicked({ selection, count })
       closeQuestionPicker()
@@ -1323,9 +1307,9 @@
   })
   $('#knowledgeEntry').addEventListener('click',showKnowledgeBase)
   $('#teachingSkillsEntry').addEventListener('click',showTeachingSkillsPage)
-  $('#questionWorkbench2Entry').addEventListener('click',openQuestionWorkbench2)
-  $('#questionWorkbenchSmartEntry').addEventListener('click',openQuestionWorkbenchSmart)
-  window.addEventListener('fx-question-workbench-v2-exit',showBlankTask)
+  window.addEventListener('fx-question-workbench-v3-exit',showBlankTask)
+  const workbenchHash=location.hash.replace('#','')
+  if(workbenchHash==='workbench'||workbenchHash==='workbench-v3')openQuestionWorkbenchPage()
   $$('.task-item,.recent-demo').forEach(item=>item.addEventListener('click',()=>{const id=item.dataset.task;if(id==='meeting')startMeetingPlayback(false);else if(id==='courseware-demo')window.FxPracticeDemo?.startCoursewareDemo(false);else if(id==='blank')showBlankTask();else showSimpleTask(id)}))
   composerInput.addEventListener('input',()=>{
     syncSendReady()
@@ -1334,6 +1318,7 @@
   sendButton.addEventListener('click',()=>{
     const text=composerInput.value.trim()
     const pending=getPendingAttachments()
+    if(!text && !pending.selection.length && !pending.fileName && !pending.contextFile)return
     const demoSkills=$$('[data-context]',skillRow).map(node=>node.dataset.context).filter(skill=>skill==='组题'||skill==='互动课件'||skill==='AI组题命题 Demo 1'||skill==='AI组题命题 Demo 2'||learningDemoPrompts[skill])
     let activeDemoSkill=demoSkills[demoSkills.length-1]
     const activeSkillChip=$$('[data-context]',skillRow).find(node=>node.classList.contains('skill-chip--active'))
@@ -1348,15 +1333,13 @@
       else if(activeSkillChip)activeDemoSkill=activeSkillChip.dataset.context
     }
     if(activeDemoSkill==='组题'){
+      if(!text && !pending.selection.length && !pending.fileName && !pending.contextFile)return
       composerInput.value=''
       sendButton.classList.remove('ready')
+      sendButton.disabled=true
       if(pending.selection.length || pending.fileName || pending.contextFile){
         window.FxPracticeDemo?.startComposeWithAttachments({ text, ...pending })
         clearPendingAttachments()
-        return
-      }
-      if(!text){
-        window.FxPracticeDemo?.startComposeEntry(true)
         return
       }
       if(window.FxPracticeDemo?.isComposeEntry?.()){
@@ -1451,14 +1434,14 @@
     const chip = event.target.closest('[data-hint-command]')
     if (!chip) return
     composerInput.value = chip.dataset.hintCommand
-    sendButton.classList.add('ready')
+    syncSendReady()
     composerInput.focus()
   })
   messageColumn?.addEventListener('click', (event) => {
     const chip = event.target.closest('[data-hint-command]')
     if (!chip || chip.closest('.composer-wrap')) return
     composerInput.value = chip.dataset.hintCommand
-    sendButton.classList.add('ready')
+    syncSendReady()
     composerInput.focus()
   })
 })()

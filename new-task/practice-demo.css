@@ -1317,6 +1317,12 @@
   font-weight: 600;
   cursor: pointer;
 }
+.paper-new-input button:disabled {
+  color: #9aa7a0;
+  background: #edf1ef;
+  cursor: not-allowed;
+  opacity: .72;
+}
 
 .paper-new-sources {
   display: grid;
