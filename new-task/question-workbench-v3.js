@@ -243,6 +243,7 @@
   function findQuestionById(id) {
     return bankQuestions.find((question) => question.id === id)
       || personalQuestions.find((question) => question.id === id)
+      || allKnowledgePapers().flatMap((paper) => paper.questions || []).find((question) => question.id === id)
       || aiImportRecords.flatMap((record) => record.questions || []).find((question) => question.id === id)
       || aiComposeRecords.flatMap((record) => record.questions || []).find((question) => question.id === id)
   }
@@ -518,7 +519,7 @@
       content = `<div class="wb3-record-page"><div class="wb3-import-page-title"><div><h2>AI组题记录</h2><p>保留每次 AI 协作生成的题单，可再次整份或逐题选用。</p></div></div>
         <div class="wb3-record-list">${aiComposeRecords.map((record) => `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.sparkle}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '生成完成' : '生成中'}</span><b>${escapeHtml(record.title)}</b><small>${record.mode === 'append' ? '补充题目' : record.mode === 'adapt' ? '改编单题' : '生成新题单'} · ${escapeHtml(record.createdAt)} · ${record.questions.length} 题</small><em>${escapeHtml(record.prompt)}</em></div><button type="button" data-open-compose-record="${record.id}">${record.status === 'completed' ? '查看题目' : '查看进度'}</button></article>`).join('')}</div></div>`
     } else if (importWorkspaceView === 'knowledge' && previewPaper) {
-      content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)} · ${previewPaper.questions.length} 题 · 可逐题选用</p></div></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
+      content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)} · ${previewPaper.questions.length} 题 · 可逐题选用</p></div><button type="button" class="primary" data-import-knowledge-all="${previewPaper.id}">全部选用</button></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
     } else {
       content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>我的知识库</h2><p>先查看整套题目，再像官方题库一样逐题选用。</p></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.type)} · ${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('')}</div></div>`
     }
@@ -1095,6 +1096,13 @@
       if (importRecordAll) {
         const record = aiImportRecords.find((item) => item.id === importRecordAll.dataset.importRecordAll)
         if (record?.status === 'completed') addConfirmedQuestionsFromSources(record.questions, `已从 AI录题记录加入 ${record.questions.length} 道题`)
+        return
+      }
+
+      const importKnowledgeAll = event.target.closest('[data-import-knowledge-all]')
+      if (importKnowledgeAll) {
+        const paper = allKnowledgePapers().find((item) => item.id === importKnowledgeAll.dataset.importKnowledgeAll)
+        if (paper) addConfirmedQuestionsFromSources(paper.questions, `已从「${paper.title}」选用 ${paper.questions.length} 道题`)
         return
       }
 
