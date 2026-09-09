@@ -1183,7 +1183,7 @@
   function openQuestionPicker(intent = 'composer'){
     questionPickerIntent = intent
     addMenu.hidden=true
-    if(!questionPickerFrame.src)questionPickerFrame.src='./question-picker.html'
+    if(!questionPickerFrame.src)questionPickerFrame.src='./question-picker.html?v=20260909picker5'
     questionPicker.classList.remove('question-picker--workbench-v2')
     $('#questionPickerTitle').textContent='从题库添加'
     $('.question-picker-header p').textContent='选择试卷、同步练习或专题中的题目'
