@@ -1595,9 +1595,9 @@
       adaptPicker = null
       restoreAiConversationHandoff()
       const requestedPaperId = sessionStorage.getItem('feixiang-question-workbench-open-paper')
-      if (requestedPaperId && requestedPaperId === activeDraft.id) {
+      if (requestedPaperId && savedDraftPapers().some((paper) => paper.draftId === requestedPaperId)) {
         sessionStorage.removeItem('feixiang-question-workbench-open-paper')
-        previewKnowledgePaperId = `saved-${activeDraft.id}`
+        previewKnowledgePaperId = `saved-${requestedPaperId}`
         importWorkspaceView = 'knowledge'
         openWorkspaceTabs = [previewKnowledgePaperId.replace(/^/, 'paper:')]
       }

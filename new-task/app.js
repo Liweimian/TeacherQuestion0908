@@ -837,10 +837,9 @@
     }
     const renderComposeFolder=()=>{
       const papers=savedComposePapers()
-      panel.innerHTML=`<div class="kb-page"><nav class="kb-tabs"><button>我的生成</button><button>我的收藏</button><button class="active">我的云盘 <span>♙</span></button><label><span>⌕</span><input type="search" placeholder="搜索组题文件"></label></nav><header class="kb-folder-head"><div><button type="button" data-back-cloud>←</button><span>我的云盘</span><i>/</i><b>我的组题</b></div><span>共 ${papers.length} 份题单</span></header><div class="kb-table-head kb-paper-columns"><span>题单名称</span><span>更新时间</span><span>操作</span></div><div class="kb-paper-list">${papers.map(paper=>`<article><span class="kb-paper-icon">题</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><time>${escapeHtml(paper.time)}</time><div><button type="button" data-open-compose-paper="${escapeHtml(paper.id)}">查看</button><button type="button" class="delete" data-delete-compose-paper="${escapeHtml(paper.id)}">删除</button></div></article>`).join('')}</div></div>`
+      panel.innerHTML=`<div class="kb-page"><nav class="kb-tabs"><button>我的生成</button><button>我的收藏</button><button class="active">我的云盘 <span>♙</span></button><label><span>⌕</span><input type="search" placeholder="搜索组题文件"></label></nav><header class="kb-folder-head"><div><button type="button" data-back-cloud>←</button><span>我的云盘</span><i>/</i><b>我的组题</b></div><span>共 ${papers.length} 份题单</span></header><div class="kb-table-head kb-paper-columns"><span>题单名称</span><span>更新时间</span><span>操作</span></div><div class="kb-paper-list">${papers.map(paper=>`<article><span class="kb-paper-icon">题</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><time>${escapeHtml(paper.time)}</time><div><button type="button" data-open-compose-paper="${escapeHtml(paper.id)}">查看</button><button type="button" data-edit-compose-paper="${escapeHtml(paper.id)}">编辑</button><button type="button" class="delete" data-delete-compose-paper="${escapeHtml(paper.id)}">删除</button></div></article>`).join('')}</div></div>`
       $('[data-back-cloud]',panel)?.addEventListener('click',renderCloud)
-      $$('[data-open-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
-        const id=button.dataset.openComposePaper
+      const ensureComposeDraft=id=>{
         let drafts=[]
         try{drafts=JSON.parse(localStorage.getItem('feixiang-question-workbench-v3-drafts')||'[]')}catch{}
         if(!drafts.some(item=>item.id===id)){
@@ -849,8 +848,19 @@
           drafts.push({id,title:paper?.title||'AI组题题单',subject:'五年级 · 数学',curriculumKey:'小学数学',createdAt:Date.now(),updatedAt:Date.now(),questions:Array.from({length:count},(_,index)=>({id:`${id}-q${index+1}`,sourceId:`b${index%10+1}`,status:'confirmed',source:'ai-compose',type:index%3===0?'填空题':'选择题',knowledge:'数与运算',difficulty:'较易',score:1,text:`${paper?.title||'AI组题'}示例题 ${index+1}。`}))})
           localStorage.setItem('feixiang-question-workbench-v3-drafts',JSON.stringify(drafts))
         }
-        localStorage.setItem('feixiang-question-workbench-v3-active-draft',id)
+      }
+      $$('[data-open-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
+        const id=button.dataset.openComposePaper
+        ensureComposeDraft(id)
+        localStorage.removeItem('feixiang-question-workbench-v3-active-draft')
         sessionStorage.setItem('feixiang-question-workbench-open-paper',id)
+        window.location.href='./workbench.html'
+      }))
+      $$('[data-edit-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
+        const id=button.dataset.editComposePaper
+        ensureComposeDraft(id)
+        sessionStorage.removeItem('feixiang-question-workbench-open-paper')
+        localStorage.setItem('feixiang-question-workbench-v3-active-draft',id)
         window.location.href='./workbench.html'
       }))
       $$('[data-delete-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
