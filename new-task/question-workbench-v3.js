@@ -132,6 +132,11 @@
   let root
   let activeDraft
   let questionSource = 'official'
+  const OFFICIAL_PAGE_SIZE = 20
+  const OFFICIAL_MAX_PAGES = 3
+  let officialPage = 1
+  let officialMoreUnlocked = false
+  let officialUnlockPromptOpen = false
   let curriculumKey = '小学数学'
   let treeSearchQuery = ''
   let activeKnowledge = '全部知识点'
@@ -261,11 +266,18 @@
     if (questionSource === 'personal') {
       return personalQuestions.filter((question) => question.curriculum === curriculumKey)
     }
-    return bankQuestions.filter((question) => question.curriculum === curriculumKey)
+    const base = bankQuestions.filter((question) => question.curriculum === curriculumKey)
+    return Array.from({ length: OFFICIAL_PAGE_SIZE * OFFICIAL_MAX_PAGES }, (_, round) => base.map((question, index) => ({
+      ...question,
+      id: round ? `${question.id}-demo-${round + 1}` : question.id,
+      originId: question.originId || question.id,
+      text: round ? `${question.text}（拓展练习 ${round * base.length + index + 1}）` : question.text,
+    }))).flat()
   }
 
   function findQuestionById(id) {
-    return bankQuestions.find((question) => question.id === id)
+    return currentBankQuestions().find((question) => question.id === id)
+      || bankQuestions.find((question) => question.id === id)
       || personalQuestions.find((question) => question.id === id)
       || allKnowledgePapers().flatMap((paper) => paper.questions || []).find((question) => question.id === id)
       || aiImportRecords.flatMap((record) => record.questions || []).find((question) => question.id === id)
@@ -574,11 +586,18 @@
     const addedMap = getAddedMap()
     const curriculum = currentCurriculum()
     const questions = filterBankQuestions()
+    const totalPages = Math.min(OFFICIAL_MAX_PAGES, Math.max(1, Math.ceil(questions.length / OFFICIAL_PAGE_SIZE)))
+    if (officialPage > totalPages) officialPage = totalPages
+    const visibleQuestions = questionSource === 'official' ? questions.slice((officialPage - 1) * OFFICIAL_PAGE_SIZE, officialPage * OFFICIAL_PAGE_SIZE) : questions
     const treeGroups = visibleTreeGroups()
     const parentNames = Object.keys(curriculum.parents)
     const difficultyOptions = [...new Set(currentBankQuestions().map((question) => question.difficulty))]
-    const resultsBody = questions.length
-      ? questions.map((question) => questionCardMarkup(question, addedMap)).join('')
+    const paging = questionSource !== 'official' || questions.length <= OFFICIAL_PAGE_SIZE ? '' : officialMoreUnlocked
+      ? `<footer class="wb3-bank-pagination"><button type="button" data-official-page="${officialPage - 1}" ${officialPage === 1 ? 'disabled' : ''}>上一页</button><span>第 ${officialPage} / ${totalPages} 页 · 每页20题</span><button type="button" data-official-page="${officialPage + 1}" ${officialPage === totalPages ? 'disabled' : ''}>下一页</button></footer>`
+      : `<footer class="wb3-bank-unlock"><span>消耗20积分，可继续查看后2页，共60道题</span><button type="button" data-official-unlock>解锁更多</button></footer>`
+    const unlockPrompt = officialUnlockPromptOpen ? `<div class="wb3-overlay" data-official-unlock-overlay><div class="wb3-unlock-dialog" role="dialog"><span>${icons.sparkle}</span><h3>解锁更多题目</h3><p>本次将消耗 <b>20积分</b>，解锁当前知识点后续2页题目。</p><div><button type="button" data-official-unlock-cancel>暂不解锁</button><button type="button" class="primary" data-official-unlock-confirm>确认解锁</button></div></div></div>` : ''
+    const resultsBody = visibleQuestions.length
+      ? visibleQuestions.map((question) => questionCardMarkup(question, addedMap)).join('') + paging
       : `<div class="wb3-empty-results">没有符合当前筛选或搜索条件的题目</div>`
     return `<section class="wb3-library">
       ${workspaceTabsMarkup()}
@@ -596,7 +615,7 @@
             <div class="wb3-results-filters"><label><select id="wb3FilterType" aria-label="题型"><option value="全部题型" ${filterType === '全部题型' ? 'selected' : ''}>全部题型</option><option ${filterType === '选择题' ? 'selected' : ''}>选择题</option><option ${filterType === '填空题' ? 'selected' : ''}>填空题</option><option ${filterType === '解答题' ? 'selected' : ''}>解答题</option></select></label><label><select id="wb3FilterDifficulty" aria-label="难度"><option value="全部难度" ${filterDifficulty === '全部难度' ? 'selected' : ''}>全部难度</option>${difficultyOptions.map((name) => `<option ${filterDifficulty === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></label><label class="wb3-filter-search"><span class="wb3-main-search">${icons.search}<input id="wb3TreeSearch" type="search" value="${escapeHtml(treeSearchQuery)}" placeholder="搜索知识点或题干关键词"></span></label></div>
           </header>
           ${uploadParsing ? `<div class="wb3-upload-status"><i></i>正在解析上传文件，识别结果将出现在右侧待确认区…</div>` : ''}
-          <div class="wb3-result-scroll">${resultsBody}</div>
+          <div class="wb3-result-scroll">${resultsBody}</div>${unlockPrompt}
         </div>
       </div>
     </section>`
@@ -1220,6 +1239,7 @@
         treeSearchQuery = ''
         filterType = '全部题型'
         filterDifficulty = '全部难度'
+        officialPage = 1
         render()
         return
       }
@@ -1228,9 +1248,22 @@
       if (knowledge) {
         activeKnowledge = knowledge.dataset.knowledge
         treeSearchQuery = ''
+        officialPage = 1
         render()
         return
       }
+
+      const officialPageButton = event.target.closest('[data-official-page]')
+      if (officialPageButton && !officialPageButton.disabled) {
+        officialPage = Math.max(1, Math.min(OFFICIAL_MAX_PAGES, Number(officialPageButton.dataset.officialPage)))
+        render()
+        root.querySelector('.wb3-result-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+      if (event.target.closest('[data-official-unlock]')) { officialUnlockPromptOpen = true; render(); return }
+      if (event.target.closest('[data-official-unlock-confirm]')) { officialMoreUnlocked = true; officialUnlockPromptOpen = false; officialPage = 2; render(); return }
+      if (event.target.closest('[data-official-unlock-cancel]')) { officialUnlockPromptOpen = false; render(); return }
+      if (event.target.matches('[data-official-unlock-overlay]')) { officialUnlockPromptOpen = false; render(); return }
 
       const quickAdd = event.target.closest('[data-quick-add]')
       if (quickAdd) { toggleQuestionFromBank(quickAdd.dataset.quickAdd); return }
@@ -1425,6 +1458,7 @@
     root.addEventListener('input', (event) => {
       if (event.target.id === 'wb3TreeSearch') {
         treeSearchQuery = event.target.value
+        officialPage = 1
         const caret = treeSearchQuery.length
         render()
         window.requestAnimationFrame(() => {
@@ -1434,8 +1468,8 @@
         })
         return
       }
-      if (event.target.id === 'wb3FilterType') { filterType = event.target.value; render(); return }
-      if (event.target.id === 'wb3FilterDifficulty') { filterDifficulty = event.target.value; render(); return }
+      if (event.target.id === 'wb3FilterType') { filterType = event.target.value; officialPage = 1; render(); return }
+      if (event.target.id === 'wb3FilterDifficulty') { filterDifficulty = event.target.value; officialPage = 1; render(); return }
       if (event.target.id === 'wb3DraftTitle' || event.target.id === 'wb3PaperTitle') {
         activeDraft.title = event.target.value
         persistDraft()
@@ -1469,6 +1503,7 @@
         treeSearchQuery = ''
         filterType = '全部题型'
         filterDifficulty = '全部难度'
+        officialPage = 1
         persistDraft()
         render()
         showToast(`已切换到${event.target.value}`)

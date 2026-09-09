@@ -495,6 +495,16 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
   overflow: auto;
   padding: 12px;
 }
+.wb3-bank-unlock { display:flex; align-items:center; justify-content:center; gap:7px; padding:9px 0 3px; color:#718179; font-size:11px; }
+.wb3-bank-unlock button { padding:0; border:0; background:transparent; color:var(--wb3-green); font-size:11px; font-weight:700; text-decoration:underline; text-underline-offset:2px; }
+.wb3-bank-pagination { display:flex; align-items:center; justify-content:center; gap:12px; padding:12px 0 3px; color:#718179; font-size:11px; }
+.wb3-bank-pagination button { height:29px; padding:0 12px; border:1px solid #b9d6c8; border-radius:7px; background:#fff; color:var(--wb3-green); }
+.wb3-bank-pagination button:disabled { cursor:not-allowed; opacity:.4; }
+.wb3-unlock-dialog { width:min(380px,100%); padding:28px; border:1px solid #cbded5; border-radius:16px; background:#fff; box-shadow:0 24px 64px rgba(7,49,35,.22); text-align:center; }
+.wb3-unlock-dialog > span { width:38px; height:38px; display:grid; place-items:center; margin:0 auto 10px; border-radius:11px; background:#e8f4ee; color:var(--wb3-green); }
+.wb3-unlock-dialog > span svg { width:19px; }
+.wb3-unlock-dialog h3 { margin:0; color:#233e32; font-size:17px; }.wb3-unlock-dialog p { margin:9px 0 20px; color:#718179; font-size:12px; }
+.wb3-unlock-dialog > div { display:flex; justify-content:center; gap:8px; }.wb3-unlock-dialog button { height:34px; padding:0 15px; border:1px solid #d5e1db; border-radius:8px; background:#fff; color:#566960; }.wb3-unlock-dialog button.primary { border-color:var(--wb3-green); background:var(--wb3-green); color:#fff; }
 
 .wb3-paper-card {
   width: 100%;
