@@ -812,7 +812,33 @@
     openFiles = []
     activeFile = null
     renderPreview()
-    panel.innerHTML = `<div class="knowledge-placeholder"><b>我的知识库</b><p>当前 Demo 聚焦新任务组题与配套练习流程，完整知识库页面未包含在本仓库。</p></div>`
+    const savedComposePapers=()=>{
+      let drafts=[]
+      try{drafts=JSON.parse(localStorage.getItem('feixiang-question-workbench-v3-drafts')||'[]')}catch{}
+      const saved=drafts.filter(item=>item?.questions?.some(question=>question.status==='confirmed')).map(item=>({
+        title:item.title||'未命名题单',
+        meta:`${item.subject||'数学'} · ${item.questions.filter(question=>question.status==='confirmed').length}题`,
+        time:new Date(item.updatedAt||Date.now()).toLocaleDateString('zh-CN').replaceAll('/','.'),
+        source:'组题画布'
+      }))
+      const demos=[
+        {title:'五年级小数乘除法基础练习',meta:'五年级 · 数学 · 5题',time:'2026.09.09',source:'AI组题'},
+        {title:'四年级数学综合练习题单',meta:'四年级 · 数学 · 13题',time:'2026.09.08',source:'AI组题'},
+        {title:'七年级有理数随堂练习',meta:'七年级 · 数学 · 12题',time:'2026.09.07',source:'AI组题'}
+      ]
+      return [...saved,...demos.filter(demo=>!saved.some(item=>item.title===demo.title))]
+    }
+    const folderIcon='<span class="kb-folder-icon"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M2 7.5A3.5 3.5 0 0 1 5.5 4h7l3 3h11A3.5 3.5 0 0 1 30 10.5v11A4.5 4.5 0 0 1 25.5 26h-19A4.5 4.5 0 0 1 2 21.5v-14Z"/><path d="M2 10h28"/></svg><i>↻</i></span>'
+    const renderCloud=()=>{
+      panel.innerHTML=`<div class="kb-page"><nav class="kb-tabs"><button>我的生成</button><button>我的收藏</button><button class="active">我的云盘 <span>♙</span></button><label><span>⌕</span><input type="search" placeholder="搜索知识库"></label></nav><header class="kb-cloud-head"><div><b>我的云盘</b><span>（7.9KB/5.00GB）</span></div><div><button>▦ 管理</button><button>▣ 新建文件夹</button><button class="primary">↥ 上传文件</button></div></header><div class="kb-table-head"><span>文件名</span><span>更新时间</span><span>大小</span><span>操作</span></div><div class="kb-folder-list"><button type="button">${folderIcon}<b>我的工作成果</b><time>2026.09.05</time><em>–</em><i>···</i></button><button type="button" data-open-compose-folder>${folderIcon}<b>我的组题</b><time>2026.09.09</time><em>–</em><i>···</i></button><button type="button">${folderIcon}<b>对话中上传的文件</b><time>2026.09.05</time><em>–</em><i>···</i></button></div></div>`
+      $('[data-open-compose-folder]',panel)?.addEventListener('click',renderComposeFolder)
+    }
+    const renderComposeFolder=()=>{
+      const papers=savedComposePapers()
+      panel.innerHTML=`<div class="kb-page"><nav class="kb-tabs"><button>我的生成</button><button>我的收藏</button><button class="active">我的云盘 <span>♙</span></button><label><span>⌕</span><input type="search" placeholder="搜索组题文件"></label></nav><header class="kb-folder-head"><div><button type="button" data-back-cloud>←</button><span>我的云盘</span><i>/</i><b>我的组题</b></div><span>共 ${papers.length} 份题单</span></header><div class="kb-table-head kb-paper-columns"><span>题单名称</span><span>来源</span><span>更新时间</span><span>操作</span></div><div class="kb-paper-list">${papers.map(paper=>`<article><span class="kb-paper-icon">题</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><em>${escapeHtml(paper.source)}</em><time>${escapeHtml(paper.time)}</time><div><button type="button">查看</button><button type="button">···</button></div></article>`).join('')}</div></div>`
+      $('[data-back-cloud]',panel)?.addEventListener('click',renderCloud)
+    }
+    renderCloud()
   }
   function renderSkillLibraryCards(){
     const grid=$('#skillLibraryGrid')
