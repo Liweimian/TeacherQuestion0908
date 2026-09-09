@@ -849,19 +849,29 @@
           localStorage.setItem('feixiang-question-workbench-v3-drafts',JSON.stringify(drafts))
         }
       }
-      $$('[data-open-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
-        const id=button.dataset.openComposePaper
-        ensureComposeDraft(id)
-        localStorage.removeItem('feixiang-question-workbench-v3-active-draft')
-        sessionStorage.setItem('feixiang-question-workbench-open-paper',id)
-        window.location.href='./workbench.html'
-      }))
-      $$('[data-edit-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
-        const id=button.dataset.editComposePaper
+      const editComposePaper=id=>{
         ensureComposeDraft(id)
         sessionStorage.removeItem('feixiang-question-workbench-open-paper')
         localStorage.setItem('feixiang-question-workbench-v3-active-draft',id)
         window.location.href='./workbench.html'
+      }
+      const renderComposePreview=id=>{
+        ensureComposeDraft(id)
+        let drafts=[]
+        try{drafts=JSON.parse(localStorage.getItem('feixiang-question-workbench-v3-drafts')||'[]')}catch{}
+        const draft=drafts.find(item=>item.id===id)
+        if(!draft)return
+        const questions=(draft.questions||[]).filter(question=>question.status==='confirmed')
+        panel.innerHTML=`<div class="kb-preview-page"><header class="kb-preview-top"><div class="kb-preview-path"><button type="button" data-back-compose-folder>‹</button><span>我的云盘</span><i>›</i><span>我的组题</span><i>›</i><b>${escapeHtml(draft.title||'未命名题单')}</b></div><div class="kb-preview-actions"><label><span>⌕</span><input type="search" placeholder="搜索知识库"></label><button type="button" class="edit" data-preview-edit>✎ 编辑</button><button type="button">↗ 分享</button><button type="button">↓ 下载</button></div></header><section class="kb-preview-meta"><span>DOCX · 题单</span><h1>${escapeHtml(draft.title||'未命名题单')}.docx</h1><div><em>${questions.length} 道题</em><em>更新于 ${new Date(draft.updatedAt||Date.now()).toLocaleDateString('zh-CN').replaceAll('/','.')}</em></div></section><div class="kb-document-stage"><article class="kb-document-paper"><div class="kb-doc-school">学校：____________　班级：________　姓名：________</div><h2>${escapeHtml(draft.title||'未命名题单')}</h2><p class="kb-doc-summary">${escapeHtml(draft.subject||'数学')}　共 ${questions.length} 题</p><div class="kb-doc-questions">${questions.map((question,index)=>`<section><b>${index+1}</b><div><p>${escapeHtml(question.text||`示例题 ${index+1}`)}</p>${question.options?.length?`<small>${question.options.map(option=>escapeHtml(option)).join('　')}</small>`:''}</div></section>`).join('')}</div></article></div></div>`
+        $('[data-back-compose-folder]',panel)?.addEventListener('click',renderComposeFolder)
+        $('[data-preview-edit]',panel)?.addEventListener('click',()=>editComposePaper(id))
+      }
+      $$('[data-open-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
+        const id=button.dataset.openComposePaper
+        renderComposePreview(id)
+      }))
+      $$('[data-edit-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
+        editComposePaper(button.dataset.editComposePaper)
       }))
       $$('[data-delete-compose-paper]',panel).forEach(button=>button.addEventListener('click',()=>{
         const id=button.dataset.deleteComposePaper
