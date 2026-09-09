@@ -1594,6 +1594,13 @@
       adaptRequest = null
       adaptPicker = null
       restoreAiConversationHandoff()
+      const requestedPaperId = sessionStorage.getItem('feixiang-question-workbench-open-paper')
+      if (requestedPaperId && requestedPaperId === activeDraft.id) {
+        sessionStorage.removeItem('feixiang-question-workbench-open-paper')
+        previewKnowledgePaperId = `saved-${activeDraft.id}`
+        importWorkspaceView = 'knowledge'
+        openWorkspaceTabs = [previewKnowledgePaperId.replace(/^/, 'paper:')]
+      }
       document.body.classList.add('fx-question-workbench-v3-open')
       root.hidden = false
       render()
