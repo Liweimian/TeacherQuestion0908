@@ -386,7 +386,7 @@
     if (pendingPickerSelection.length) {
       const count = pendingPickerSelection.length
       parts.push(
-        `<span class="composer-attachment-link" data-attachment-kind="question"><button type="button" class="composer-attachment-text" aria-label="继续选择题目">已选 ${count} 题</button><button type="button" class="composer-attachment-remove" data-remove-attachment="question" aria-label="移除已选题目">×</button></span>`
+        `<span class="composer-attachment-link" data-attachment-kind="question"><button type="button" class="composer-attachment-text" aria-label="继续选择题目">已选${count}道题</button><button type="button" class="composer-attachment-remove" data-remove-attachment="question" aria-label="移除已选题目">×</button></span>`
       )
     }
     clearComposerAttachmentRows()
@@ -937,7 +937,7 @@
   function questionPreviewMarkup(kind){
     const chosen=questionCandidates
     if(kind==='question-paper')return `<div class="question-preview-page annotatable" data-page="1"><header><span>七年级数学 · 随堂练习</span><b>15 分钟　满分 53 分</b></header><h1>有理数随堂练习</h1><p class="question-preview-meta">姓名：________　班级：________　日期：________</p><section><h2>一、选择与填空</h2>${chosen.slice(0,6).map((q,i)=>`<p><b>${i+1}.</b> ${escapeHtml(q.title)}</p>`).join('')}<h2>二、计算与解答</h2>${chosen.slice(6).map((q,i)=>`<p><b>${i+7}.</b> ${escapeHtml(q.title)}</p>`).join('')}</section>${markerMarkup(activeFile,1)}</div>`
-    if(kind==='question-answers')return `<div class="question-preview-page annotatable" data-page="1"><header><span>教师使用</span><b>答案与解析</b></header><h1>有理数随堂练习 · 答案解析</h1><section class="answer-grid">${chosen.map((q,i)=>`<article><b>第 ${i+1} 题</b><span>参考答案：${['-3','5','D','3','5','±4','9','-15','6','-1℃','-10','300元'][i]}</span><small>考查：${q.knowledge} · ${q.difficulty}</small></article>`).join('')}</section>${markerMarkup(activeFile,1)}</div>`
+    if(kind==='question-answers')return `<div class="question-preview-page annotatable" data-page="1"><header><span>教师使用</span><b>答案与解析</b></header><h1>有理数随堂练习 · 答案解析</h1><section class="answer-grid">${chosen.map((q,i)=>`<article><b>第 ${i+1} 题</b><span>答案：${['-3','5','D','3','5','±4','9','-15','6','-1℃','-10','300元'][i]}</span><small>考查：${q.knowledge} · ${q.difficulty}</small></article>`).join('')}</section>${markerMarkup(activeFile,1)}</div>`
     return `<div class="question-preview-page annotatable" data-page="1"><header><span>AI组题命题</span><b>命题说明书</b></header><h1>有理数随堂练习 · 命题与质量说明</h1><div class="spec-cards"><article><b>12 题</b><span>目标题量</span></article><article><b>15 分钟</b><span>建议用时</span></article><article><b>2 题</b><span>重点易错</span></article></div><h2>命题结构</h2><table><tr><th>内容</th><th>题量</th><th>目标</th></tr><tr><td>正负数、相反数、绝对值</td><td>6</td><td>巩固基础概念</td></tr><tr><td>有理数运算</td><td>3</td><td>检查计算规范</td></tr><tr><td>数轴、情境与探究</td><td>3</td><td>迁移与综合应用</td></tr></table><h2>质量检查</h2><ul><li>知识点覆盖完整，基础题为主。</li><li>包含 2 道高频易错题，答案与题干一致。</li><li>题库题、原创题和变式题均保留来源标记。</li></ul>${markerMarkup(activeFile,1)}</div>`
   }
   function learningPreviewMarkup(kind){
@@ -1118,8 +1118,8 @@
     }
     const composeActive = shouldShowComposeAddMenu()
     const sourceButtons = composeActive
-      ? `<button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中加题</b><small>按学科、知识点和难度选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button><button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button>`
-      : `<button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button>`
+      ? `<button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中添加</b><small>按学科、知识点和难度选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button><button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button>`
+      : `<button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button><button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中添加</b><small>按学科、知识点和难度选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button>`
     const skillsSection = composeActive
       ? ''
       : `<div class="menu-section-title">教学技能</div>${teachingSkills.map(skill=>`<button data-add-skill="${escapeHtml(skill.name)}"><span class="menu-icon">✦</span><span><b>${escapeHtml(skill.name === '组题' ? 'AI组题' : skill.name)}</b><small>${escapeHtml(skill.description)}</small></span></button>`).join('')}`
@@ -1162,7 +1162,8 @@
   }
   function refreshQuestionPickerCount(){
     const count=selectedQuestionCount()
-    questionPickerCount.textContent=`已选 ${count} 题`
+    questionPickerCount.textContent=`已选${count}道题`
+    questionPickerConfirm.disabled=!count
   }
   function collectPickerSelection(){
     try{
@@ -1182,9 +1183,9 @@
   function openQuestionPicker(intent = 'composer'){
     questionPickerIntent = intent
     addMenu.hidden=true
-    if(!questionPickerFrame.src)questionPickerFrame.src='../detail-ai.html?workspaceView=home&picker=1&source=new-task'
+    if(!questionPickerFrame.src)questionPickerFrame.src='./question-picker.html'
     questionPicker.classList.remove('question-picker--workbench-v2')
-    $('#questionPickerTitle').textContent='从题库加入当前对话'
+    $('#questionPickerTitle').textContent='从题库添加'
     $('.question-picker-header p').textContent='选择试卷、同步练习或专题中的题目'
     questionPickerConfirm.textContent='加入对话'
     questionPicker.hidden=false
@@ -1210,7 +1211,6 @@
       composerInput.focus()
       return
     }
-    if (!isComposeSkillActive()) addContext('组题', true)
     setPendingQuestionSelection(selection)
     syncHomeComposeFocus()
     closeQuestionPicker()

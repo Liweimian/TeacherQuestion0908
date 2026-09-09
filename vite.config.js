@@ -8,6 +8,7 @@ export default defineConfig({
       input: {
         home: resolve(import.meta.dirname, "index.html"),
         newTask: resolve(import.meta.dirname, "new-task/index.html"),
+        questionPicker: resolve(import.meta.dirname, "new-task/question-picker.html"),
       },
     },
   },

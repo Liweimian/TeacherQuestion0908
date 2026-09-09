@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>从题库添加</title>
+  <link rel="stylesheet" href="./question-picker.css?v=20260909picker3">
+  <style>.answer-panel p{margin:0}.answer-panel p+p{margin-top:5px;padding-top:5px;border-top:1px solid #dfeae4}</style>
+</head>
+<body>
+  <main class="picker-shell">
+    <aside class="picker-sidebar">
+      <select id="curriculum" aria-label="学科"><option>小学数学</option><option>小学语文</option><option>小学英语</option><option>初中数学</option></select>
+      <div class="source-tabs" role="tablist"><button class="active" data-source="official">官方题库</button><button data-source="mine">我的题库</button></div>
+      <nav id="knowledgeTree" aria-label="知识点"></nav>
+    </aside>
+    <section class="picker-main">
+      <header class="filter-bar">
+        <select id="typeFilter" aria-label="题型"><option>全部题型</option><option>选择题</option><option>填空题</option><option>解答题</option></select>
+        <select id="difficultyFilter" aria-label="难度"><option>全部难度</option><option>较易</option><option>中等</option><option>较难</option></select>
+        <label class="search-box"><span>⌕</span><input id="questionSearch" type="search" placeholder="搜索知识点或题干关键词"></label>
+      </header>
+      <div class="question-list" id="questionList"></div>
+    </section>
+  </main>
+  <script src="./question-picker.js?v=20260909picker4"></script>
+</body>
+</html>

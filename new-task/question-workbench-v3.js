@@ -30,6 +30,29 @@
     trash: svg('<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/>'),
   }
 
+  const defaultPaperFormat = { fontSize: 13, lineHeight: 1.65, answerHeight: 28, questionGap: 8 }
+
+  function paperFormat() {
+    activeDraft.format = { ...defaultPaperFormat, ...(activeDraft.format || {}) }
+    if (!activeDraft.format.questionGapVersion) {
+      activeDraft.format.questionGap = 8
+      activeDraft.format.questionGapVersion = 2
+    }
+    return activeDraft.format
+  }
+
+  function paperToolbarMarkup() {
+    const format = paperFormat()
+    return `<div class="wb3-paper-toolbar" role="toolbar" aria-label="画布编辑工具">
+      <label class="wb3-tool-select" data-tooltip="字号"><span class="wb3-tool-icon font-size-icon">T</span><select data-paper-format="fontSize" aria-label="字号"><option value="12" ${format.fontSize === 12 ? 'selected' : ''}>小五</option><option value="13" ${format.fontSize === 13 ? 'selected' : ''}>五号</option><option value="14" ${format.fontSize === 14 ? 'selected' : ''}>小四</option><option value="16" ${format.fontSize === 16 ? 'selected' : ''}>四号</option></select></label>
+      <div class="wb3-tool-group text"><button type="button" data-rich-command="bold" data-tooltip="加粗" aria-label="加粗"><b>B</b></button><button type="button" data-rich-command="italic" data-tooltip="斜体" aria-label="斜体"><i>I</i></button><button type="button" data-rich-command="underline" data-tooltip="下划线" aria-label="下划线"><u>U</u></button></div>
+      <i class="wb3-tool-separator"></i>
+      <label class="wb3-tool-select" data-tooltip="行间距"><span class="wb3-tool-icon line-height-icon"><i>↕</i><b>≡</b></span><select data-paper-format="lineHeight" aria-label="行间距"><option value="1.4" ${format.lineHeight === 1.4 ? 'selected' : ''}>1.0</option><option value="1.65" ${format.lineHeight === 1.65 ? 'selected' : ''}>1.5</option><option value="2" ${format.lineHeight === 2 ? 'selected' : ''}>2.0</option></select></label>
+      <label class="wb3-tool-select" data-tooltip="作答区行高"><span class="wb3-tool-icon answer-height-icon"><i>↕</i><b></b></span><select data-paper-format="answerHeight" aria-label="作答区行高"><option value="20" ${format.answerHeight === 20 ? 'selected' : ''}>1.0</option><option value="28" ${format.answerHeight === 28 ? 'selected' : ''}>1.5</option><option value="40" ${format.answerHeight === 40 ? 'selected' : ''}>2.0</option></select></label>
+      <label class="wb3-tool-select" data-tooltip="题间距"><span class="wb3-tool-icon question-gap-icon"><i>↕</i><b>H</b></span><select data-paper-format="questionGap" aria-label="题间距"><option value="8" ${format.questionGap === 8 ? 'selected' : ''}>0.5</option><option value="12" ${format.questionGap === 12 ? 'selected' : ''}>1.0</option><option value="20" ${format.questionGap === 20 ? 'selected' : ''}>1.5</option></select></label>
+    </div>`
+  }
+
   const bankQuestions = [
     { id: 'b1', type: '填空题', knowledge: '部分合作问题', difficulty: '较易', score: 1, text: '用无人机喷洒农药、施肥等，可以极大地提高农业生产效率。农场给一片农田喷洒农药，一架小型无人机8小时能完成这片农田的喷洒任务。使用这架无人机喷洒1小时后，随即又调来了一架中型无人机加入到喷洒农药工作中，已知这架中型无人机每小时喷洒的农田面积是小型无人机的2倍。请你算一算，还需（　　）小时就能完成这片农田的农药喷洒工作。' },
     { id: 'b2', type: '填空题', knowledge: '长方形', difficulty: '较易', score: 1, text: '将一张长40厘米、宽24厘米的长方形纸对折后，变成两个同样大的小长方形，小长方形的长是（　　）厘米，宽是（　　）厘米或长是（　　）厘米，宽是（　　）厘米。' },
@@ -115,6 +138,7 @@
   let filterType = '全部题型'
   let filterDifficulty = '全部难度'
   let selectedQuestionId = ''
+  let answerEditorQuestionId = ''
   let revealedAnswerIds = new Set()
   let uploadParsing = false
   let aiGenerating = false
@@ -296,7 +320,23 @@
       cn1: '结合具体语境判断。', cn2: '依据句子成分与搭配判断。', cn3: '抓住人物的语言、动作和心理描写概括。', cn4: '开放性答案。',
       en1: 'C. weekend', en2: 'goes', en3: 'According to the passage.', en4: '开放性答案。',
       jm1: 'B. 3', jm2: 'x＝4', jm3: '70°', jm4: '开放性答案。', hm1: '{2,3}', hm2: 'x＝1', hm3: '见标准证明过程。', hm4: '开放性答案。',
-    }[question.originId || question.sourceId || question.id] || question.answer || '请查看题库标准答案与解析。'
+    }[question.originId || question.sourceId || question.id] || question.answer || '请查看题库答案。'
+  }
+
+  function questionAnalysisText(question) {
+    const id = question.originId || question.sourceId || question.id
+    return question.analysis || {
+      b1: '先分别计算两种无人机每小时完成的工作量，再用剩余工作量除以两架无人机的效率和。',
+      b2: '沿不同方向对折时，对折方向的边长减半，另一条边保持不变。',
+      b3: '线段有两个端点，符合“有始有终”的含义。',
+      b4: '延长后仍有两个确定端点，所以所得图形仍是线段。',
+      b5: '积为四位数需满足256×□≤9999，据此求出方框内的最大整数。',
+      b6: '将各因数分解质因数，统计2和5能够配成多少组10。',
+      b7: '先求乙领先的路程，再用领先路程除以追及时间求速度差。',
+      b8: '30分钟内分针转过半圈，即180°。',
+      b9: '先用底面积乘高求长方体体积，再与正方体体积作差。',
+      b10: '两次对折的方向不同，得到的折痕关系也会不同。',
+    }[id] || `围绕“${question.knowledge || '本题考点'}”提取条件，选择对应公式或关系，分步推理并核对结果。`
   }
 
   function questionCardMarkup(question, addedMap) {
@@ -315,7 +355,7 @@
         </span>
         <p>${escapeHtml(question.text)}</p>
         ${question.options?.length ? `<span class="wb3-qcard-options">${question.options.map((option) => `<span>${escapeHtml(option)}</span>`).join('')}</span>` : ''}
-        ${answerShown ? `<span class="wb3-qcard-answer"><b>参考答案</b>${escapeHtml(answerText)}</span>` : ''}
+        ${answerShown ? `<span class="wb3-qcard-answer"><span><b>答案</b>${escapeHtml(answerText)}</span><span><b>解析</b>${escapeHtml(questionAnalysisText(question))}</span></span>` : ''}
       </span>
       <span class="wb3-qcard-actions">
         ${canDeletePersonal ? `<button type="button" class="delete" data-delete-personal-question="${question.id}" title="从我的题库删除" aria-label="从我的题库删除">${icons.trash}</button>` : ''}
@@ -338,7 +378,7 @@
   function importMenuMarkup() {
     if (!importMenuOpen) return ''
     return `<div class="wb3-import-menu" role="menu">
-      <button type="button" data-import="upload" role="menuitem">${icons.upload}<span><b>上传文件 · AI录题</b><small>后台解析约 4–10 分钟</small></span></button>
+      <button type="button" data-import="upload" role="menuitem">${icons.upload}<span><b>上传文件</b><small>AI 录题并自动打标，后台解析约 4–10 分钟</small></span></button>
       <button type="button" data-import="history" role="menuitem">${icons.blank}<span><b>AI录题记录</b><small>${aiImportRecords.filter((record) => record.status === 'processing').length} 个处理中 · 可复用历史结果</small></span></button>
       <button type="button" data-import="knowledge" role="menuitem">${icons.knowledge}<span><b>我的知识库</b><small>按整份题单预览或导入</small></span></button>
       <button type="button" data-import="ai-compose" role="menuitem">${icons.sparkle}<span><b>AI组题记录</b><small>查看 AI 生成的整套题目</small></span></button>
@@ -494,7 +534,7 @@
     if (importWorkspaceView === 'ai-entry') {
       content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI 组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入组题画布。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div><div class="wb3-ai-create-input"><textarea id="wb3AiCreateInput" rows="4" placeholder="例如：生成一份五年级小数乘法练习，共 10 题，基础为主"></textarea><button type="button" data-ai-create-send>${icons.sparkle}开始组题</button></div></div>`
     } else if (importWorkspaceView === 'add-more') {
-      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>从文件、个人题单或 AI 组题中继续挑题。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件 · AI智能录题</b><small>支持 Word、PDF 和试卷图片；AI录题后自动打标并进入“我的题库”，可继续逐题选用</small></div><em>打开</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>从我的知识库添加</b><small>预览自己保存的题单，再选择单道题加入</small></div><em>打开</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>AI 组题</b><small>描述题量、知识点和难度要求，AI 生成整套题目并加入组题画布</small></div><em>开始组题</em></button></div></div>`
+      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库，题目可直接选用</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>从我的知识库添加</b><small>打开我在组题画布中保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>让 AI 帮我组题</b><small>告诉 AI 题量、知识点和难度要求，生成题目后添加到当前组题画布</small></div><em>开始组题</em></button></div></div>`
     } else if (importWorkspaceView === 'ai-upload') {
       content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击上传 / 拖动文件到此处</b><span>支持 PDF、DOCX、PNG、JPG，单文件 20M 内</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI解析进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目。</p></div></div><div class="wb3-record-list">${aiImportRecords.map((record) => `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.blank}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '解析完成' : record.status === 'failed' ? '解析失败' : '处理中'}</span><b>${escapeHtml(record.filename)}</b><small>提交于 ${escapeHtml(record.submittedAt)}${record.completedAt ? ` · 完成于 ${escapeHtml(record.completedAt)}` : ''}${record.questions?.length ? ` · ${record.questions.length} 题` : ''}</small><em>${escapeHtml(record.stage)}${record.eta ? ` · ${escapeHtml(record.eta)}` : ''}</em></div><button type="button" data-open-record="${record.id}">${record.status === 'completed' ? '查看题目' : '查看进度'}</button></article>`).join('')}</div></section></div>`
     } else if (importWorkspaceView === 'ai-history') {
@@ -593,14 +633,30 @@
       </article>`
     }
     const answerShown = revealedAnswerIds.has(question.id)
-    return `<article class="wb3-sheet-q ${selectedQuestionId === question.id ? 'selected' : ''} ${answerShown ? 'answer-open' : ''}" data-sheet-id="${question.id}" data-question-id="${question.id}">
+    const answerLines = Number(question.answerLines || 0)
+    const answerStyle = question.answerStyle === 'lined' ? 'lined' : 'blank'
+    const answerEditorOpen = answerEditorQuestionId === question.id
+    const answerControl = `<span class="wb3-answer-control-wrap">
+      <button type="button" class="wb3-answer-trigger ${answerLines ? 'has-area' : ''}" data-answer-editor="${question.id}" title="设置作答区" aria-label="设置作答区"><span>▤</span>${answerLines ? `<em>${answerLines}行</em>` : ''}</button>
+      ${answerEditorOpen ? `<div class="wb3-answer-editor-popover">
+        <header><b>作答区</b>${answerLines ? `<button type="button" data-answer-space-clear="${question.id}">清除</button>` : '<span>选择一种样式</span>'}</header>
+        <div class="wb3-answer-style-options">
+          <button type="button" class="${answerLines && answerStyle === 'blank' ? 'active' : ''}" data-answer-style-set="blank" data-question="${question.id}"><i class="blank"></i><span><b>空白区</b><small>适合计算、画图</small></span></button>
+          <button type="button" class="${answerLines && answerStyle === 'lined' ? 'active' : ''}" data-answer-style-set="lined" data-question="${question.id}"><i class="lined"></i><span><b>横线区</b><small>适合文字作答</small></span></button>
+        </div>
+        <footer><span>高度</span><button type="button" data-answer-line-remove="${question.id}" ${answerLines < 1 ? 'disabled' : ''}>−</button><em>${answerLines || 2} 行</em><button type="button" data-answer-line-add="${question.id}">＋</button></footer>
+      </div>` : ''}
+    </span>`
+    return `<article class="wb3-sheet-q ${selectedQuestionId === question.id ? 'selected' : ''} ${answerShown ? 'answer-open' : ''} ${answerEditorOpen ? 'answer-editor-open' : ''}" data-sheet-id="${question.id}" data-question-id="${question.id}">
       <span class="wb3-sheet-q-num">${index + 1}</span>
       <div class="wb3-sheet-q-main">
         <div class="wb3-sheet-q-tags"><span>${escapeHtml(question.type)}</span><span>${escapeHtml(question.knowledge)}</span><span>${escapeHtml(question.difficulty)}</span><span>${Number(question.score || 0)} 分</span></div>
         <div class="wb3-sheet-q-text" contenteditable="true">${escapeHtml(question.text)}</div>
         ${question.options?.length ? `<small class="wb3-sheet-q-options">${escapeHtml(question.options.join('　'))}</small>` : ''}
-        ${answerShown ? `<div class="wb3-sheet-q-answer"><b>参考答案</b>${escapeHtml(questionAnswerText(question))}</div>` : ''}
+        ${answerLines > 0 ? `<div class="wb3-answer-space ${answerStyle}" style="--wb3-answer-lines:${answerLines}" aria-label="${answerLines} 行${answerStyle === 'lined' ? '横线' : '空白'}作答区"></div>` : ''}
+        ${answerShown ? `<div class="wb3-sheet-q-answer"><p><b>答案</b>${escapeHtml(questionAnswerText(question))}</p><p><b>解析</b>${escapeHtml(questionAnalysisText(question))}</p></div>` : ''}
         <div class="wb3-sheet-q-tools">
+          ${answerControl}
           <button type="button" data-sheet-answer="${question.id}" title="${answerShown ? '收起答案' : '显示答案'}" aria-label="${answerShown ? '收起答案' : '显示答案'}">答</button>
           <button type="button" class="danger" data-delete-question="${question.id}" title="删除题目" aria-label="删除题目">${icons.trash}</button>
         </div>
@@ -642,9 +698,10 @@
           </div>
         </div>
       </header>
+      ${paperToolbarMarkup()}
       ${pendingBanner}
       <div class="wb3-sheet-scroll">
-        <div class="wb3-paper">
+        <div class="wb3-paper" style="--wb3-paper-font-size:${paperFormat().fontSize}px;--wb3-paper-line-height:${paperFormat().lineHeight};--wb3-answer-height:${paperFormat().answerHeight}px;--wb3-question-gap:${paperFormat().questionGap}px">
           <div class="wb3-paper-meta">学校：____________________　班级：________　姓名：________</div>
           <input class="wb3-paper-title" id="wb3PaperTitle" value="${escapeHtml(activeDraft?.title || '未命名题单')}">
           <div class="wb3-paper-sub"><span>${escapeHtml(activeDraft?.subject || '四年级 · 数学')}</span><span>共 ${meta.count} 题</span><span>${meta.score || '--'} 分</span></div>
@@ -1220,6 +1277,60 @@
         return
       }
 
+      const answerLineAdd = event.target.closest('[data-answer-line-add]')
+      if (answerLineAdd) {
+        const question = activeDraft.questions.find((item) => item.id === answerLineAdd.dataset.answerLineAdd)
+        if (question) {
+          question.answerLines = Math.min(12, Number(question.answerLines || 0) + 1)
+          question.answerStyle ||= 'blank'
+          answerEditorQuestionId = question.id
+        }
+        persistDraft()
+        render()
+        return
+      }
+
+      const answerEditor = event.target.closest('[data-answer-editor]')
+      if (answerEditor) {
+        answerEditorQuestionId = answerEditorQuestionId === answerEditor.dataset.answerEditor ? '' : answerEditor.dataset.answerEditor
+        render()
+        return
+      }
+
+      const answerStyleSet = event.target.closest('[data-answer-style-set]')
+      if (answerStyleSet) {
+        const question = activeDraft.questions.find((item) => item.id === answerStyleSet.dataset.question)
+        if (question) {
+          question.answerLines = Number(question.answerLines || 0) || 2
+          question.answerStyle = answerStyleSet.dataset.answerStyleSet === 'lined' ? 'lined' : 'blank'
+          answerEditorQuestionId = question.id
+        }
+        persistDraft()
+        render()
+        return
+      }
+
+      const answerSpaceClear = event.target.closest('[data-answer-space-clear]')
+      if (answerSpaceClear) {
+        const question = activeDraft.questions.find((item) => item.id === answerSpaceClear.dataset.answerSpaceClear)
+        if (question) question.answerLines = 0
+        persistDraft()
+        render()
+        return
+      }
+
+      const answerLineRemove = event.target.closest('[data-answer-line-remove]')
+      if (answerLineRemove) {
+        const question = activeDraft.questions.find((item) => item.id === answerLineRemove.dataset.answerLineRemove)
+        if (question) {
+          question.answerLines = Math.max(0, Number(question.answerLines || 0) - 1)
+          answerEditorQuestionId = question.id
+        }
+        persistDraft()
+        render()
+        return
+      }
+
       const adaptResultReplace = event.target.closest('[data-adapt-result-replace]')
       if (adaptResultReplace) {
         const record = aiComposeRecords.find((item) => item.id === adaptResultReplace.dataset.composeId)
@@ -1301,6 +1412,14 @@
         else downloadPaperBundle()
         return
       }
+
+      const richCommand = event.target.closest('[data-rich-command]')
+      if (richCommand) {
+        document.execCommand(richCommand.dataset.richCommand, false, richCommand.dataset.richValue || null)
+        richCommand.classList.toggle('active', document.queryCommandState(richCommand.dataset.richCommand))
+        persistDraft()
+        return
+      }
     })
 
     root.addEventListener('input', (event) => {
@@ -1321,6 +1440,24 @@
         activeDraft.title = event.target.value
         persistDraft()
       }
+      if (event.target.matches('[data-paper-format]')) {
+        const key = event.target.dataset.paperFormat
+        const raw = event.target.value
+        paperFormat()[key] = Number(raw)
+        persistDraft()
+        render()
+      }
+    })
+
+    root.addEventListener('mousedown', (event) => {
+      if (event.target.closest('.wb3-paper-toolbar button')) event.preventDefault()
+    })
+
+    root.addEventListener('pointerout', (event) => {
+      const questionCard = event.target.closest('.wb3-sheet-q.answer-editor-open')
+      if (!questionCard || questionCard.contains(event.relatedTarget)) return
+      answerEditorQuestionId = ''
+      render()
     })
 
     root.addEventListener('change', (event) => {
