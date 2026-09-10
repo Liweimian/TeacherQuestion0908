@@ -55,6 +55,7 @@
 .conversation.home-screen .composer-wrap{top:150px}
 .conversation.home-screen .home-composer-space{height:235px}
 .conversation.home-screen .home-plaza{position:relative;z-index:1;margin-top:24px}
+.conversation.home-screen.teaching-skills-screen .home-plaza.teaching-plaza{margin-top:250px}
 @media(max-width:1180px){.conversation.home-screen .composer-wrap{top:145px}.conversation.home-screen .home-composer-space{height:245px}}
 
 .knowledge-placeholder{display:grid;place-content:center;gap:10px;min-height:100%;padding:32px;text-align:center;color:#5f7369}

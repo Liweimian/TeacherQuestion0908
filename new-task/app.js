@@ -30,10 +30,10 @@
     practiceDash: { id:'practiceDash', name:'课后练一练 · 教师看板', label:'数据回收 · 实时', mark:'板', className:'excel', url:'#', pages:1, preview:'practice-dashboard' }
   }
   const teachingSkills = [
-    { name:'组题', description:'上传文件、从题目资源添加，或让 AI 生成与改编练习和试卷', cover:'question', category:'组题与练习' },
-    { name:'AI智批', description:'答案、步骤、书写3维识别，快速完成批改与存疑复核', cover:'grading', category:'批改与学情' },
-    { name:'AI错因诊断', description:'班级、小组、个人3层诊断，定位共性问题与个体错因', cover:'diagnosis', category:'批改与学情' },
-    { name:'AI个性化练习', description:'基础、进阶、挑战3层练习，针对学生错因智能出题', cover:'practice', category:'组题与练习' },
+    { name:'组题', description:'100万+题目资源，题库与原创题专业组卷', cover:'question', category:'组题与练习' },
+    { name:'AI智批', description:'任意作业智能批改，原卷留痕并汇总结果', cover:'grading', category:'批改与学情' },
+    { name:'AI错因诊断', description:'班级、小组、个人三级诊断，精准定位错因', cover:'diagnosis', category:'批改与学情' },
+    { name:'AI个性化练习', description:'基于学情生成分层练习，强化薄弱知识点', cover:'practice', category:'组题与练习' },
     { name:'教学设计', description:'目标、活动、评价3环贯通，生成完整教学方案', cover:'lesson', category:'备课与课件' },
     { name:'互动课件', description:'支持PPT与HTML双形态，生成可讲、可练、可互动课件', cover:'courseware', category:'备课与课件' },
     { name:'家长会材料', description:'一次生成数据表、报告、PPT和家校指南4类材料', cover:'meeting', category:'教学办公' },
@@ -42,9 +42,9 @@
   const teachingSkillDetails = {
     '组题':{
       eyebrow:'组题与练习',
-      title:'组题',
-      description:'根据教学目标、知识点、题量和难度要求，智能检索优质题库，并补充原创题或变式题，快速完成一份结构合理的试卷。',
-      points:['题库选题、原创题与变式题灵活组合','AI先完成题型排序和建议分值','支持生成学生版、答案解析和命题说明'],
+      title:'AI组题',
+      description:'用自然语言说出年级、学科、考点、题量和难度，AI 按「专家级命题6步法」模拟命题专家思路，把关试卷结构、考点覆盖、难度梯度和内容质量，几分钟生成一套高质量试卷。',
+      points:['真题智选：依托100万+专业题库，从真实试卷中甄选优质题目','命题专家思路：按专家级命题6步法组卷，把关结构、难度与质量','一键成卷：几分钟组完，支持导出 Word、答案解析和命题说明书'],
       exampleTitle:'七年级数学 · 分数的运算练习题',
       exampleMeta:'12题 · 60分钟 · 学生版试卷',
       image:'./assets/home-covers/question.png'
@@ -176,7 +176,7 @@
     'AI个性化练习':'根据刚才的错因诊断，为六年级2班生成一份个性化练习：每位学生8题，基础巩固为主，针对各自首要错因安排2道变式题。先给我分组预览，确认后导出。'
   }
   const teachingSkillPrompts = {
-    '组题':'帮我出一份北京市西城区小学数学5年级上期末考试试卷',
+    '组题':'我是小学五年级数学老师，请帮我组一份北京市西城区五年级上学期期末考试试卷。',
     'AI智批':'请批改【班级或学生】的【作业/试卷名称】（可上传文件），重点检查【答案正确性/解题步骤/书写规范】，评分标准为【】（未填写时按题目分值和常规教学标准）。请先确认识别到的样卷和存疑作答，再生成批改结果、班级统计和讲评建议。',
     'AI错因诊断':'请分析【班级或学生】在【时间范围/最近几次】【作业或考试】中的错误，重点诊断【知识理解/计算方法/审题习惯/表达规范】。请先给出错因聚类和重点关注学生，我确认后再生成诊断报告、教学建议和后续干预计划。',
     'AI个性化练习':'请根据【错因诊断结果/上传的作业或试卷】，为【班级或学生】生成个性化练习。每人【】题，难度以【基础巩固/均衡/提高】为主，并针对首要错因安排【】道变式题。请先展示学生分组和题目样例，确认后再导出练习包和答案。',
@@ -216,7 +216,7 @@
   const composerWrap = $('.composer-wrap')
   const conversationView = $('#conversationView')
 
-  const SKILL_LABELS = { 组题: 'AI组题' }
+  const SKILL_LABELS = { 组题: 'AI组题', AI错因诊断: 'AI错题诊断' }
   function skillLabel(name) {
     return SKILL_LABELS[name] || name
   }
@@ -626,6 +626,7 @@
       item.classList.remove('active')
     })
     $('#conversationView').classList.remove('skill-library-screen')
+    $('#conversationView').classList.remove('teaching-skills-screen')
     $('#conversationView').classList.remove('has-home-cases')
     $('.skill-detail-overlay')?.remove()
     $('.practice-case-overlay')?.remove()
@@ -691,9 +692,11 @@
   }
 
   const teachingFavoriteKey='feixiang-teaching-skill-favorites'
+  // 只记录当前页面会话：刷新后再次视为首次点击。
+  let aiComposeIntroSeen=false
   const readTeachingFavorites=()=>{try{const value=JSON.parse(localStorage.getItem(teachingFavoriteKey)||'[]');return Array.isArray(value)?value.filter(name=>teachingSkills.some(skill=>skill.name===name)):[]}catch{return[]}}
   const saveTeachingFavorites=names=>localStorage.setItem(teachingFavoriteKey,JSON.stringify(names))
-  const teachingSkillCardMarkup=(skill,compact=false)=>`<article class="teaching-skill-card${compact?' compact':''}" data-skill-card="${escapeHtml(skill.name)}"><button class="teaching-skill-main" type="button" data-open-skill="${escapeHtml(skill.name)}" aria-label="查看${escapeHtml(skill.name)}技能详情">${teachingSkillIcon(skill)}<span class="teaching-skill-copy"><b class="teaching-skill-title">${escapeHtml(skill.name)}</b><small>${escapeHtml(skill.description)}</small></span></button><button class="teaching-skill-favorite" type="button" data-favorite-skill="${escapeHtml(skill.name)}" aria-label="收藏 ${escapeHtml(skill.name)}">☆</button></article>`
+  const teachingSkillCardMarkup=(skill,compact=false)=>`<article class="teaching-skill-card${compact?' compact':''}" data-skill-card="${escapeHtml(skill.name)}"><button class="teaching-skill-main" type="button" data-open-skill="${escapeHtml(skill.name)}" aria-label="查看${escapeHtml(skillLabel(skill.name))}技能详情">${teachingSkillIcon(skill)}<span class="teaching-skill-copy"><b class="teaching-skill-title">${escapeHtml(skillLabel(skill.name))}</b><small>${escapeHtml(skill.description)}</small></span></button><button class="teaching-skill-favorite" type="button" data-favorite-skill="${escapeHtml(skill.name)}" aria-label="收藏 ${escapeHtml(skillLabel(skill.name))}">☆</button></article>`
   const orderedTeachingSkills=()=>{const favorites=readTeachingFavorites();return [...teachingSkills].sort((a,b)=>{const ai=favorites.indexOf(a.name),bi=favorites.indexOf(b.name),af=ai>=0,bf=bi>=0;return af!==bf?(af?-1:1):af?ai-bi:teachingSkills.indexOf(a)-teachingSkills.indexOf(b)})}
 
   function syncTeachingFavoriteButtons(){
@@ -716,9 +719,7 @@
   }
 
   function openQuestionWorkbench(){
-    showBlankTask()
     activateSkill('组题')
-    window.FxPracticeDemo?.startComposeEntry(true)
   }
 
   function openQuestionWorkbenchPage(){
@@ -733,6 +734,11 @@
 
   function openTeachingSkill(skillName){
     if(skillName==='组题'){
+      if(!aiComposeIntroSeen){
+        aiComposeIntroSeen=true
+        showSkillDetail(skillName)
+        return
+      }
       openQuestionWorkbench()
       return
     }
@@ -794,11 +800,44 @@
     const overlay=document.createElement('section')
     overlay.className='skill-detail-overlay'
     overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',`${skillName}技能详情`)
-    overlay.innerHTML=`<div class="skill-detail-card"><header><button type="button" data-close-skill-detail aria-label="返回教学技能">←</button><span>教学技能 / ${escapeHtml(detail.title)}</span><button type="button" data-close-skill-detail aria-label="关闭">×</button></header><div class="skill-detail-layout"><section class="skill-detail-copy"><span class="skill-detail-eyebrow">${escapeHtml(detail.eyebrow)}</span><h2>${escapeHtml(detail.title)}</h2><p>${escapeHtml(detail.description)}</p><div class="skill-detail-points">${detail.points.map(point=>`<div><span>✓</span>${escapeHtml(point)}</div>`).join('')}</div><button class="skill-generate-button" type="button" data-go-generate>去生成 <span>→</span></button><small>点击后返回新任务，并在首页输入框中预填引导提示词。</small></section><aside class="skill-detail-preview"><div class="skill-detail-preview-head"><span>示例</span><div><b>${escapeHtml(detail.exampleTitle)}</b><small>${escapeHtml(detail.exampleMeta)}</small></div></div><div class="skill-detail-image"><img src="${detail.image}" alt="${escapeHtml(detail.title)}产出示例"></div></aside></div></div>`
+    const isAiCompose=skillName==='组题'
+    const previewMarkup=isAiCompose?`<aside class="skill-detail-preview ai-compose-tour" data-ai-compose-tour>
+      <div class="ai-tour-heading"><span>动态演示</span><button type="button" data-ai-tour-replay aria-label="重新播放演示">↻ <span>重播</span></button></div>
+      <div class="ai-tour-stage">
+        <section class="ai-tour-scene active" data-ai-tour-scene="process" aria-label="AI组题过程演示">
+          <div class="ai-tour-visual ai-tour-visual-process"><img class="ai-tour-frame" src="./assets/ai-compose-intro/process-latest.png" alt="AI检索试卷并生成可下载文档"><div class="ai-tour-callout"><span></span>正在检索并生成试卷</div></div>
+        </section>
+        <section class="ai-tour-scene" data-ai-tour-scene="result" aria-label="AI组题结果演示">
+          <div class="ai-tour-visual ai-tour-visual-result"><img class="ai-tour-frame" src="./assets/ai-compose-intro/result-latest.png" alt="生成后的完整数学试卷预览"><div class="ai-tour-callout">◎ 查看完整试卷内容</div></div>
+        </section>
+      </div>
+    </aside>`:`<aside class="skill-detail-preview"><div class="skill-detail-preview-head"><span>示例</span><div><b>${escapeHtml(detail.exampleTitle)}</b><small>${escapeHtml(detail.exampleMeta)}</small></div></div><div class="skill-detail-image"><img src="${detail.image}" alt="${escapeHtml(detail.title)}产出示例"></div></aside>`
+    const skillNavTitle=detail.navTitle||detail.title
+    overlay.innerHTML=`<div class="skill-detail-card${isAiCompose?' ai-compose-detail':''}"><header><button type="button" data-close-skill-detail aria-label="返回教学技能">←</button><span>教学技能 / ${escapeHtml(skillNavTitle)}</span><button type="button" data-close-skill-detail aria-label="关闭">×</button></header><div class="skill-detail-layout"><section class="skill-detail-copy"><span class="skill-detail-eyebrow">${escapeHtml(detail.eyebrow)}</span><h2>${escapeHtml(detail.title)}</h2><p>${escapeHtml(detail.description)}</p><div class="skill-detail-points">${detail.points.map(point=>`<div><span>✓</span>${escapeHtml(point)}</div>`).join('')}</div><button class="skill-generate-button" type="button" data-go-generate>${isAiCompose?'开始使用':'去生成'} <span>→</span></button><small>${isAiCompose?'点击后在当前页面加入 AI组题标签和示例请求。':'点击后返回新任务，并在首页输入框中预填引导提示词。'}</small></section>${previewMarkup}</div></div>`
     $('#conversationView').appendChild(overlay)
-    $$('[data-close-skill-detail]',overlay).forEach(button=>button.addEventListener('click',()=>overlay.remove()))
-    $('[data-go-generate]',overlay).addEventListener('click',()=>{showBlankTask();activateSkill(detail.title)})
-    overlay.addEventListener('click',event=>{if(event.target===overlay)overlay.remove()})
+    let tourTimer
+    const closeDetail=()=>{clearTimeout(tourTimer);overlay.remove()}
+    const setTourStep=(step,autoAdvance=false)=>{
+      const tour=$('[data-ai-compose-tour]',overlay)
+      if(!tour)return
+      clearTimeout(tourTimer)
+      $$('[data-ai-tour-step]',tour).forEach(button=>{const active=button.dataset.aiTourStep===step;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))})
+      $$('[data-ai-tour-scene]',tour).forEach(scene=>scene.classList.toggle('active',scene.dataset.aiTourScene===step))
+      tour.classList.remove('is-playing')
+      void tour.offsetWidth
+      tour.classList.add('is-playing')
+      if(autoAdvance&&step==='process'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)tourTimer=setTimeout(()=>setTourStep('result'),5200)
+    }
+    $$('[data-close-skill-detail]',overlay).forEach(button=>button.addEventListener('click',closeDetail))
+    $$('[data-ai-tour-step]',overlay).forEach(button=>button.addEventListener('click',()=>setTourStep(button.dataset.aiTourStep)))
+    $('[data-ai-tour-replay]',overlay)?.addEventListener('click',()=>setTourStep('process',true))
+    if(isAiCompose)requestAnimationFrame(()=>setTourStep('process',true))
+    $('[data-go-generate]',overlay).addEventListener('click',()=>{
+      closeDetail()
+      if(skillName==='组题')activateSkill(skillName)
+      else{showBlankTask();activateSkill(skillName)}
+    })
+    overlay.addEventListener('click',event=>{if(event.target===overlay)closeDetail()})
   }
 
   function showKnowledgeBase(){
@@ -901,13 +940,21 @@
     stopPlayback();setActiveTask('teachingSkillsEntry')
     $('#teachingSkillsEntry').classList.add('active')
     openFiles=[];activeFile=null;renderPreview()
-    $('#conversationView').classList.add('skill-library-screen')
-    libraryMode='all';libraryCategory='全部';libraryQuery=''
-    messageColumn.innerHTML=`<div class="skill-library-page"><header><span>飞象老师教学技能</span><h1>覆盖每一个教学环节的专业能力</h1><p>选择适合当前任务的教学技能，也可以收藏常用能力，随时从首页快速调用。</p></header><div class="skill-library-controls"><label><span>⌕</span><input id="skillSearch" type="search" placeholder="搜索教学技能"></label><div class="skill-library-modes"><button type="button" class="active" data-library-mode="all">全部技能</button><button type="button" data-library-mode="favorites">☆ 我的收藏</button></div><button class="skill-sort" type="button">推荐排序⌄</button></div><div class="skill-category-row">${['全部','组题与练习','批改与学情','备课与课件','教学办公'].map((category,index)=>`<button type="button" data-library-category="${category}" class="${index===0?'active':''}">${category}</button>`).join('')}</div><div class="skill-library-grid" id="skillLibraryGrid"></div></div>`
-    renderSkillLibraryCards()
-    $('#skillSearch').addEventListener('input',event=>{libraryQuery=event.target.value;renderSkillLibraryCards()})
-    $$('[data-library-mode]',messageColumn).forEach(button=>button.addEventListener('click',()=>{libraryMode=button.dataset.libraryMode;$$('[data-library-mode]',messageColumn).forEach(item=>item.classList.toggle('active',item===button));renderSkillLibraryCards()}))
-    $$('[data-library-category]',messageColumn).forEach(button=>button.addEventListener('click',()=>{libraryCategory=button.dataset.libraryCategory;$$('[data-library-category]',messageColumn).forEach(item=>item.classList.toggle('active',item===button));renderSkillLibraryCards()}))
+    const view=$('#conversationView')
+    view.classList.remove('skill-library-screen','has-home-cases','home-compose-focus')
+    view.classList.add('home-screen','teaching-skills-screen')
+    skillRow.innerHTML=''
+    attachmentRow.innerHTML=''
+    clearPendingAttachments()
+    composerInput.value=''
+    composerInput.placeholder='描述你要完成的教学任务'
+    syncSendReady()
+    const featured=teachingSkills.slice(0,4)
+    messageColumn.innerHTML=`<div class="teaching-skills-home"><header><h1>Joyce老师，今天想从哪项教学工作开始？</h1></header><section><div class="home-section-head"><h2>教学技能<small>为你推荐</small></h2><button type="button" class="teaching-more">更多 <span>→</span></button></div><div class="teaching-skill-grid teaching-skill-featured">${featured.map(skill=>teachingSkillCardMarkup(skill)).join('')}</div></section><section class="home-plaza teaching-plaza"><div class="plaza-tabs"><button class="active" type="button" data-plaza="resource">资源广场</button><button type="button" data-plaza="app">应用广场</button></div><div class="plaza-grid" id="plazaGrid"></div></section></div>`
+    bindHomeSkillCards()
+    renderPlaza('resource')
+    $$('[data-plaza]',messageColumn).forEach(button=>button.addEventListener('click',()=>{$$('[data-plaza]',messageColumn).forEach(item=>item.classList.toggle('active',item===button));renderPlaza(button.dataset.plaza)}))
+    syncComposerReserve()
   }
   function showSimpleTask(id) {
     window.FxPracticeDemo?.resetPaperState?.()
@@ -1163,7 +1210,7 @@
       $$('[data-home-skill-context]',skillRow).forEach(node=>node.remove())
       addContext(skill,true)
       composerInput.placeholder=COMPOSE_PLACEHOLDER
-      composerInput.value=''
+      composerInput.value=teachingSkillPrompts['组题']
       $('#conversationView').classList.remove('has-home-cases')
       $('#homeCases')?.setAttribute('hidden','')
       syncSendReady()
