@@ -14,30 +14,48 @@
   color: #315448;
   box-shadow: 0 3px 12px rgba(24,55,43,.08);
   font: 600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
   backdrop-filter: blur(8px);
 }
+.prd-trigger:active,.prd-trigger.is-dragging { cursor: grabbing; }
 .prd-trigger:hover { border-color: #5d9d82; background: #f4faf7; color: #087a55; }
 .prd-trigger svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .prd-trigger.is-open { opacity: 0; pointer-events: none; }
 .prd-drawer {
   position: fixed;
-  inset: 0 0 0 auto;
+  top: 52px;
+  right: 12px;
   z-index: 6000;
-  width: min(620px, calc(100vw - 36px));
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(82vh, 860px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-left: 1px solid #dce6e1;
+  border: 1px solid #dce6e1;
+  border-radius: 14px;
   background: #fff;
   color: #263a31;
-  box-shadow: -18px 0 48px rgba(18,46,35,.15);
-  transform: translateX(104%);
-  transition: transform .22s ease;
+  box-shadow: 0 16px 48px rgba(18,46,35,.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px) scale(.98);
+  transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
   font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;
 }
-.prd-drawer.open { transform: translateX(0); }
-.prd-drawer-head { flex: none; padding: 18px 20px 0; border-bottom: 1px solid #e5ece8; background: #fbfdfc; }
+.prd-drawer.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); }
+.prd-drawer.is-dragging { transition: none; user-select: none; }
+.prd-drawer-head {
+  flex: none;
+  padding: 16px 18px 0;
+  border-bottom: 1px solid #e5ece8;
+  background: #fbfdfc;
+  border-radius: 14px 14px 0 0;
+  cursor: grab;
+  touch-action: none;
+}
+.prd-drawer-head:active,.prd-drawer.is-dragging .prd-drawer-head { cursor: grabbing; }
 .prd-drawer-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .prd-drawer-title small { display: block; margin-bottom: 5px; color: #087a55; font-size: 11px; font-weight: 750; letter-spacing: .08em; }
 .prd-drawer-title h2 { margin: 0; color: #18382b; font-size: 21px; line-height: 1.3; }

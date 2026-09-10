@@ -1,6 +1,9 @@
 (() => {
   const STORAGE_KEY = 'feixiang-question-workbench-v3-drafts'
   const ACTIVE_DRAFT_KEY = 'feixiang-question-workbench-v3-active-draft'
+  const SUSPENDED_DRAFT_SESSION_KEY = 'feixiang-wb-suspended-draft-id'
+  const PLUS_BLANK_SESSION_KEY = 'feixiang-wb-plus-creates-new'
+  const BANK_SEARCH_KEY = 'feixiang-question-workbench-v3-bank-search'
   const $ = (selector, root = document) => root.querySelector(selector)
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
@@ -45,7 +48,6 @@
     const format = paperFormat()
     return `<div class="wb3-paper-toolbar" role="toolbar" aria-label="画布编辑工具">
       <label class="wb3-tool-select" data-tooltip="字号"><span class="wb3-tool-icon font-size-icon">T</span><select data-paper-format="fontSize" aria-label="字号"><option value="12" ${format.fontSize === 12 ? 'selected' : ''}>小五</option><option value="13" ${format.fontSize === 13 ? 'selected' : ''}>五号</option><option value="14" ${format.fontSize === 14 ? 'selected' : ''}>小四</option><option value="16" ${format.fontSize === 16 ? 'selected' : ''}>四号</option></select></label>
-      <div class="wb3-tool-group text"><button type="button" data-rich-command="bold" data-tooltip="加粗" aria-label="加粗"><b>B</b></button><button type="button" data-rich-command="italic" data-tooltip="斜体" aria-label="斜体"><i>I</i></button><button type="button" data-rich-command="underline" data-tooltip="下划线" aria-label="下划线"><u>U</u></button></div>
       <i class="wb3-tool-separator"></i>
       <label class="wb3-tool-select" data-tooltip="行间距"><span class="wb3-tool-icon line-height-icon"><i>↕</i><b>≡</b></span><select data-paper-format="lineHeight" aria-label="行间距"><option value="1.4" ${format.lineHeight === 1.4 ? 'selected' : ''}>1.0</option><option value="1.65" ${format.lineHeight === 1.65 ? 'selected' : ''}>1.5</option><option value="2" ${format.lineHeight === 2 ? 'selected' : ''}>2.0</option></select></label>
       <label class="wb3-tool-select" data-tooltip="作答区行高"><span class="wb3-tool-icon answer-height-icon"><i>↕</i><b></b></span><select data-paper-format="answerHeight" aria-label="作答区行高"><option value="20" ${format.answerHeight === 20 ? 'selected' : ''}>1.0</option><option value="28" ${format.answerHeight === 28 ? 'selected' : ''}>1.5</option><option value="40" ${format.answerHeight === 40 ? 'selected' : ''}>2.0</option></select></label>
@@ -64,7 +66,25 @@
     { id: 'b8', type: '选择题', knowledge: '钟面上的角', difficulty: '较易', score: 1, text: '从早上6：00到早上6：30钟面上分针旋转了（　）。', options: ['A. 180°', 'B. 90°', 'C. 30°'] },
     { id: 'b9', type: '解答题', knowledge: '长方体体积', difficulty: '中等', score: 3, text: '一个长方体盒子的底面积是4/9平方分米，高是1/2分米。一个正方体盒子的体积是1/8立方分米。长方体盒子的体积比正方体盒子的体积多多少立方分米？' },
     { id: 'b10', type: '选择题', knowledge: '折痕关系', difficulty: '较易', score: 1, text: '把一张正方形纸对折两次后展开，折痕（　）。', options: ['A. 相交', 'B. 互相平行', 'C. 互相垂直', 'D. 可能互相平行，也可能互相垂直'] },
-  ].map((question) => ({ ...question, curriculum: '小学数学', hasAnswer: true })).concat([
+    { id: 'b11', type: '填空题', knowledge: '三位数乘两位数', difficulty: '中等', score: 2, text: '某工厂每天生产零件 186 个，照这样计算，25 天一共生产零件____个。' },
+    { id: 'b12', type: '选择题', knowledge: '三位数乘两位数', difficulty: '较易', score: 1, text: '计算 405×32 时，其中“405×2”表示（　）。', options: ['A. 2 个 405 相加', 'B. 20 个 405 相加', 'C. 405 个 2 相加', 'D. 405 个 20 相加'] },
+    { id: 'b13', type: '填空题', knowledge: '因数末尾有0', difficulty: '中等', score: 2, text: '25×16×125，积的末尾有____个 0。' },
+    { id: 'b14', type: '解答题', knowledge: '部分合作问题', difficulty: '中等', score: 4, text: '一项工程，甲队单独做 12 天完成，乙队单独做 18 天完成。两队合作 4 天后，还剩多少工程没有完成？' },
+    { id: 'b15', type: '填空题', knowledge: '同向追及问题', difficulty: '较易', score: 2, text: '哥哥每分钟走 80 米，弟弟每分钟走 60 米。哥哥在弟弟后面 100 米处同时同向出发，____分钟后哥哥追上弟弟。' },
+    { id: 'b16', type: '选择题', knowledge: '长方形', difficulty: '较易', score: 1, text: '一个长方形的长是 8 厘米，宽是 5 厘米，它的周长是（　）厘米。', options: ['A. 13', 'B. 26', 'C. 40', 'D. 80'] },
+    { id: 'b17', type: '填空题', knowledge: '长方形', difficulty: '中等', score: 2, text: '用两根同样长的铁丝分别围成一个正方形和一个长方形，正方形边长 6 厘米，长方形长 7 厘米，长方形的宽是____厘米。' },
+    { id: 'b18', type: '选择题', knowledge: '直线、射线和线段', difficulty: '较易', score: 1, text: '下列说法正确的是（　）。', options: ['A. 射线比直线短', 'B. 线段可以测量长度', 'C. 直线有两个端点', 'D. 射线没有端点'] },
+    { id: 'b19', type: '填空题', knowledge: '线段', difficulty: '较易', score: 1, text: '过平面上一点，可以向两个方向各画一条射线，所组成的图形是____。' },
+    { id: 'b20', type: '选择题', knowledge: '钟面上的角', difficulty: '中等', score: 2, text: '下午 3 时 30 分，钟面上时针与分针所成的较小角是（　）。', options: ['A. 75°', 'B. 90°', 'C. 105°', 'D. 120°'] },
+    { id: 'b21', type: '解答题', knowledge: '长方体体积', difficulty: '中等', score: 4, text: '一个无盖长方体鱼缸，长 40 厘米、宽 25 厘米、高 30 厘米，在鱼缸内注入 15 厘米深的水，水的体积是多少立方厘米？' },
+    { id: 'b22', type: '选择题', knowledge: '折痕关系', difficulty: '较易', score: 1, text: '把一张圆形纸对折一次，折痕是（　）。', options: ['A. 线段', 'B. 射线', 'C. 直线', 'D. 曲线'] },
+    { id: 'b23', type: '填空题', knowledge: '因数末尾有0', difficulty: '较易', score: 1, text: '450×120 的积末尾有____个 0。' },
+    { id: 'b24', type: '解答题', knowledge: '同向追及问题', difficulty: '提高', score: 5, text: '环形跑道周长 400 米，小红每分钟跑 200 米，小华每分钟跑 150 米，两人从同一地点同时同向出发，至少多少分钟后小红第一次追上小华？' },
+    { id: 'b25', type: '选择题', knowledge: '长方体体积', difficulty: '较易', score: 1, text: '一个长方体木块长 10 cm、宽 4 cm、高 3 cm，它的体积是（　）cm³。', options: ['A. 17', 'B. 34', 'C. 120', 'D. 240'] },
+    { id: 'b26', type: '填空题', knowledge: '部分合作问题', difficulty: '较易', score: 2, text: '修一条路，甲队单独修 10 天完成，乙队单独修 15 天完成。两队合作，每天完成这条路的____。' },
+    { id: 'b27', type: '选择题', knowledge: '直线、射线和线段', difficulty: '中等', score: 2, text: '经过两点可以画（　）条直线。', options: ['A. 1', 'B. 2', 'C. 无数', 'D. 0'] },
+    { id: 'b28', type: '填空题', knowledge: '线段', difficulty: '中等', score: 2, text: '把 5 厘米长的线段向一端延长 100 米，得到的图形是____。' },
+  ].map((question, index) => ({ ...question, curriculum: '小学数学', hasAnswer: true, onlineAt: Date.now() - index * 3600_000 })).concat([
     { id: 'cn1', curriculum: '小学语文', hasAnswer: true, type: '选择题', knowledge: '词语运用', difficulty: '基础', score: 3, text: '下列词语使用恰当的一项是（　）。', options: ['A. 津津有味', 'B. 迫不及待', 'C. 理所当然', 'D. 难以置信'] },
     { id: 'cn2', curriculum: '小学语文', hasAnswer: true, type: '选择题', knowledge: '病句修改', difficulty: '中等', score: 3, text: '下列句子中没有语病的一项是（　）。' },
     { id: 'cn3', curriculum: '小学语文', hasAnswer: true, type: '解答题', knowledge: '现代文阅读', difficulty: '中等', score: 8, text: '阅读短文，概括主人公的性格特点并说明理由。' },
@@ -81,6 +101,19 @@
     { id: 'hm2', curriculum: '高中数学', hasAnswer: true, type: '填空题', knowledge: '函数性质', difficulty: '中等', score: 5, text: '函数 f(x)＝x²−2x 的对称轴为____。' },
     { id: 'hm3', curriculum: '高中数学', hasAnswer: true, type: '解答题', knowledge: '立体几何', difficulty: '提高', score: 12, text: '证明直线与平面垂直，并求相关几何量。' },
     { id: 'hm4', curriculum: '高中数学', hasAnswer: false, type: '解答题', knowledge: '概率统计', difficulty: '提高', score: 12, text: '利用样本数据估计总体特征并说明结论。' },
+    { id: 'jcn1', curriculum: '初中语文', hasAnswer: true, type: '选择题', knowledge: '文言文实词', difficulty: '中等', score: 3, text: '下列加点词解释正确的一项是（　）。' },
+    { id: 'jen1', curriculum: '初中英语', hasAnswer: true, type: '填空题', knowledge: '一般过去时', difficulty: '基础', score: 2, text: 'He ____ (visit) the museum last Sunday.' },
+    { id: 'jp1', curriculum: '初中物理', hasAnswer: true, type: '选择题', knowledge: '力和运动', difficulty: '中等', score: 3, text: '关于惯性，下列说法正确的是（　）。' },
+    { id: 'jc1', curriculum: '初中化学', hasAnswer: true, type: '选择题', knowledge: '物质的变化', difficulty: '基础', score: 3, text: '下列变化属于化学变化的是（　）。' },
+    { id: 'jb1', curriculum: '初中生物', hasAnswer: true, type: '选择题', knowledge: '细胞的结构', difficulty: '基础', score: 3, text: '植物细胞特有的结构是（　）。', options: ['A. 细胞壁', 'B. 细胞膜', 'C. 细胞质', 'D. 细胞核'] },
+    { id: 'hcn1', curriculum: '高中语文', hasAnswer: true, type: '选择题', knowledge: '古代诗歌鉴赏', difficulty: '中等', score: 3, text: '对本诗意象理解正确的一项是（　）。' },
+    { id: 'hen1', curriculum: '高中英语', hasAnswer: true, type: '填空题', knowledge: '非谓语动词', difficulty: '中等', score: 3, text: 'The problem ____ (discuss) yesterday is still unsolved.' },
+    { id: 'hp1', curriculum: '高中物理', hasAnswer: true, type: '解答题', knowledge: '牛顿运动定律', difficulty: '提高', score: 8, text: '光滑水平面上质量为 m 的物块受恒力 F 作用，求加速度。' },
+    { id: 'hc1', curriculum: '高中化学', hasAnswer: true, type: '选择题', knowledge: '氧化还原反应', difficulty: '中等', score: 4, text: '下列反应中氯元素化合价升高的是（　）。' },
+    { id: 'hb1', curriculum: '高中生物', hasAnswer: true, type: '选择题', knowledge: '细胞代谢', difficulty: '中等', score: 4, text: '有氧呼吸的主要场所是（　）。', options: ['A. 细胞核', 'B. 线粒体', 'C. 叶绿体', 'D. 核糖体'] },
+    { id: 'hh1', curriculum: '高中历史', hasAnswer: true, type: '选择题', knowledge: '中国古代史', difficulty: '中等', score: 4, text: '秦统一六国后在全国推行的制度是（　）。' },
+    { id: 'hg1', curriculum: '高中地理', hasAnswer: true, type: '选择题', knowledge: '自然地理', difficulty: '中等', score: 4, text: '下列地貌类型主要由流水侵蚀作用形成的是（　）。' },
+    { id: 'hpol1', curriculum: '高中政治', hasAnswer: true, type: '选择题', knowledge: '经济生活', difficulty: '基础', score: 4, text: '市场在资源配置中起决定性作用，主要体现的是（　）。' },
   ])
 
   const bankPapers = [
@@ -89,11 +122,12 @@
     { id: 'paper-3', title: '四年级易错题专项卷', subject: '数学', grade: '四年级', paperType: '专项练习', meta: '精选题单 · 4题 · 12分钟', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3], bankQuestions[4]] },
   ]
 
+  const KNOWLEDGE_COMPOSE_FOLDER = '我的知识库 / 我的云盘 / 我的组题'
   const knowledgePapers = [
-    { id: 'k1', title: '四年级数学错题集', type: '收藏题集', meta: '18 题 · 四年级上册', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3]] },
-    { id: 'k2', title: '四年级数学期末卷', type: '历史试卷', meta: '26 题 · 区级题库', questions: [bankQuestions[2], bankQuestions[4]] },
-    { id: 'k3', title: '长方体互动课件配套题', type: '校本资源', meta: '课件资源 · 6 道配套题', questions: [bankQuestions[2], bankQuestions[4]] },
-    { id: 'k4', title: '四年级计算每日练', type: '收藏题集', meta: '12 题 · 最近更新', questions: [bankQuestions[0], bankQuestions[2], bankQuestions[4]] },
+    { id: 'k1', title: '四年级数学错题集', type: '我的组题', meta: '3 题 · 自动保存 · 04-12', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3]] },
+    { id: 'k2', title: '四年级数学期末卷', type: '我的组题', meta: '2 题 · 自动保存 · 04-08', questions: [bankQuestions[2], bankQuestions[4]] },
+    { id: 'k3', title: '长方体单元练习', type: '我的组题', meta: '2 题 · 自动保存 · 04-05', questions: [bankQuestions[2], bankQuestions[4]] },
+    { id: 'k4', title: '四年级计算每日练', type: '我的组题', meta: '3 题 · 自动保存 · 04-01', questions: [bankQuestions[0], bankQuestions[2], bankQuestions[4]] },
   ]
 
   const aiHistoryQuestions = bankQuestions.slice(5, 10).map((question) => ({
@@ -103,30 +137,67 @@
     source: 'ai-record',
   }))
 
-  let personalQuestions = [...knowledgePapers[0].questions, ...aiHistoryQuestions]
+  let personalQuestions = []
   let aiImportRecords = [
     { id: 'record-complete', filename: '四年级数学综合练习.pdf', status: 'completed', stage: '解析完成', submittedAt: '09-06 16:20', completedAt: '09-06 16:27', questions: aiHistoryQuestions },
     { id: 'record-processing', filename: '四年级上册期末复习.docx', status: 'processing', stage: '正在提取题目与答案', submittedAt: '今天 10:28', eta: '预计还需 4–10 分钟', questions: [] },
+    { id: 'record-failed', filename: '单元练习扫描-第3页.jpg', status: 'failed', stage: '解析失败，可重新解析', submittedAt: '09-05 11:20', questions: [] },
   ]
-  let aiComposeRecords = [
-    {
-      id: 'compose-history-1',
-      title: '五年级小数乘除法基础练习',
-      prompt: '生成 5 道五年级小数乘除法基础题',
+  function formatAiComposeHistoryDate(value = Date.now()) {
+    const date = new Date(value)
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+  }
+
+  function seedAiComposeHistoryRecord(id, prompt, historyAt, questionCount = 5) {
+    const historyDate = formatAiComposeHistoryDate(historyAt)
+    return {
+      id,
+      conversationId: id,
+      turnIndex: 1,
+      title: prompt.length > 22 ? `${prompt.slice(0, 22)}…` : prompt,
+      prompt,
       mode: 'generate',
       status: 'completed',
-      createdAt: '09-06 15:40',
-      plan: { count: 5, types: '选择、填空、解答', difficulty: '基础为主，适量中等', knowledge: '数与运算、数量关系、图形与几何', minutes: 15 },
-      questions: bankQuestions.slice(0, 5).map((question, index) => ({ ...question, id: `compose-history-1-q${index + 1}`, originId: question.id, source: 'ai-compose' })),
-    },
+      createdAt: historyDate,
+      historyDate,
+      historyAt,
+      plan: { count: questionCount, types: '选择、填空、解答', difficulty: '基础为主，适量中等', knowledge: '覆盖当前学科核心知识点', minutes: 15 },
+      questions: bankQuestions.slice(0, questionCount).map((question, index) => ({
+        ...question,
+        id: `${id}-q${index + 1}`,
+        originId: question.id,
+        source: 'ai-compose',
+      })),
+    }
+  }
+
+  let aiComposeRecords = [
+    seedAiComposeHistoryRecord('compose-h-1', '帮我生成一份 七年级上册数学期末考试模拟题', Date.parse('2026-08-03T10:00:00')),
+    seedAiComposeHistoryRecord('compose-h-2', '帮我出一份北京市西城区小学数学5年级上期末考试试卷', Date.parse('2026-08-03T09:00:00')),
+    seedAiComposeHistoryRecord('compose-h-3', '帮我出3道英语听力题 初中7年级北京海淀区', Date.parse('2026-05-27T10:00:00'), 3),
+    seedAiComposeHistoryRecord('compose-h-4', '帮我出一份北京市西城区小学数学5年级上期末考试试卷', Date.parse('2026-05-21T10:00:00')),
+    seedAiComposeHistoryRecord('compose-h-5', '帮我出一份北京市西城区小学数学5年级上期末考试试卷', Date.parse('2026-04-16T10:00:00')),
   ]
 
   const curriculumCatalog = {
-    '小学数学': { subject: '四年级 · 数学', groups: [['全部知识点',10],['数与运算',2],['三位数乘两位数',1],['因数末尾有0',1],['数量关系',2],['部分合作问题',1],['同向追及问题',1],['图形与几何',6],['长方形',1],['直线、射线和线段',1],['线段',1],['钟面上的角',1],['长方体体积',1],['折痕关系',1]], parents: { '数与运算':['三位数乘两位数','因数末尾有0'], '数量关系':['部分合作问题','同向追及问题'], '图形与几何':['长方形','直线、射线和线段','线段','钟面上的角','长方体体积','折痕关系'] } },
+    '小学数学': { subject: '四年级 · 数学', groups: [['全部知识点',28],['数与运算',4],['三位数乘两位数',2],['因数末尾有0',2],['数量关系',6],['部分合作问题',2],['同向追及问题',2],['图形与几何',14],['长方形',2],['直线、射线和线段',2],['线段',2],['钟面上的角',1],['长方体体积',2],['折痕关系',2]], parents: { '数与运算':['三位数乘两位数','因数末尾有0'], '数量关系':['部分合作问题','同向追及问题'], '图形与几何':['长方形','直线、射线和线段','线段','钟面上的角','长方体体积','折痕关系'] } },
     '小学语文': { subject: '五年级 · 语文', groups: [['全部知识点',4],['语言文字积累',2],['词语运用',1],['病句修改',1],['阅读与鉴赏',1],['现代文阅读',1],['表达与交流',1],['习作',1]], parents: { '语言文字积累':['词语运用','病句修改'], '阅读与鉴赏':['现代文阅读'], '表达与交流':['习作'] } },
     '小学英语': { subject: '五年级 · 英语', groups: [['全部知识点',4],['语言知识',2],['词汇',1],['一般现在时',1],['阅读',1],['阅读理解',1],['表达',1],['书面表达',1]], parents: { '语言知识':['词汇','一般现在时'], '阅读':['阅读理解'], '表达':['书面表达'] } },
+    '初中语文': { subject: '八年级 · 语文', groups: [['全部知识点',1],['古诗文阅读',1],['文言文实词',1]], parents: { '古诗文阅读':['文言文实词'] } },
     '初中数学': { subject: '七年级 · 数学', groups: [['全部知识点',4],['数与式',1],['有理数',1],['方程与不等式',1],['一元一次方程',1],['图形与几何',1],['三角形',1],['统计与概率',1],['数据分析',1]], parents: { '数与式':['有理数'], '方程与不等式':['一元一次方程'], '图形与几何':['三角形'], '统计与概率':['数据分析'] } },
+    '初中英语': { subject: '八年级 · 英语', groups: [['全部知识点',1],['语法',1],['一般过去时',1]], parents: { '语法':['一般过去时'] } },
+    '初中物理': { subject: '八年级 · 物理', groups: [['全部知识点',1],['力学',1],['力和运动',1]], parents: { '力学':['力和运动'] } },
+    '初中化学': { subject: '九年级 · 化学', groups: [['全部知识点',1],['身边的化学物质',1],['物质的变化',1]], parents: { '身边的化学物质':['物质的变化'] } },
+    '初中生物': { subject: '七年级 · 生物', groups: [['全部知识点',1],['细胞',1],['细胞的结构',1]], parents: { '细胞':['细胞的结构'] } },
+    '高中语文': { subject: '高一 · 语文', groups: [['全部知识点',1],['文学鉴赏',1],['古代诗歌鉴赏',1]], parents: { '文学鉴赏':['古代诗歌鉴赏'] } },
     '高中数学': { subject: '高一 · 数学', groups: [['全部知识点',4],['预备知识',1],['集合',1],['函数',1],['函数性质',1],['几何',1],['立体几何',1],['统计与概率',1],['概率统计',1]], parents: { '预备知识':['集合'], '函数':['函数性质'], '几何':['立体几何'], '统计与概率':['概率统计'] } },
+    '高中英语': { subject: '高一 · 英语', groups: [['全部知识点',1],['语法',1],['非谓语动词',1]], parents: { '语法':['非谓语动词'] } },
+    '高中物理': { subject: '高一 · 物理', groups: [['全部知识点',1],['力学',1],['牛顿运动定律',1]], parents: { '力学':['牛顿运动定律'] } },
+    '高中化学': { subject: '高一 · 化学', groups: [['全部知识点',1],['化学反应原理',1],['氧化还原反应',1]], parents: { '化学反应原理':['氧化还原反应'] } },
+    '高中生物': { subject: '高一 · 生物', groups: [['全部知识点',1],['分子与细胞',1],['细胞代谢',1]], parents: { '分子与细胞':['细胞代谢'] } },
+    '高中历史': { subject: '高一 · 历史', groups: [['全部知识点',1],['中国古代史',1],['秦汉时期',1]], parents: { '中国古代史':['秦汉时期'] } },
+    '高中地理': { subject: '高一 · 地理', groups: [['全部知识点',1],['自然地理',1],['地貌',1]], parents: { '自然地理':['地貌'] } },
+    '高中政治': { subject: '高一 · 政治', groups: [['全部知识点',1],['经济生活',1],['市场经济',1]], parents: { '经济生活':['市场经济'] } },
   }
 
   let root
@@ -156,14 +227,117 @@
   let previewKnowledgePaperId = ''
   let adaptRequest = null
   let adaptPicker = null
+  let personalDeletePromptId = ''
+  let downloadDialogOpen = false
+  let suspendedDraftIdForNewButton = ''
+  let plusCreatesBlankOnNew = false
   let autoSavedAt = 0
+  let aiCreateInputDraft = ''
+  let aiCreateAttachments = []
+  let aiCreateListening = false
+  let aiCreateSpeechRecognition = null
+
+  const DEFAULT_DRAFT_TITLE = '未命名题单'
+  const PAPER_EXPORT_SCHOOL_HEADER = '学校：____________________　班级：________　姓名：________'
+  let mathEditorOpen = false
+  let mathEditorPreview = 'S = πr²'
+  let mathEditorLatex = 'S=\\pi r^2'
+  let symbolModalOpen = false
+  let symbolModalTab = 'math'
+  let activeRichEditorQuestionId = ''
+  let activeRichEditorField = ''
+  let richFloatEl = null
+  let lastPointerX = 0
+  let lastPointerY = 0
+
+  const SUBJECT_FORMULA_PRESETS = [
+    { name: '圆面积', display: 'S = πr²', latex: 'S=\\pi r^2' },
+    { name: '梯形面积', display: 'S = ½(a+b)×h', latex: 'S=\\frac{1}{2}(a+b)h' },
+    { name: '三角形面积', display: 'S = √[p(p-a)(p-b)(p-c)]', latex: 'S=\\sqrt{p(p-a)(p-b)(p-c)}' },
+    { name: '圆柱体积', display: 'V = πr²h', latex: 'V=\\pi r^2 h' },
+    { name: '圆锥体积', display: 'V = ⅓πr²h', latex: 'V=\\frac{1}{3}\\pi r^2 h' },
+  ]
+
+  const SYMBOL_TABS = [
+    { id: 'math', label: '数学' },
+    { id: 'serial', label: '序号' },
+    { id: 'bracket', label: '括号' },
+    { id: 'latin', label: '拉丁' },
+    { id: 'pinyin', label: '拼音' },
+    { id: 'special', label: '特殊字符' },
+  ]
+
+  const SYMBOL_GRID = {
+    math: ['+', '−', '×', '÷', '±', '=', '≠', '≈', '≤', '≥', '<', '>', '∈', '∉', '⊂', '⊃', '∪', '∩', '∞', '∠', '⊥', '∥', '°', 'π', 'α', 'β', 'γ', 'Δ', 'θ', 'λ', 'μ', 'σ', '∑', '∏', '∫', '√', '‰', '%', 'mg', 'kg', 'mm', 'cm', 'km', 'm²', 'ml', 'L'],
+    serial: ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑴', '⑵', '⑶', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ'],
+    bracket: ['(', ')', '[', ']', '{', '}', '（', '）', '【', '】', '《', '》', '「', '」'],
+    latin: ['À', 'Á', 'Â', 'Ã', 'Ä', 'à', 'á', 'â', 'ã', 'ä', 'È', 'É', 'Ê', 'Ë', 'è', 'é', 'ê', 'ë', 'Ñ', 'ñ', 'Ö', 'ö', 'Ü', 'ü'],
+    pinyin: ['ā', 'á', 'ǎ', 'à', 'ō', 'ó', 'ǒ', 'ò', 'ē', 'é', 'ě', 'è', 'ī', 'í', 'ǐ', 'ì', 'ū', 'ú', 'ǔ', 'ù', 'ǖ', 'ǘ', 'ǚ', 'ǜ'],
+    special: ['…', '—', '–', '·', '※', '★', '☆', '→', '←', '↑', '↓', '↔', '✓', '✗', '©', '®', '™', '℃', '℉'],
+  }
+
+  const MATH_STRUCTURE_BUTTONS = [
+    { label: 'a/b', insert: '()/()' },
+    { label: '√', insert: '√()' },
+    { label: 'x²', insert: '()²' },
+    { label: 'xₙ', insert: '()ₙ' },
+    { label: 'Σ', insert: 'Σ' },
+    { label: '∫', insert: '∫' },
+  ]
 
   function makeId(prefix = 'q') {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
   }
 
+  function bankSearchStorageKey() {
+    return `${curriculumKey}|${questionSource}`
+  }
+
+  function applyBankSearchFromStorage() {
+    try {
+      const map = JSON.parse(localStorage.getItem(BANK_SEARCH_KEY) || '{}')
+      const entry = map[bankSearchStorageKey()]
+      treeSearchQuery = typeof entry?.treeSearchQuery === 'string' ? entry.treeSearchQuery : ''
+    } catch {
+      treeSearchQuery = ''
+    }
+  }
+
+  function saveBankSearchToStorage() {
+    try {
+      const map = JSON.parse(localStorage.getItem(BANK_SEARCH_KEY) || '{}')
+      map[bankSearchStorageKey()] = { treeSearchQuery, savedAt: Date.now() }
+      localStorage.setItem(BANK_SEARCH_KEY, JSON.stringify(map))
+    } catch { /* ignore */ }
+  }
+
+  function personalBankTotalCount() {
+    return personalQuestions.length
+  }
+
+  function isUntitledDraftTitle(title = '') {
+    const t = String(title).trim()
+    return !t || t === DEFAULT_DRAFT_TITLE || /^未命名题单 \d+$/.test(t)
+  }
+
+  function nextUntitledDraftName() {
+    let drafts = []
+    try { drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') } catch { drafts = [] }
+    const used = new Set()
+    drafts.forEach((draft) => {
+      const t = (draft.title || DEFAULT_DRAFT_TITLE).trim()
+      if (t === DEFAULT_DRAFT_TITLE) { used.add(1); return }
+      const match = /^未命名题单 (\d+)$/.exec(t)
+      if (match) used.add(Number(match[1]))
+    })
+    if (!used.size) return DEFAULT_DRAFT_TITLE
+    let n = 1
+    while (used.has(n)) n += 1
+    return n === 1 ? DEFAULT_DRAFT_TITLE : `未命名题单 ${n}`
+  }
+
   function createBlankDraft() {
-    return { id: makeId('draft'), title: '未命名题单', subject: currentCurriculum().subject, curriculumKey, questions: [], createdAt: Date.now(), updatedAt: Date.now() }
+    return { id: makeId('draft'), title: nextUntitledDraftName(), subject: currentCurriculum().subject, curriculumKey, questions: [], createdAt: Date.now(), updatedAt: Date.now() }
   }
 
   function loadActiveDraft() {
@@ -171,7 +345,7 @@
       const activeId = localStorage.getItem(ACTIVE_DRAFT_KEY)
       if (!activeId) return null
       const draft = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').find((item) => item.id === activeId) || null
-      if (draft?.questions) draft.questions = draft.questions.filter((question) => !(question.source === 'knowledge' && question.status === 'draft'))
+      if (draft?.questions) draft.questions = draft.questions.filter((question) => question.status !== 'draft')
       return draft
     } catch { return null }
   }
@@ -187,24 +361,340 @@
 
   function allKnowledgePapers() {
     const saved = savedDraftPapers()
-    return [...saved, ...knowledgePapers.filter((paper) => !saved.some((item) => item.id === paper.id))]
+    const demos = knowledgePapers.filter((paper) => !saved.some((item) => item.id === paper.id))
+    return [...saved, ...demos].map((paper) => ({ ...paper, folderPath: KNOWLEDGE_COMPOSE_FOLDER, type: '我的组题' }))
   }
 
   function cloneQuestion(question, extra = {}) {
-    return { ...question, id: makeId('sheet'), sourceId: question.id, status: 'confirmed', source: question.source || 'bank', ...extra }
+    return {
+      ...question,
+      id: makeId('sheet'),
+      sourceId: question.id,
+      sourceSnapshot: { text: question.text || '', options: [...(question.options || [])] },
+      status: 'confirmed',
+      source: question.source || 'bank',
+      ...extra,
+    }
+  }
+
+  function confirmedSheetQuestions() {
+    return (activeDraft?.questions || []).filter((q) => q.status === 'confirmed')
+  }
+
+  function confirmedSheetIndex(questionId) {
+    const index = confirmedSheetQuestions().findIndex((q) => q.id === questionId)
+    return index >= 0 ? index + 1 : 0
   }
 
   function getAddedMap() {
     const map = new Map()
-    ;(activeDraft?.questions || []).forEach((q, index) => {
-      if (q.status === 'confirmed' && q.sourceId) map.set(q.sourceId, index + 1)
+    confirmedSheetQuestions().forEach((q, index) => {
+      if (q.sourceId) map.set(q.sourceId, index + 1)
     })
     return map
   }
 
+  function rewireSheetQuestionId(question, prevId) {
+    question.id = makeId('sheet')
+    if (selectedQuestionId === prevId) selectedQuestionId = question.id
+    if (answerEditorQuestionId === prevId) answerEditorQuestionId = question.id
+    if (activeRichEditorQuestionId === prevId) activeRichEditorQuestionId = question.id
+    if (revealedAnswerIds.has(prevId)) {
+      revealedAnswerIds.delete(prevId)
+      revealedAnswerIds.add(question.id)
+    }
+  }
+
+  function breaksSourceLink(question, { text, options, answer, analysis } = {}) {
+    const snapshot = question.sourceSnapshot
+    if (text !== undefined && snapshot && text !== snapshot.text) return true
+    if (options !== undefined && snapshot && JSON.stringify(options) !== JSON.stringify(snapshot.options || [])) return true
+    if (answer !== undefined || analysis !== undefined) {
+      if (question.sourceId || snapshot) return true
+    }
+    if (text !== undefined && !snapshot && question.sourceId && text !== (question.text || '')) return true
+    if (options !== undefined && !snapshot && question.sourceId) return true
+    return false
+  }
+
+  function applySheetQuestionContentEdit(question, nextText, nextHtml) {
+    const prevText = question.text || ''
+    const prevHtml = question.textHtml || ''
+    if (nextText === prevText && nextHtml === prevHtml) return false
+    question.text = nextText
+    question.textHtml = nextHtml
+    const breaksSource = breaksSourceLink(question, { text: nextText })
+      || (nextHtml !== prevHtml && Boolean(question.sourceId || question.sourceSnapshot))
+    if (breaksSource) delete question.sourceId
+    const prevId = question.id
+    rewireSheetQuestionId(question, prevId)
+    return true
+  }
+
+  function sheetEditableField(el) {
+    if (!el?.classList) return ''
+    if (el.classList.contains('wb3-sheet-q-text')) return 'stem'
+    if (el.classList.contains('wb3-sheet-q-options')) return 'options'
+    if (el.classList.contains('wb3-sheet-q-answer-text')) return el.dataset.answerField || 'answer'
+    return ''
+  }
+
+  function syncSheetEditableFromDom(question, field, el) {
+    if (field === 'stem') {
+      const nextHtml = el.innerHTML
+      const nextText = el.innerText.replace(/\u00a0/g, ' ').trim()
+      if (!nextText && !nextHtml.includes('wb3-formula')) return 'empty-stem'
+      return applySheetQuestionContentEdit(question, nextText, nextHtml) ? 'changed' : 'same'
+    }
+    if (field === 'options') {
+      const lines = el.innerText.replace(/\u00a0/g, ' ').split(/\n/).map((line) => line.trim()).filter(Boolean)
+      const nextOptions = lines
+      const prevJson = JSON.stringify(question.options || [])
+      const nextJson = JSON.stringify(nextOptions)
+      if (prevJson === nextJson) {
+        if ((question.optionsHtml || '') === el.innerHTML) return 'same'
+        question.optionsHtml = el.innerHTML
+        return 'format'
+      }
+      question.options = nextOptions
+      question.optionsHtml = el.innerHTML
+      if (breaksSourceLink(question, { options: nextOptions })) delete question.sourceId
+      const prevId = question.id
+      rewireSheetQuestionId(question, prevId)
+      return 'changed'
+    }
+    if (field === 'answer' || field === 'analysis') {
+      const nextValue = el.innerText.replace(/\u00a0/g, ' ').trim()
+      const key = field === 'analysis' ? 'analysis' : 'answer'
+      const prevValue = question[key] || ''
+      if (nextValue === prevValue) {
+        if ((question[`${key}Html`] || '') === el.innerHTML) return 'same'
+        question[`${key}Html`] = el.innerHTML
+        return 'format'
+      }
+      question[key] = nextValue
+      question[`${key}Html`] = el.innerHTML
+      if (breaksSourceLink(question, { [key]: nextValue })) delete question.sourceId
+      const prevId = question.id
+      rewireSheetQuestionId(question, prevId)
+      return 'changed'
+    }
+    return 'same'
+  }
+
+  function sheetQuestionHtml(question) {
+    if (question.textHtml) return question.textHtml
+    return escapeHtml(question.text || '')
+  }
+
+  function saveEditorSelection() {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount) return sel.getRangeAt(0).cloneRange()
+    return null
+  }
+
+  function activeRichEditorEl() {
+    if (!activeRichEditorQuestionId || !root) return null
+    const card = $(`[data-sheet-id="${activeRichEditorQuestionId}"]`, root)
+    if (!card) return null
+    if (activeRichEditorField === 'options') return $('.wb3-sheet-q-options', card)
+    if (activeRichEditorField === 'answer') return $('.wb3-sheet-q-answer-text[data-answer-field="answer"]', card)
+    if (activeRichEditorField === 'analysis') return $('.wb3-sheet-q-answer-text[data-answer-field="analysis"]', card)
+    return $('.wb3-sheet-q-text', card)
+  }
+
+  function insertIntoRichEditor(content, asHtml = false) {
+    const el = activeRichEditorEl()
+    if (!el) return
+    el.focus()
+    const sel = window.getSelection()
+    if (!sel) return
+    if (sel.rangeCount === 0) {
+      const range = document.createRange()
+      range.selectNodeContents(el)
+      range.collapse(false)
+      sel.removeAllRanges()
+      sel.addRange(range)
+    }
+    if (asHtml) {
+      const range = sel.getRangeAt(0)
+      range.deleteContents()
+      const tpl = document.createElement('template')
+      tpl.innerHTML = content
+      range.insertNode(tpl.content)
+      range.collapse(false)
+    } else {
+      document.execCommand('insertText', false, content)
+    }
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  }
+
+  function ensureRichFloat() {
+    if (richFloatEl) return richFloatEl
+    richFloatEl = document.createElement('div')
+    richFloatEl.className = 'wb3-rich-float'
+    richFloatEl.setAttribute('aria-hidden', 'true')
+    richFloatEl.innerHTML = `<button type="button" data-rich-command="bold" aria-label="加粗"><b>B</b></button><button type="button" data-rich-command="italic" aria-label="斜体"><i>I</i></button><button type="button" data-rich-command="underline" aria-label="下划线"><u>U</u></button><i class="wb3-rich-float-sep"></i><button type="button" data-open-math-editor aria-label="公式编辑器"><span>f</span><sub>x</sub></button><button type="button" data-open-symbol-modal aria-label="插入符号">Ω</button>`
+    document.body.appendChild(richFloatEl)
+    richFloatEl.addEventListener('mousedown', (event) => {
+      if (event.target.closest('[data-rich-command], [data-open-math-editor], [data-open-symbol-modal]')) event.preventDefault()
+    })
+    richFloatEl.addEventListener('mouseleave', (event) => {
+      const related = event.relatedTarget
+      if (related?.closest?.('.wb3-rich-editable, .wb3-math-modal, .wb3-symbol-modal, .wb3-math-overlay, .wb3-symbol-overlay')) return
+      hideRichFloatBar()
+    })
+    richFloatEl.addEventListener('click', (event) => {
+      if (!root || root.hidden) return
+      const richCommand = event.target.closest('[data-rich-command]')
+      if (richCommand) {
+        const el = activeRichEditorEl()
+        el?.focus()
+        document.execCommand(richCommand.dataset.richCommand, false, null)
+        return
+      }
+      if (event.target.closest('[data-open-math-editor]')) {
+        mathEditorPreview = 'S = πr²'
+        mathEditorLatex = 'S=\\pi r^2'
+        mathEditorOpen = true
+        render()
+        return
+      }
+      if (event.target.closest('[data-open-symbol-modal]')) {
+        symbolModalOpen = true
+        symbolModalTab = 'math'
+        render()
+      }
+    })
+    return richFloatEl
+  }
+
+  function computeRichFloatPlacement(target) {
+    const rect = target.getBoundingClientRect()
+    const left = Math.min(window.innerWidth - 280, Math.max(12, rect.left))
+    const top = Math.max(12, rect.top - 44)
+    return { left, top }
+  }
+
+  function showRichFloatBar(target) {
+    const bar = ensureRichFloat()
+    if (!target) { hideRichFloatBar(); return }
+    const { left, top } = computeRichFloatPlacement(target)
+    bar.style.left = `${left}px`
+    bar.style.top = `${top}px`
+    bar.classList.add('is-visible')
+    bar.removeAttribute('aria-hidden')
+  }
+
+  function hideRichFloatBar() {
+    if (!richFloatEl) return
+    richFloatEl.classList.remove('is-visible')
+    richFloatEl.setAttribute('aria-hidden', 'true')
+  }
+
+  function richFloatBarVisible() {
+    return Boolean(richFloatEl?.classList.contains('is-visible'))
+  }
+
+  function hideRichFloat() {
+    hideRichFloatBar()
+    activeRichEditorQuestionId = ''
+    activeRichEditorField = ''
+  }
+
+  function pointerInRichFloatHotZone(clientX, clientY) {
+    const el = activeRichEditorEl()
+    if (!el) return false
+    const pad = 4
+    const inRect = (r) => (
+      clientX >= r.left - pad
+      && clientX <= r.right + pad
+      && clientY >= r.top - pad
+      && clientY <= r.bottom + pad
+    )
+    if (inRect(el.getBoundingClientRect())) return true
+    const { left, top } = computeRichFloatPlacement(el)
+    const floatW = richFloatEl?.offsetWidth || 248
+    const floatH = richFloatEl?.offsetHeight || 40
+    if (inRect({ left, top, right: left + floatW, bottom: top + floatH })) return true
+    if (richFloatBarVisible() && richFloatEl && inRect(richFloatEl.getBoundingClientRect())) return true
+    return false
+  }
+
+  function refreshRichFloatVisibility(event) {
+    if (mathEditorOpen || symbolModalOpen) return
+    const clientX = event?.clientX ?? lastPointerX
+    const clientY = event?.clientY ?? lastPointerY
+    if (!activeRichEditorQuestionId) {
+      hideRichFloatBar()
+      return
+    }
+    const el = activeRichEditorEl()
+    if (!el) {
+      hideRichFloatBar()
+      return
+    }
+    if (pointerInRichFloatHotZone(clientX, clientY)) {
+      showRichFloatBar(el)
+      return
+    }
+    hideRichFloatBar()
+  }
+
+  let richFloatPointerBound = false
+  function bindRichFloatPointerTracking() {
+    if (richFloatPointerBound) return
+    richFloatPointerBound = true
+    document.addEventListener('pointermove', (event) => {
+      lastPointerX = event.clientX
+      lastPointerY = event.clientY
+      refreshRichFloatVisibility(event)
+    }, true)
+    document.addEventListener('pointerdown', (event) => {
+      lastPointerX = event.clientX
+      lastPointerY = event.clientY
+      refreshRichFloatVisibility(event)
+    }, true)
+  }
+
+  function sheetOptionsMarkup(question) {
+    if (!question.options?.length && question.type !== '选择题') return ''
+    const body = question.optionsHtml || escapeHtml((question.options || []).join('\n'))
+    return `<div class="wb3-sheet-q-options wb3-rich-editable" contenteditable="true">${body}</div>`
+  }
+
+  function sheetAnswerBodyMarkup(question) {
+    const answerText = question.answer ?? questionAnswerText(question)
+    const analysisText = question.analysis ?? questionAnalysisText(question)
+    const answerBody = question.answerHtml || escapeHtml(answerText)
+    const analysisBody = question.analysisHtml || escapeHtml(analysisText)
+    return `<div class="wb3-sheet-q-answer"><p class="wb3-answer-row"><b>答案</b><span class="wb3-sheet-q-answer-text wb3-rich-editable" contenteditable="true" data-answer-field="answer">${answerBody}</span></p><p class="wb3-answer-row"><b>解析</b><span class="wb3-sheet-q-answer-text wb3-rich-editable" contenteditable="true" data-answer-field="analysis">${analysisBody}</span></p></div>`
+  }
+
+  function mathEditorModalMarkup() {
+    if (!mathEditorOpen) return ''
+    return `<div class="wb3-overlay wb3-math-overlay" data-close-math-editor><div class="wb3-math-modal" role="dialog" aria-label="公式编辑器"><header><b>公式编辑器</b><button type="button" data-close-math-editor aria-label="关闭">×</button></header><div class="wb3-math-tabs"><button type="button" class="active">可视化编辑</button><button type="button" disabled title="后续支持">表格模式</button></div><div class="wb3-math-toolbar">${MATH_STRUCTURE_BUTTONS.map((item) => `<button type="button" data-math-insert="${escapeHtml(item.insert)}">${escapeHtml(item.label)}</button>`).join('')}</div><div class="wb3-math-body"><div class="wb3-math-preview" id="wb3MathPreview">${escapeHtml(mathEditorPreview)}</div><aside class="wb3-math-presets"><b>学科公式 · 数学</b>${SUBJECT_FORMULA_PRESETS.map((item) => `<button type="button" data-math-preset="${escapeHtml(item.latex)}" data-math-display="${escapeHtml(item.display)}"><span>${escapeHtml(item.name)}</span><em>${escapeHtml(item.display)}</em></button>`).join('')}</aside></div><footer><button type="button" data-close-math-editor>取消</button><button type="button" class="primary" data-math-confirm>确认</button></footer></div></div>`
+  }
+
+  function symbolModalMarkup() {
+    if (!symbolModalOpen) return ''
+    const symbols = SYMBOL_GRID[symbolModalTab] || []
+    return `<div class="wb3-overlay wb3-symbol-overlay" data-close-symbol-modal><div class="wb3-symbol-modal" role="dialog" aria-label="插入符号"><header><b>插入符号</b><button type="button" data-close-symbol-modal aria-label="关闭">×</button></header><nav class="wb3-symbol-tabs">${SYMBOL_TABS.map((tab) => `<button type="button" class="${symbolModalTab === tab.id ? 'active' : ''}" data-symbol-tab="${tab.id}">${tab.label}</button>`).join('')}</nav><div class="wb3-symbol-grid">${symbols.map((sym) => `<button type="button" data-symbol-char="${escapeHtml(sym)}">${escapeHtml(sym)}</button>`).join('')}</div></div></div>`
+  }
+
+  function removeSheetQuestionById(sheetId) {
+    activeDraft.questions = activeDraft.questions.filter((q) => q.id !== sheetId)
+    if (selectedQuestionId === sheetId) selectedQuestionId = ''
+    if (answerEditorQuestionId === sheetId) answerEditorQuestionId = ''
+    revealedAnswerIds.delete(sheetId)
+    persistDraft()
+    showToast('已删除题目')
+    render()
+  }
+
   function draftMeta() {
     const confirmed = (activeDraft?.questions || []).filter((q) => q.status === 'confirmed')
-    const pending = (activeDraft?.questions || []).filter((q) => q.status === 'draft' || q.status === 'adapt')
+    const pending = (activeDraft?.questions || []).filter((q) => q.status === 'adapt')
     const score = confirmed.reduce((sum, q) => sum + Number(q.score || 0), 0)
     const pendingScore = pending.reduce((sum, q) => sum + Number(q.score || 0), 0)
     const minutes = Math.max(5, Math.round(confirmed.length * 1.8))
@@ -232,8 +722,99 @@
     } catch { /* ignore */ }
   }
 
+  function syncNewDraftNavigationStateFromSession() {
+    try {
+      suspendedDraftIdForNewButton = sessionStorage.getItem(SUSPENDED_DRAFT_SESSION_KEY) || ''
+      plusCreatesBlankOnNew = sessionStorage.getItem(PLUS_BLANK_SESSION_KEY) === '1'
+    } catch {
+      suspendedDraftIdForNewButton = ''
+      plusCreatesBlankOnNew = false
+    }
+  }
+
+  function clearNewDraftNavigationState() {
+    suspendedDraftIdForNewButton = ''
+    plusCreatesBlankOnNew = false
+    try {
+      sessionStorage.removeItem(SUSPENDED_DRAFT_SESSION_KEY)
+      sessionStorage.removeItem(PLUS_BLANK_SESSION_KEY)
+    } catch { /* ignore */ }
+  }
+
+  function confirmedQuestionCount(draft) {
+    return (draft?.questions || []).filter((q) => q.status === 'confirmed').length
+  }
+
+  function loadDraftById(draftId) {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').find((item) => item.id === draftId) || null
+    } catch {
+      return null
+    }
+  }
+
+  function activateDraft(draft) {
+    if (!draft) return false
+    activeDraft = draft
+    if (draft.curriculumKey && curriculumCatalog[draft.curriculumKey]) curriculumKey = draft.curriculumKey
+    activeDraft.subject = activeDraft.subject || currentCurriculum().subject
+    autoSavedAt = draft.updatedAt || 0
+    selectedQuestionId = ''
+    revealedAnswerIds = new Set()
+    adaptRequest = null
+    adaptPicker = null
+    answerEditorQuestionId = ''
+    localStorage.setItem(ACTIVE_DRAFT_KEY, draft.id)
+    return true
+  }
+
+  function prepareKnowledgeEditSwitch(targetDraftId) {
+    let drafts = []
+    try { drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') } catch { drafts = [] }
+    const previousActiveId = localStorage.getItem(ACTIVE_DRAFT_KEY)
+    const previousDraft = previousActiveId ? drafts.find((item) => item.id === previousActiveId) : null
+    const previousCount = confirmedQuestionCount(previousDraft)
+
+    clearNewDraftNavigationState()
+
+    if (previousActiveId && previousActiveId !== targetDraftId && previousCount > 0) {
+      if (previousDraft) {
+        previousDraft.updatedAt = Date.now()
+        drafts = [previousDraft, ...drafts.filter((item) => item.id !== previousActiveId)]
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
+      }
+      suspendedDraftIdForNewButton = previousActiveId
+      plusCreatesBlankOnNew = false
+      try { sessionStorage.setItem(SUSPENDED_DRAFT_SESSION_KEY, previousActiveId) } catch { /* ignore */ }
+    } else if (previousActiveId !== targetDraftId) {
+      plusCreatesBlankOnNew = true
+      try { sessionStorage.setItem(PLUS_BLANK_SESSION_KEY, '1') } catch { /* ignore */ }
+    }
+
+    localStorage.setItem(ACTIVE_DRAFT_KEY, targetDraftId)
+  }
+
   function startNewDraft() {
     persistDraft()
+    syncNewDraftNavigationStateFromSession()
+
+    if (suspendedDraftIdForNewButton && !plusCreatesBlankOnNew) {
+      const suspended = loadDraftById(suspendedDraftIdForNewButton)
+      if (suspended && suspended.id !== activeDraft?.id) {
+        activateDraft(suspended)
+        clearNewDraftNavigationState()
+        importWorkspaceView = 'library'
+        activeImportRecordId = ''
+        activeAiComposeRecordId = ''
+        previewKnowledgePaperId = ''
+        persistDraft()
+        render()
+        showToast(`已打开「${suspended.title || DEFAULT_DRAFT_TITLE}」`)
+        return
+      }
+    }
+
+    clearNewDraftNavigationState()
     activeDraft = createBlankDraft()
     selectedQuestionId = ''
     revealedAnswerIds = new Set()
@@ -246,7 +827,7 @@
     autoSavedAt = 0
     persistDraft()
     render()
-    showToast('已新建组题，上一份内容已自动保存')
+    showToast('已新建空白题单')
   }
 
   function showToast(text) {
@@ -266,13 +847,7 @@
     if (questionSource === 'personal') {
       return personalQuestions.filter((question) => question.curriculum === curriculumKey)
     }
-    const base = bankQuestions.filter((question) => question.curriculum === curriculumKey)
-    return Array.from({ length: OFFICIAL_PAGE_SIZE * OFFICIAL_MAX_PAGES }, (_, round) => base.map((question, index) => ({
-      ...question,
-      id: round ? `${question.id}-demo-${round + 1}` : question.id,
-      originId: question.originId || question.id,
-      text: round ? `${question.text}（拓展练习 ${round * base.length + index + 1}）` : question.text,
-    }))).flat()
+    return bankQuestions.filter((question) => question.curriculum === curriculumKey)
   }
 
   function findQuestionById(id) {
@@ -292,10 +867,24 @@
     return questions.filter((question) => question.knowledge === name).length
   }
 
-  function filterBankQuestions() {
+  function questionsInTreeScope() {
     const curriculum = currentCurriculum()
     const treeQuery = treeSearchQuery.trim().toLowerCase()
     return currentBankQuestions().filter((question) => {
+      if (treeQuery) {
+        return question.knowledge.toLowerCase().includes(treeQuery)
+          || question.text.toLowerCase().includes(treeQuery)
+          || (question.options || []).some((option) => option.toLowerCase().includes(treeQuery))
+          || Object.entries(curriculum.parents).some(([parent, children]) => parent.toLowerCase().includes(treeQuery) && children.includes(question.knowledge))
+      }
+      return activeKnowledge === '全部知识点' || question.knowledge === activeKnowledge || curriculum.parents[activeKnowledge]?.includes(question.knowledge)
+    })
+  }
+
+  function filterBankQuestions() {
+    const curriculum = currentCurriculum()
+    const treeQuery = treeSearchQuery.trim().toLowerCase()
+    const scoped = currentBankQuestions().filter((question) => {
       const scopeMatch = treeQuery
         ? question.knowledge.toLowerCase().includes(treeQuery)
           || question.text.toLowerCase().includes(treeQuery)
@@ -306,6 +895,20 @@
       const difficultyMatch = filterDifficulty === '全部难度' || question.difficulty === filterDifficulty
       return scopeMatch && typeMatch && difficultyMatch
     })
+    if (questionSource === 'official') {
+      return scoped.sort((a, b) => (Number(b.onlineAt || 0) - Number(a.onlineAt || 0)) || String(a.id).localeCompare(String(b.id)))
+    }
+    return scoped
+  }
+
+  function emptyResultsMarkup(filteredCount, treeScopedCount) {
+    if (questionSource === 'personal' && currentBankQuestions().length === 0) {
+      return `<div class="wb3-empty-results wb3-empty-personal"><b>还没有题目</b><p>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</p><button type="button" class="wb3-empty-upload-btn primary" data-empty-import="upload">${icons.upload}上传文件</button></div>`
+    }
+    if (treeScopedCount === 0 && !treeSearchQuery.trim()) {
+      return `<div class="wb3-empty-results">暂无题目</div>`
+    }
+    return `<div class="wb3-empty-results">没有符合当前筛选或搜索条件的题目</div>`
   }
 
   function visibleTreeGroups() {
@@ -327,6 +930,7 @@
   }
 
   function questionAnswerText(question) {
+    if (question.answer) return question.answer
     return {
       b1: '2又1/3小时。', b2: '24；20；40；12。', b3: 'C. 线段', b4: 'B. 线段', b5: 'C. 39', b6: '2个。', b7: '425米/分。', b8: 'A. 180°', b9: '7/72立方分米。', b10: 'D. 可能互相平行，也可能互相垂直',
       cn1: '结合具体语境判断。', cn2: '依据句子成分与搭配判断。', cn3: '抓住人物的语言、动作和心理描写概括。', cn4: '开放性答案。',
@@ -336,8 +940,9 @@
   }
 
   function questionAnalysisText(question) {
+    if (question.analysis) return question.analysis
     const id = question.originId || question.sourceId || question.id
-    return question.analysis || {
+    return {
       b1: '先分别计算两种无人机每小时完成的工作量，再用剩余工作量除以两架无人机的效率和。',
       b2: '沿不同方向对折时，对折方向的边长减半，另一条边保持不变。',
       b3: '线段有两个端点，符合“有始有终”的含义。',
@@ -401,7 +1006,7 @@
     if (!knowledgeModalOpen) return ''
     return `<div class="wb3-overlay" data-close-overlay>
       <div class="wb3-modal" role="dialog" aria-labelledby="wb3KnowledgeTitle">
-        <header><div><h2 id="wb3KnowledgeTitle">从知识库导入题单</h2><p>选择一份历史题单，导入后将在右侧待确认</p></div><button type="button" data-close-knowledge aria-label="关闭">×</button></header>
+        <header><div><h2 id="wb3KnowledgeTitle">从知识库导入题单</h2><p>选择一份历史题单，选用后将直接加入右侧画布</p></div><button type="button" data-close-knowledge aria-label="关闭">×</button></header>
         <div class="wb3-modal-body">${allKnowledgePapers().map((p) => `<button class="wb3-knowledge-row" type="button" data-import-paper="${p.id}"><span>${icons.blank}</span><span><b>${escapeHtml(p.title)}</b><small>${escapeHtml(p.type)} · ${escapeHtml(p.meta)} · ${p.questions.length} 题</small></span>${icons.chevron}</button>`).join('')}</div>
       </div>
     </div>`
@@ -536,6 +1141,140 @@
     return `<section class="wb3-append-assist"><span>${icons.sparkle}</span><div><b>已为当前题单准备好 ${record.questions.length} 道补充题</b><p>这些题目补充了当前题单的知识点与难度梯度，并尽量避开已有题目。你可以全部加入，也可以在下方逐题选用。</p><div class="wb3-append-confirm"><strong>是否将这 ${record.questions.length} 道题直接加入当前题单？</strong><button type="button" data-compose-record-all="${record.id}">全部加入组题画布</button></div></div></section>`
   }
 
+  function importRecordActionMarkup(record) {
+    if (record.status === 'completed') return `<button type="button" data-open-record="${record.id}">查看题目</button>`
+    if (record.status === 'failed') return `<button type="button" data-reparse-record="${record.id}">重新解析</button>`
+    return ''
+  }
+
+  function importRecordRowMarkup(record) {
+    return `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.blank}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '解析完成' : record.status === 'failed' ? '解析失败' : '处理中'}</span><b>${escapeHtml(record.filename)}</b><small>提交于 ${escapeHtml(record.submittedAt)}${record.completedAt ? ` · 完成于 ${escapeHtml(record.completedAt)}` : ''}${record.questions?.length ? ` · ${record.questions.length} 题` : ''}</small><em>${escapeHtml(record.stage)}${record.eta ? ` · ${escapeHtml(record.eta)}` : ''}</em></div>${importRecordActionMarkup(record)}</article>`
+  }
+
+  function importRecordListMarkup() {
+    return aiImportRecords.length
+      ? aiImportRecords.map((record) => importRecordRowMarkup(record)).join('')
+      : '<p class="wb3-record-empty">暂无记录</p>'
+  }
+
+  function aiComposeHistoryForEntry() {
+    return aiComposeRecords
+      .filter((record) => record.mode === 'generate' && record.status === 'completed')
+      .slice()
+      .sort((a, b) => (b.historyAt || 0) - (a.historyAt || 0))
+  }
+
+  function aiComposeHistoryListMarkup() {
+    const items = aiComposeHistoryForEntry()
+    if (!items.length) return ''
+    return `<section class="wb3-ai-compose-history" aria-label="历史记录"><h3>历史记录</h3><div class="wb3-ai-history-list">${items.map((record) => `<button type="button" class="wb3-ai-history-row" data-open-compose-record="${record.id}"><span class="wb3-ai-history-text"><b>${escapeHtml(record.prompt)}</b><small>${escapeHtml(record.historyDate || record.createdAt)}</small></span><span class="wb3-ai-history-arrow" aria-hidden="true">${icons.chevron}</span></button>`).join('')}</div></section>`
+  }
+
+  function aiCreateAttachmentsMarkup() {
+    return aiCreateAttachments.map((file) => `<span class="wb3-ai-create-file"><button type="button" class="wb3-ai-create-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</button><button type="button" data-remove-ai-create-file="${file.id}" aria-label="移除附件">×</button></span>`).join('')
+  }
+
+  function aiCreateInputBlockMarkup() {
+    return `<div class="wb3-ai-create-input"><div class="wb3-ai-create-attachments" ${aiCreateAttachments.length ? '' : 'hidden'}>${aiCreateAttachmentsMarkup()}</div><textarea id="wb3AiCreateInput" rows="4" placeholder="描述题量、知识点和难度；可添加文件或语音输入">${escapeHtml(aiCreateInputDraft)}</textarea><div class="wb3-ai-create-toolbar"><button type="button" class="wb3-ai-create-add" data-ai-create-add-file aria-label="添加文件" title="添加文件">＋</button><button type="button" class="wb3-ai-create-voice ${aiCreateListening ? 'listening' : ''}" data-ai-create-voice aria-label="语音输入" title="语音输入"><span aria-hidden="true">♩</span></button><button type="button" class="wb3-ai-create-send" data-ai-create-send>${icons.sparkle}开始组题</button></div></div>`
+  }
+
+  function captureAiCreateInputDraft() {
+    const input = root && $('#wb3AiCreateInput', root)
+    if (input) aiCreateInputDraft = input.value
+  }
+
+  function stopAiCreateVoice() {
+    aiCreateListening = false
+    aiCreateSpeechRecognition?.stop?.()
+    aiCreateSpeechRecognition = null
+  }
+
+  function toggleAiCreateVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (aiCreateListening) {
+      stopAiCreateVoice()
+      render()
+      return
+    }
+    if (!SpeechRecognition) {
+      aiCreateInputDraft = aiCreateInputDraft.trim()
+        ? `${aiCreateInputDraft.trim()} 帮我生成一份五年级小数乘法练习，共 10 题`
+        : '帮我生成一份五年级小数乘法练习，共 10 题'
+      showToast('浏览器不支持语音识别，已填入演示文案')
+      render()
+      return
+    }
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'zh-CN'
+    recognition.interimResults = true
+    recognition.continuous = false
+    aiCreateSpeechRecognition = recognition
+    aiCreateListening = true
+    render()
+    recognition.onresult = (event) => {
+      const transcript = [...event.results].map((result) => result[0].transcript).join('')
+      aiCreateInputDraft = transcript
+      const input = root && $('#wb3AiCreateInput', root)
+      if (input) input.value = transcript
+    }
+    recognition.onerror = () => {
+      stopAiCreateVoice()
+      showToast('语音识别失败，请重试或使用文字输入')
+      render()
+    }
+    recognition.onend = () => {
+      if (!aiCreateListening) return
+      stopAiCreateVoice()
+      showToast(aiCreateInputDraft.trim() ? '语音识别完成' : '未识别到内容')
+      render()
+    }
+    recognition.start()
+  }
+
+  function buildAiCreatePrompt() {
+    const text = aiCreateInputDraft.trim()
+    if (text) return text
+    if (aiCreateAttachments.length) {
+      const names = aiCreateAttachments.map((file) => file.name).join('、')
+      return `请根据附件「${names}」中的内容帮我组题`
+    }
+    return ''
+  }
+
+  function resetAiCreateInput() {
+    aiCreateInputDraft = ''
+    aiCreateAttachments = []
+    stopAiCreateVoice()
+  }
+
+  function completeImportRecord(recordId) {
+    const record = aiImportRecords.find((item) => item.id === recordId)
+    if (!record || record.status !== 'processing') return
+    record.questions = bankQuestions.slice(0, 5).map((question, index) => ({ ...question, id: `${recordId}-q${index + 1}`, originId: question.id, source: 'ai-record' }))
+    record.status = 'completed'
+    record.stage = '解析完成'
+    record.completedAt = '刚刚'
+    delete record.eta
+    record.questions.forEach((question) => {
+      if (!personalQuestions.some((item) => item.id === question.id)) personalQuestions.unshift(question)
+    })
+    if (root && !root.hidden) render()
+    showToast('AI录题完成，题目已自动关联到“我的题库”')
+  }
+
+  function restartImportRecord(recordId) {
+    const record = aiImportRecords.find((item) => item.id === recordId)
+    if (!record || record.status !== 'failed') return
+    record.status = 'processing'
+    record.stage = '正在重新识别题目'
+    record.eta = '预计还需 4–10 分钟'
+    record.questions = []
+    delete record.completedAt
+    render()
+    showToast('已开始重新解析')
+    window.setTimeout(() => completeImportRecord(recordId), 6500)
+  }
+
   function importWorkspaceMarkup() {
     const addedMap = getAddedMap()
     const activeRecord = aiImportRecords.find((record) => record.id === activeImportRecordId)
@@ -544,17 +1283,14 @@
     let content = ''
 
     if (importWorkspaceView === 'ai-entry') {
-      content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI 组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入组题画布。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div><div class="wb3-ai-create-input"><textarea id="wb3AiCreateInput" rows="4" placeholder="例如：生成一份五年级小数乘法练习，共 10 题，基础为主"></textarea><button type="button" data-ai-create-send>${icons.sparkle}开始组题</button></div></div>`
+      content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI 组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入组题画布；支持添加文件与语音输入。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div>${aiCreateInputBlockMarkup()}${aiComposeHistoryListMarkup()}</div>`
     } else if (importWorkspaceView === 'add-more') {
       content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库，题目可直接选用</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>从我的知识库添加</b><small>打开我在组题画布中保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>让 AI 帮我组题</b><small>告诉 AI 题量、知识点和难度要求，生成题目后添加到当前组题画布</small></div><em>开始组题</em></button></div></div>`
     } else if (importWorkspaceView === 'ai-upload') {
-      content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击上传 / 拖动文件到此处</b><span>支持 PDF、DOCX、PNG、JPG，单文件 20M 内</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI解析进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目。</p></div></div><div class="wb3-record-list">${aiImportRecords.map((record) => `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.blank}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '解析完成' : record.status === 'failed' ? '解析失败' : '处理中'}</span><b>${escapeHtml(record.filename)}</b><small>提交于 ${escapeHtml(record.submittedAt)}${record.completedAt ? ` · 完成于 ${escapeHtml(record.completedAt)}` : ''}${record.questions?.length ? ` · ${record.questions.length} 题` : ''}</small><em>${escapeHtml(record.stage)}${record.eta ? ` · ${escapeHtml(record.eta)}` : ''}</em></div><button type="button" data-open-record="${record.id}">${record.status === 'completed' ? '查看题目' : '查看进度'}</button></article>`).join('')}</div></section></div>`
+      content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击上传 / 拖动文件到此处</b><span>优先支持一次选择多张 PNG、JPG 图片；亦可上传 PDF、DOCX，单文件 20M 内</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI解析进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；处理中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
     } else if (importWorkspaceView === 'ai-history') {
       content = `<div class="wb3-record-page"><div class="wb3-import-page-title"><div><h2>AI录题记录</h2><p>处理中任务可以离开页面，已完成结果可随时重新选题。</p></div></div>
-        <div class="wb3-record-list">${aiImportRecords.map((record) => `<article class="wb3-record-row ${record.status}">
-          <span class="wb3-record-file">${icons.blank}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '解析完成' : record.status === 'failed' ? '解析失败' : '处理中'}</span><b>${escapeHtml(record.filename)}</b><small>提交于 ${escapeHtml(record.submittedAt)}${record.completedAt ? ` · 完成于 ${escapeHtml(record.completedAt)}` : ''}${record.questions?.length ? ` · ${record.questions.length} 题` : ''}</small><em>${escapeHtml(record.stage)}${record.eta ? ` · ${escapeHtml(record.eta)}` : ''}</em></div>
-          <button type="button" data-open-record="${record.id}">${record.status === 'completed' ? '查看题目' : '查看进度'}</button>
-        </article>`).join('')}</div></div>`
+        <div class="wb3-record-list">${importRecordListMarkup()}</div></div>`
     } else if (importWorkspaceView === 'ai-record' && activeRecord) {
       content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(activeRecord.filename)}</h2><p>${activeRecord.status === 'completed' ? `${activeRecord.questions.length} 道题 · 已自动关联到我的题库` : `${escapeHtml(activeRecord.stage)} · ${escapeHtml(activeRecord.eta || '')}`}</p></div>${activeRecord.status === 'completed' ? `<button type="button" class="primary" data-import-record-all="${activeRecord.id}">全部选用</button>` : ''}</div>
         ${activeRecord.status === 'completed' ? `<div class="wb3-library-sync-note compact">${icons.check}<span><b>这些题目已自动进入“我的题库”</b><small>下方卡片与普通题库一致，可逐题显示答案、AI改编或选用。</small></span></div><div class="wb3-import-question-list">${activeRecord.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div>` : `<div class="wb3-processing-card"><i></i><b>${escapeHtml(activeRecord.stage)}</b><p>${escapeHtml(activeRecord.eta || '预计需要 4–10 分钟')}。可以返回题库继续组题。</p><span>上传完成　→　识别题目　→　提取答案　→　自动打标　→　关联我的题库</span></div>`}
@@ -575,7 +1311,7 @@
     } else if (importWorkspaceView === 'knowledge' && previewPaper) {
       content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)} · ${previewPaper.questions.length} 题 · 可逐题选用</p></div><button type="button" class="primary" data-import-knowledge-all="${previewPaper.id}">全部选用</button></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
     } else {
-      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>我的知识库</h2><p>先查看整套题目，再像官方题库一样逐题选用。</p></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.type)} · ${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('')}</div></div>`
+      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>从我的知识库添加</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>仅展示该文件夹下由组题画布自动保存的题单。先查看，再逐题或全部选用。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">我的组题中还没有题单，请先在右侧画布组题并自动保存</p>'}</div></div>`
     }
 
     return `<section class="wb3-library wb3-import-workspace">${workspaceTabsMarkup()}<div class="wb3-import-center-body">${content}</div></section>`
@@ -592,13 +1328,18 @@
     const treeGroups = visibleTreeGroups()
     const parentNames = Object.keys(curriculum.parents)
     const difficultyOptions = [...new Set(currentBankQuestions().map((question) => question.difficulty))]
-    const paging = questionSource !== 'official' || questions.length <= OFFICIAL_PAGE_SIZE ? '' : officialMoreUnlocked
+    const showOfficialUnlock = questionSource === 'official' && questions.length > OFFICIAL_PAGE_SIZE
+    const paging = !showOfficialUnlock ? '' : officialMoreUnlocked
       ? `<footer class="wb3-bank-pagination"><button type="button" data-official-page="${officialPage - 1}" ${officialPage === 1 ? 'disabled' : ''}>上一页</button><span>第 ${officialPage} / ${totalPages} 页 · 每页20题</span><button type="button" data-official-page="${officialPage + 1}" ${officialPage === totalPages ? 'disabled' : ''}>下一页</button></footer>`
       : `<footer class="wb3-bank-unlock"><span>消耗20积分，可继续查看后2页，共60道题</span><button type="button" data-official-unlock>解锁更多</button></footer>`
     const unlockPrompt = officialUnlockPromptOpen ? `<div class="wb3-overlay" data-official-unlock-overlay><div class="wb3-unlock-dialog" role="dialog"><span>${icons.sparkle}</span><h3>解锁更多题目</h3><p>本次将消耗 <b>20积分</b>，解锁当前知识点后续2页题目。</p><div><button type="button" data-official-unlock-cancel>暂不解锁</button><button type="button" class="primary" data-official-unlock-confirm>确认解锁</button></div></div></div>` : ''
+    const treeScopedCount = questionsInTreeScope().length
+    const personalTabMeta = questionSource === 'personal'
+      ? `<p class="wb3-personal-tab-meta">共${personalBankTotalCount()}道</p>`
+      : ''
     const resultsBody = visibleQuestions.length
       ? visibleQuestions.map((question) => questionCardMarkup(question, addedMap)).join('') + paging
-      : `<div class="wb3-empty-results">没有符合当前筛选或搜索条件的题目</div>`
+      : emptyResultsMarkup(questions.length, treeScopedCount)
     return `<section class="wb3-library">
       ${workspaceTabsMarkup()}
       <div class="wb3-library-body">
@@ -608,13 +1349,14 @@
             <button type="button" role="tab" data-question-source="official" aria-selected="${questionSource === 'official'}" class="${questionSource === 'official' ? 'active' : ''}">官方题库</button>
             <button type="button" role="tab" data-question-source="personal" aria-selected="${questionSource === 'personal'}" class="${questionSource === 'personal' ? 'active' : ''}">我的题库</button>
           </div>
-          <div class="wb3-tree-list">${treeGroups.length ? treeGroups.map(([name]) => `<button type="button" class="${activeKnowledge === name ? 'active' : ''} ${parentNames.includes(name) ? 'group' : ''}" data-knowledge="${name}" data-tree-name="${escapeHtml(name.toLowerCase())}"><span>${parentNames.includes(name) ? '⌄ ' : ''}${name}</span><em>${knowledgeCount(name)}</em></button>`).join('') : '<p class="wb3-tree-empty">没有匹配的知识点</p>'}</div>
+          ${personalTabMeta}
+          <div class="wb3-tree-list">${treeGroups.length ? treeGroups.map(([name]) => `<button type="button" class="${activeKnowledge === name ? 'active' : ''} ${parentNames.includes(name) ? 'group' : ''}" data-knowledge="${name}" data-tree-name="${escapeHtml(name.toLowerCase())}"><span>${parentNames.includes(name) ? '⌄ ' : ''}${name}</span>${questionSource === 'personal' ? `<em>${knowledgeCount(name)}</em>` : ''}</button>`).join('') : '<p class="wb3-tree-empty">没有匹配的知识点</p>'}</div>
         </aside>
         <div class="wb3-results">
           <header class="wb3-results-head">
             <div class="wb3-results-filters"><label><select id="wb3FilterType" aria-label="题型"><option value="全部题型" ${filterType === '全部题型' ? 'selected' : ''}>全部题型</option><option ${filterType === '选择题' ? 'selected' : ''}>选择题</option><option ${filterType === '填空题' ? 'selected' : ''}>填空题</option><option ${filterType === '解答题' ? 'selected' : ''}>解答题</option></select></label><label><select id="wb3FilterDifficulty" aria-label="难度"><option value="全部难度" ${filterDifficulty === '全部难度' ? 'selected' : ''}>全部难度</option>${difficultyOptions.map((name) => `<option ${filterDifficulty === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></label><label class="wb3-filter-search"><span class="wb3-main-search">${icons.search}<input id="wb3TreeSearch" type="search" value="${escapeHtml(treeSearchQuery)}" placeholder="搜索知识点或题干关键词"></span></label></div>
           </header>
-          ${uploadParsing ? `<div class="wb3-upload-status"><i></i>正在解析上传文件，识别结果将出现在右侧待确认区…</div>` : ''}
+          ${uploadParsing ? `<div class="wb3-upload-status"><i></i>正在解析上传文件，完成后题目进入「我的题库」可选用…</div>` : ''}
           <div class="wb3-result-scroll">${resultsBody}</div>${unlockPrompt}
         </div>
       </div>
@@ -634,23 +1376,6 @@
         </div>
       </article>`
     }
-    if (question.status === 'draft') {
-      const sourceNote = question.sourceLabel ? ` · ${escapeHtml(question.sourceLabel)}` : question.source === 'ai' ? ' · AI 生成' : ''
-      return `<article class="wb3-sheet-q draft" data-sheet-id="${question.id}">
-        <span class="wb3-sheet-q-num">${index + 1}</span>
-        <div class="wb3-sheet-q-main">
-          <span class="wb3-draft-label">${icons.sparkle} 待确认${sourceNote}</span>
-          <div class="wb3-sheet-q-tags"><span>${escapeHtml(question.type)}</span><span>${escapeHtml(question.knowledge)}</span><span>${escapeHtml(question.difficulty)}</span></div>
-          <div class="wb3-sheet-q-text">${escapeHtml(question.text)}</div>
-          ${question.options?.length ? `<small class="wb3-sheet-q-options">${escapeHtml(question.options.join('　'))}</small>` : ''}
-          <div class="wb3-draft-actions">
-            <button type="button" class="primary" data-draft-accept="${question.id}">采纳</button>
-            <button type="button" data-draft-regen="${question.id}">换一版</button>
-            <button type="button" data-draft-reject="${question.id}">不要</button>
-          </div>
-        </div>
-      </article>`
-    }
     const answerShown = revealedAnswerIds.has(question.id)
     const answerLines = Number(question.answerLines || 0)
     const answerStyle = question.answerStyle === 'lined' ? 'lined' : 'blank'
@@ -666,14 +1391,15 @@
         <footer><span>高度</span><button type="button" data-answer-line-remove="${question.id}" ${answerLines < 1 ? 'disabled' : ''}>−</button><em>${answerLines || 2} 行</em><button type="button" data-answer-line-add="${question.id}">＋</button></footer>
       </div>` : ''}
     </span>`
+    const displayIndex = confirmedSheetIndex(question.id) || index + 1
     return `<article class="wb3-sheet-q ${selectedQuestionId === question.id ? 'selected' : ''} ${answerShown ? 'answer-open' : ''} ${answerEditorOpen ? 'answer-editor-open' : ''}" data-sheet-id="${question.id}" data-question-id="${question.id}">
-      <span class="wb3-sheet-q-num">${index + 1}</span>
+      <span class="wb3-sheet-q-num">${displayIndex}</span>
       <div class="wb3-sheet-q-main">
         <div class="wb3-sheet-q-tags"><span>${escapeHtml(question.type)}</span><span>${escapeHtml(question.knowledge)}</span><span>${escapeHtml(question.difficulty)}</span><span>${Number(question.score || 0)} 分</span></div>
-        <div class="wb3-sheet-q-text" contenteditable="true">${escapeHtml(question.text)}</div>
-        ${question.options?.length ? `<small class="wb3-sheet-q-options">${escapeHtml(question.options.join('　'))}</small>` : ''}
+        <div class="wb3-sheet-q-text wb3-rich-editable" contenteditable="true">${sheetQuestionHtml(question)}</div>
+        ${sheetOptionsMarkup(question)}
         ${answerLines > 0 ? `<div class="wb3-answer-space ${answerStyle}" style="--wb3-answer-lines:${answerLines}" aria-label="${answerLines} 行${answerStyle === 'lined' ? '横线' : '空白'}作答区"></div>` : ''}
-        ${answerShown ? `<div class="wb3-sheet-q-answer"><p><b>答案</b>${escapeHtml(questionAnswerText(question))}</p><p><b>解析</b>${escapeHtml(questionAnalysisText(question))}</p></div>` : ''}
+        ${answerShown ? sheetAnswerBodyMarkup(question) : ''}
         <div class="wb3-sheet-q-tools">
           ${answerControl}
           <button type="button" data-sheet-answer="${question.id}" title="${answerShown ? '收起答案' : '显示答案'}" aria-label="${answerShown ? '收起答案' : '显示答案'}">答</button>
@@ -690,16 +1416,13 @@
     const savedTime = autoSavedAt ? new Date(autoSavedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''
     const selectedIndex = questions.findIndex((q) => q.id === selectedQuestionId && q.status === 'confirmed')
 
-    const pendingBanner = meta.pendingCount
-      ? `<div class="wb3-draft-banner"><span>${meta.pendingCount} 道待确认${meta.pendingScore ? ` · 预计 +${meta.pendingScore} 分` : ''}</span><div><button type="button" class="primary" data-draft-accept-all>全部采纳</button><button type="button" data-draft-reject-all>全部不要</button></div></div>`
-      : ''
-
-    const sheetBody = confirmed.length || questions.some((q) => q.status !== 'confirmed')
-      ? questions.map(sheetQuestionMarkup).join('')
+    const sheetQuestions = questions.filter((q) => q.status === 'confirmed' || q.status === 'adapt')
+    const sheetBody = sheetQuestions.length
+      ? sheetQuestions.map(sheetQuestionMarkup).join('')
       : `<div class="wb3-empty-sheet">
           <span class="wb3-empty-icon">${icons.blank}</span>
           <b>空白题单</b>
-          <p>从左侧题库逐题选用，或通过“更多题源”上传文件、打开个人题单和历史 AI 组题。</p>
+          <p>从左侧题库逐题选用，或通过「更多题源」上传文件、从知识库选择题单、让 AI 组题。</p>
           <div class="wb3-empty-actions">
             <button type="button" data-empty-import="library">${icons.knowledge}去题库选题</button>
             <button type="button" data-empty-import="add-more">${icons.plus}更多题源</button>
@@ -711,31 +1434,70 @@
         <div class="wb3-sheet-head-top">
           <div><b>组题画布</b><span id="wb3AutoSaveStatus">${savedTime ? `已自动保存 ${savedTime}` : '草稿将自动保存'}</span></div>
           <div class="wb3-sheet-head-right"><div class="wb3-sheet-stats">
-              <strong>${meta.count} 题 · ${meta.score || 0} 分</strong>
-              ${meta.pendingCount ? `<em>${meta.pendingCount} 道待确认</em>` : ''}
+              <strong>共 ${meta.count} 题</strong>
             </div><button type="button" class="wb3-new-draft" data-new-draft aria-label="新建组题" title="新建组题">${icons.plus}</button><button type="button" class="wb3-new-draft" data-action="download" aria-label="下载题单" title="下载题单">${icons.download}</button>
           </div>
         </div>
       </header>
       ${paperToolbarMarkup()}
-      ${pendingBanner}
       <div class="wb3-sheet-scroll">
         <div class="wb3-paper" style="--wb3-paper-font-size:${paperFormat().fontSize}px;--wb3-paper-line-height:${paperFormat().lineHeight};--wb3-answer-height:${paperFormat().answerHeight}px;--wb3-question-gap:${paperFormat().questionGap}px">
-          <div class="wb3-paper-meta">学校：____________________　班级：________　姓名：________</div>
-          <input class="wb3-paper-title" id="wb3PaperTitle" value="${escapeHtml(activeDraft?.title || '未命名题单')}">
-          <div class="wb3-paper-sub"><span>${escapeHtml(activeDraft?.subject || '四年级 · 数学')}</span><span>共 ${meta.count} 题</span><span>${meta.score || '--'} 分</span></div>
+          <input class="wb3-paper-title" id="wb3PaperTitle" value="${escapeHtml(activeDraft?.title || DEFAULT_DRAFT_TITLE)}" placeholder="${escapeHtml(DEFAULT_DRAFT_TITLE)}">
           ${sheetBody}
         </div>
       </div>
     </aside>`
   }
 
+  function personalQuestionOnCanvas(id) {
+    return (activeDraft?.questions || []).some((q) => q.status === 'confirmed' && q.sourceId === id)
+  }
+
+  function downloadDialogMarkup() {
+    if (!downloadDialogOpen) return ''
+    const title = escapeHtml(activeDraft?.title || DEFAULT_DRAFT_TITLE)
+    const count = confirmedSheetQuestions().length
+    return `<div class="wb3-overlay" data-download-dialog-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog wb3-download-dialog" role="dialog" aria-labelledby="wb3DownloadDialogTitle"><span>${icons.download}</span><h3 id="wb3DownloadDialogTitle">下载题单</h3><p>将下载 Word 文件（.doc），<strong>题目与答案、解析</strong>合并在同一文档中；卷首自动含学校 / 班级 / 姓名栏。</p><p class="wb3-download-dialog-meta"><b>${title}</b><small>共 ${count} 题</small></p><div><button type="button" data-download-dialog-cancel>取消</button><button type="button" class="primary" data-download-dialog-confirm>确定</button></div></div></div>`
+  }
+
+  function personalDeletePromptMarkup() {
+    if (!personalDeletePromptId) return ''
+    const onCanvas = personalQuestionOnCanvas(personalDeletePromptId)
+    const hint = onCanvas
+      ? '该题已加入右侧组题画布，确认删除后将从<strong>我的题库与当前画布</strong>中一并移除。'
+      : '删除后无法再从「我的题库」选用。'
+    return `<div class="wb3-overlay" data-personal-delete-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3PersonalDeleteTitle"><span>${icons.trash}</span><h3 id="wb3PersonalDeleteTitle">从我的题库删除？</h3><p>${hint}</p><div><button type="button" data-personal-delete-cancel>取消</button><button type="button" class="primary danger" data-personal-delete-confirm>确认删除</button></div></div></div>`
+  }
+
+  function removePersonalQuestion(id) {
+    const removedFromCanvas = personalQuestionOnCanvas(id)
+    if (removedFromCanvas) {
+      activeDraft.questions = activeDraft.questions.filter((q) => !(q.status === 'confirmed' && q.sourceId === id))
+      if (selectedQuestionId && !activeDraft.questions.some((q) => q.id === selectedQuestionId)) selectedQuestionId = ''
+      persistDraft()
+    }
+    personalQuestions = personalQuestions.filter((question) => question.id !== id)
+    revealedAnswerIds.delete(id)
+    if (adaptRequest?.source?.id === id) adaptRequest = null
+    if (adaptPicker?.source?.id === id) adaptPicker = null
+    personalDeletePromptId = ''
+    render()
+    showToast(removedFromCanvas ? '已从我的题库删除，并同步移出组题画布' : '已从“我的题库”删除')
+  }
+
   function render() {
     if (!root || !activeDraft) return
+    captureAiCreateInputDraft()
     root.innerHTML = `<div class="wb3-shell">${leftPanelMarkup()}${rightPanelMarkup()}</div>
     ${knowledgeModalMarkup()}
-    <input id="wb3FileInput" type="file" accept=".doc,.docx,.pdf,.png,.jpg,.jpeg" hidden>
+    ${personalDeletePromptMarkup()}
+    ${downloadDialogMarkup()}
+    ${mathEditorModalMarkup()}
+    ${symbolModalMarkup()}
+    <input id="wb3FileInput" type="file" accept=".doc,.docx,.pdf,.png,.jpg,.jpeg,image/*" multiple hidden>
+    <input id="wb3AiCreateFileInput" type="file" accept=".doc,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*" multiple hidden>
     <div class="wb3-toast" id="wb3Toast" role="status"></div>`
+    if (activeRichEditorQuestionId) activeRichEditorEl()?.focus()
   }
 
   function toggleQuestionFromBank(id) {
@@ -768,9 +1530,100 @@
     highlightLastAdded()
   }
 
-  function downloadPaperBundle() {
-    const includeAnswers = window.confirm('下载的试卷是否需要包含答案解析？\n\n确定：下载试卷＋答案解析\n取消：仅下载试卷')
-    showToast(includeAnswers ? '正在下载试卷与答案解析' : '正在下载试卷')
+  function sanitizeExportFilename(title = '') {
+    const safe = String(title).replace(/[/\\?%*:|"<>]/g, '_').trim()
+    return safe || DEFAULT_DRAFT_TITLE
+  }
+
+  function exportAnswerAreaMarkup(question) {
+    const lines = Number(question.answerLines || 0)
+    if (!lines) return ''
+    if (question.answerStyle === 'lined') {
+      return `<div class="answer-area lined">${Array.from({ length: lines }, () => '<div class="answer-line"></div>').join('')}</div>`
+    }
+    return `<div class="answer-area blank" style="height:${Math.max(28, lines * 28)}px"></div>`
+  }
+
+  function buildPaperExportHtml(includeAnswers) {
+    const title = sanitizeExportFilename(activeDraft?.title || DEFAULT_DRAFT_TITLE)
+    const fmt = paperFormat()
+    const questionsHtml = confirmedSheetQuestions().map((question, index) => {
+      const stem = question.textHtml || escapeHtml(question.text || '')
+      const options = question.options?.length || question.optionsHtml
+        ? `<p class="options">${question.optionsHtml || escapeHtml((question.options || []).join('　'))}</p>`
+        : ''
+      const keys = includeAnswers
+        ? `<div class="answer-keys"><p><b>答案：</b>${escapeHtml(questionAnswerText(question))}</p><p><b>解析：</b>${escapeHtml(questionAnalysisText(question))}</p></div>`
+        : ''
+      return `<section class="question"><p class="stem"><span class="num">${index + 1}.</span> ${stem}</p>${options}${exportAnswerAreaMarkup(question)}${keys}</section>`
+    }).join('')
+    return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+      body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;font-size:${fmt.fontSize}px;line-height:${fmt.lineHeight};color:#111;padding:32px 40px;}
+      .school-header{text-align:center;font-size:12px;color:#555;margin:0 0 20px;letter-spacing:.02em;}
+      h1{text-align:center;font-size:20px;margin:0 0 24px;font-weight:700;}
+      .question{margin-bottom:${Math.round(fmt.questionGap * 16)}px;}
+      .stem{margin:0 0 8px;}
+      .num{font-weight:700;margin-right:4px;}
+      .options{margin:6px 0 0;font-size:${Math.max(11, fmt.fontSize - 1)}px;color:#333;}
+      .answer-area.lined{margin-top:10px;}
+      .answer-line{border-bottom:1px solid #333;height:${Math.round(fmt.answerHeight * 18)}px;margin-bottom:6px;}
+      .answer-area.blank{margin-top:10px;border:1px solid #ccc;background:#fafafa;}
+      .answer-keys{margin-top:10px;padding:10px 12px;background:#f5f8f6;font-size:${Math.max(11, fmt.fontSize - 1)}px;}
+      .formula,.wb3-formula{font-family:"Times New Roman",serif;font-style:italic;background:#eef5f1;padding:0 4px;border-radius:3px;}
+      @media print{body{padding:24px 32px;}}
+    </style></head><body>
+      <p class="school-header">${escapeHtml(PAPER_EXPORT_SCHOOL_HEADER)}</p>
+      <h1>${escapeHtml(title)}</h1>
+      ${questionsHtml}
+    </body></html>`
+  }
+
+  function downloadExportBlob(filename, html, mimeType) {
+    const blob = new Blob(['\ufeff', html], { type: mimeType })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(link.href)
+  }
+
+  function downloadPaperPdf(html) {
+    const printWin = window.open('', '_blank', 'noopener,noreferrer')
+    if (!printWin) {
+      showToast('请允许弹出窗口，以便导出 PDF')
+      return false
+    }
+    printWin.document.open()
+    printWin.document.write(html)
+    printWin.document.close()
+    printWin.focus()
+    window.setTimeout(() => {
+      try { printWin.print() } catch { /* ignore */ }
+    }, 300)
+    return true
+  }
+
+  function openDownloadDialog() {
+    if (!confirmedSheetQuestions().length) {
+      showToast('题单还没有题目，无法下载')
+      return
+    }
+    downloadDialogOpen = true
+    render()
+  }
+
+  function closeDownloadDialog() {
+    downloadDialogOpen = false
+    render()
+  }
+
+  function downloadPaperWordWithAnswers() {
+    const html = buildPaperExportHtml(true)
+    const baseName = sanitizeExportFilename(activeDraft?.title || DEFAULT_DRAFT_TITLE)
+    downloadExportBlob(`${baseName}.doc`, html, 'application/msword')
+    downloadDialogOpen = false
+    render()
+    showToast('已下载 Word（题目与答案解析在同一文件中）')
   }
 
   function highlightAdded(sourceId) {
@@ -792,57 +1645,31 @@
     })
   }
 
-  function addPendingQuestions(list, sourceLabel, source = 'import') {
-    list.forEach((item) => {
-      activeDraft.questions.push({
-        ...item,
-        id: makeId('draft'),
-        status: 'draft',
-        source,
-        sourceLabel,
-      })
-    })
-    persistDraft()
-    render()
-    window.requestAnimationFrame(() => {
-      $('.wb3-draft-banner', root)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    })
-  }
-
-  function handleUpload(file) {
+  function startImportRecord(file) {
     if (!file) return
-    importMenuOpen = false
     const recordId = makeId('record')
     aiImportRecords.unshift({ id: recordId, filename: file.name, status: 'processing', stage: '正在识别题目', submittedAt: '刚刚', eta: '预计还需 4–10 分钟', questions: [] })
+    window.setTimeout(() => completeImportRecord(recordId), 6500)
+    return recordId
+  }
+
+  function handleUploadFiles(fileList) {
+    const files = [...(fileList || [])].filter(Boolean)
+    if (!files.length) return
+    importMenuOpen = false
     if (!openWorkspaceTabs.includes('upload')) openWorkspaceTabs.push('upload')
     activeImportRecordId = ''
     importWorkspaceView = 'ai-upload'
+    files.forEach((file) => startImportRecord(file))
     render()
-    showToast('文件已上传，正在 AI解析')
-    window.setTimeout(() => {
-      const record = aiImportRecords.find((item) => item.id === recordId)
-      if (!record) return
-      record.questions = bankQuestions.slice(0, 5).map((question, index) => ({ ...question, id: `${recordId}-q${index + 1}`, originId: question.id, source: 'ai-record' }))
-      record.status = 'completed'
-      record.stage = '解析完成'
-      record.completedAt = '刚刚'
-      delete record.eta
-      record.questions.forEach((question) => {
-        if (!personalQuestions.some((item) => item.id === question.id)) personalQuestions.unshift(question)
-      })
-      if (root && !root.hidden) render()
-      showToast('AI录题完成，题目已自动关联到“我的题库”')
-    }, 6500)
+    showToast(files.length > 1 ? `已上传 ${files.length} 个文件，正在 AI 解析` : '文件已上传，正在 AI 解析')
   }
 
   function importKnowledgePaper(paperId) {
     const paper = allKnowledgePapers().find((p) => p.id === paperId)
     if (!paper) return
     knowledgeModalOpen = false
-    const confirmed = activeDraft.questions.filter((q) => q.status === 'confirmed')
-    if (confirmed.length && !window.confirm(`题单已有 ${confirmed.length} 题。导入「${paper.title}」将追加 ${paper.questions.length} 道待确认题，是否继续？`)) return
-    addPendingQuestions(paper.questions.map((q) => ({ ...q })), paper.title, 'knowledge')
-    showToast(`已从知识库导入 ${paper.questions.length} 道待确认题`)
+    addConfirmedQuestionsFromSources(paper.questions, `已从「${paper.title}」选用 ${paper.questions.length} 道题`)
   }
 
   function aiModeFromPrompt() {
@@ -871,6 +1698,8 @@
       mode,
       status: 'processing',
       createdAt: '刚刚',
+      historyAt: Date.now(),
+      historyDate: formatAiComposeHistoryDate(Date.now()),
       questions: [],
       original: selected ? { ...selected } : null,
       originalQuestionId: activeDraft.questions.some((item) => item.id === selected?.id) ? selected.id : '',
@@ -916,44 +1745,6 @@
     }, 1200)
   }
 
-  function acceptDraft(id) {
-    const q = activeDraft.questions.find((item) => item.id === id)
-    if (!q) return
-    q.status = 'confirmed'
-    q.id = makeId('sheet')
-    delete q.sourceLabel
-    persistDraft()
-    showToast('已采纳')
-    render()
-  }
-
-  function rejectDraft(id) {
-    activeDraft.questions = activeDraft.questions.filter((item) => item.id !== id)
-    persistDraft()
-    showToast('已丢弃')
-    render()
-  }
-
-  function acceptAllDrafts() {
-    activeDraft.questions.forEach((q) => {
-      if (q.status === 'draft') {
-        q.status = 'confirmed'
-        q.id = makeId('sheet')
-        delete q.sourceLabel
-      }
-    })
-    persistDraft()
-    showToast('已全部采纳')
-    render()
-  }
-
-  function rejectAllDrafts() {
-    activeDraft.questions = activeDraft.questions.filter((q) => q.status !== 'draft')
-    persistDraft()
-    showToast('已丢弃全部待确认题')
-    render()
-  }
-
   function acceptAdapt(id) {
     const adapt = activeDraft.questions.find((item) => item.id === id)
     if (!adapt) return
@@ -995,8 +1786,72 @@
     root.setAttribute('aria-modal', 'true')
     root.setAttribute('aria-label', '组题工作台')
     document.body.appendChild(root)
+    bindRichFloatPointerTracking()
 
     root.addEventListener('click', (event) => {
+      if (event.target.classList.contains('wb3-math-overlay') || event.target.closest('button[data-close-math-editor]')) {
+        mathEditorOpen = false
+        render()
+        return
+      }
+      if (event.target.closest('[data-math-insert]')) {
+        mathEditorPreview = event.target.closest('[data-math-insert]').dataset.mathInsert
+        mathEditorLatex = mathEditorPreview
+        const preview = $('#wb3MathPreview', root)
+        if (preview) preview.textContent = mathEditorPreview
+        return
+      }
+      const mathPreset = event.target.closest('[data-math-preset]')
+      if (mathPreset) {
+        mathEditorPreview = mathPreset.dataset.mathDisplay || mathPreset.dataset.mathPreset
+        mathEditorLatex = mathPreset.dataset.mathPreset
+        const preview = $('#wb3MathPreview', root)
+        if (preview) preview.textContent = mathEditorPreview
+        return
+      }
+      if (event.target.closest('[data-math-confirm]')) {
+        const question = activeDraft?.questions.find((item) => item.id === activeRichEditorQuestionId)
+        const formulaHtml = `<span class="wb3-formula" contenteditable="false" data-latex="${escapeHtml(mathEditorLatex)}">${escapeHtml(mathEditorPreview)}</span>`
+        insertIntoRichEditor(formulaHtml, true)
+        const el = activeRichEditorEl()
+        if (question && el) {
+          applySheetQuestionContentEdit(question, el.innerText.replace(/\u00a0/g, ' ').trim(), el.innerHTML)
+          activeRichEditorQuestionId = question.id
+        }
+        mathEditorOpen = false
+        persistDraft()
+        render()
+        showToast('公式已插入')
+        return
+      }
+      if (event.target.classList.contains('wb3-symbol-overlay') || event.target.closest('[data-close-symbol-modal]')) {
+        if (!event.target.closest('[data-symbol-char]') && !event.target.closest('[data-symbol-tab]')) {
+          symbolModalOpen = false
+          render()
+          return
+        }
+      }
+      const symbolTabBtn = event.target.closest('[data-symbol-tab]')
+      if (symbolTabBtn) {
+        symbolModalTab = symbolTabBtn.dataset.symbolTab
+        render()
+        return
+      }
+      const symbolChar = event.target.closest('[data-symbol-char]')
+      if (symbolChar) {
+        const question = activeDraft?.questions.find((item) => item.id === activeRichEditorQuestionId)
+        insertIntoRichEditor(symbolChar.dataset.symbolChar, false)
+        const el = activeRichEditorEl()
+        if (question && el) {
+          applySheetQuestionContentEdit(question, el.innerText.replace(/\u00a0/g, ' ').trim(), el.innerHTML)
+          activeRichEditorQuestionId = question.id
+        }
+        symbolModalOpen = false
+        persistDraft()
+        render()
+        return
+      }
+
       const closeWorkspaceTab = event.target.closest('[data-close-workspace-tab]')
       if (closeWorkspaceTab) {
         const id = closeWorkspaceTab.dataset.closeWorkspaceTab
@@ -1046,14 +1901,36 @@
 
       const aiCreateSuggestion = event.target.closest('[data-ai-create-suggestion]')
       if (aiCreateSuggestion) {
-        const input = $('#wb3AiCreateInput', root)
-        if (input) { input.value = aiCreateSuggestion.dataset.aiCreateSuggestion; input.focus() }
+        aiCreateInputDraft = aiCreateSuggestion.dataset.aiCreateSuggestion
+        render()
+        window.requestAnimationFrame(() => $('#wb3AiCreateInput', root)?.focus())
+        return
+      }
+
+      if (event.target.closest('[data-ai-create-add-file]')) {
+        captureAiCreateInputDraft()
+        $('#wb3AiCreateFileInput', root)?.click()
+        return
+      }
+
+      const removeAiCreateFile = event.target.closest('[data-remove-ai-create-file]')
+      if (removeAiCreateFile) {
+        aiCreateAttachments = aiCreateAttachments.filter((file) => file.id !== removeAiCreateFile.dataset.removeAiCreateFile)
+        render()
+        return
+      }
+
+      if (event.target.closest('[data-ai-create-voice]')) {
+        captureAiCreateInputDraft()
+        toggleAiCreateVoice()
         return
       }
 
       if (event.target.closest('[data-ai-create-send]')) {
-        const prompt = ($('#wb3AiCreateInput', root)?.value || '').trim()
-        if (!prompt) { showToast('请输入组题要求'); return }
+        captureAiCreateInputDraft()
+        const prompt = buildAiCreatePrompt()
+        if (!prompt) { showToast('请输入组题要求，或添加附件'); return }
+        resetAiCreateInput()
         generateAiDrafts(prompt, 'generate')
         return
       }
@@ -1164,6 +2041,12 @@
 
       if (event.target.closest('[data-start-upload]')) { $('#wb3FileInput', root)?.click(); return }
 
+      const reparseRecord = event.target.closest('[data-reparse-record]')
+      if (reparseRecord) {
+        restartImportRecord(reparseRecord.dataset.reparseRecord)
+        return
+      }
+
       const openRecord = event.target.closest('[data-open-record]')
       if (openRecord) {
         openWorkspaceTab(`record:${openRecord.dataset.openRecord}`)
@@ -1201,7 +2084,15 @@
         return
       }
 
-      if (event.target.closest('[data-download-paper-bundle]')) { downloadPaperBundle(); return }
+      if (event.target.closest('[data-download-paper-bundle]')) { openDownloadDialog(); return }
+      if (event.target.closest('[data-download-dialog-cancel]') || (event.target.closest('[data-download-dialog-overlay]') && !event.target.closest('.wb3-download-dialog'))) {
+        closeDownloadDialog()
+        return
+      }
+      if (event.target.closest('[data-download-dialog-confirm]')) {
+        downloadPaperWordWithAnswers()
+        return
+      }
       if (event.target.closest('[data-download-brief]')) { event.preventDefault(); showToast('正在下载命题说明书 PDF'); return }
 
       const previewKnowledge = event.target.closest('[data-preview-knowledge]')
@@ -1227,16 +2118,23 @@
 
       const emptyImport = event.target.closest('[data-empty-import]')
       if (emptyImport) {
-        if (emptyImport.dataset.emptyImport === 'library') { importWorkspaceView = 'library'; render() }
-        if (emptyImport.dataset.emptyImport === 'add-more') { importWorkspaceView = 'add-more'; render() }
+        if (emptyImport.dataset.emptyImport === 'library') { importWorkspaceView = 'library'; render(); return }
+        if (emptyImport.dataset.emptyImport === 'add-more') { importWorkspaceView = 'add-more'; render(); return }
+        if (emptyImport.dataset.emptyImport === 'upload') {
+          if (!openWorkspaceTabs.includes('upload')) openWorkspaceTabs.push('upload')
+          importWorkspaceView = 'ai-upload'
+          render()
+          return
+        }
         return
       }
 
       const sourceTab = event.target.closest('[data-question-source]')
       if (sourceTab) {
+        saveBankSearchToStorage()
         questionSource = sourceTab.dataset.questionSource
         activeKnowledge = '全部知识点'
-        treeSearchQuery = ''
+        applyBankSearchFromStorage()
         filterType = '全部题型'
         filterDifficulty = '全部难度'
         officialPage = 1
@@ -1247,7 +2145,6 @@
       const knowledge = event.target.closest('[data-knowledge]')
       if (knowledge) {
         activeKnowledge = knowledge.dataset.knowledge
-        treeSearchQuery = ''
         officialPage = 1
         render()
         return
@@ -1270,13 +2167,23 @@
 
       const deletePersonal = event.target.closest('[data-delete-personal-question]')
       if (deletePersonal) {
-        const id = deletePersonal.dataset.deletePersonalQuestion
-        personalQuestions = personalQuestions.filter((question) => question.id !== id)
-        revealedAnswerIds.delete(id)
-        if (adaptRequest?.source?.id === id) adaptRequest = null
-        if (adaptPicker?.source?.id === id) adaptPicker = null
+        personalDeletePromptId = deletePersonal.dataset.deletePersonalQuestion
         render()
-        showToast('已从“我的题库”删除')
+        return
+      }
+
+      if (event.target.closest('[data-personal-delete-confirm]')) {
+        if (personalDeletePromptId) removePersonalQuestion(personalDeletePromptId)
+        return
+      }
+      if (event.target.closest('[data-personal-delete-cancel]')) {
+        personalDeletePromptId = ''
+        render()
+        return
+      }
+      if (event.target.matches('[data-personal-delete-overlay]')) {
+        personalDeletePromptId = ''
+        render()
         return
       }
 
@@ -1388,19 +2295,6 @@
         return
       }
 
-      const draftAccept = event.target.closest('[data-draft-accept]')
-      if (draftAccept) { acceptDraft(draftAccept.dataset.draftAccept); return }
-      const draftReject = event.target.closest('[data-draft-reject]')
-      if (draftReject) { rejectDraft(draftReject.dataset.draftReject); return }
-      const draftRegen = event.target.closest('[data-draft-regen]')
-      if (draftRegen) {
-        rejectDraft(draftRegen.dataset.draftRegen)
-        generateAiDrafts('换一版')
-        return
-      }
-      if (event.target.closest('[data-draft-accept-all]')) { acceptAllDrafts(); return }
-      if (event.target.closest('[data-draft-reject-all]')) { rejectAllDrafts(); return }
-
       const adaptAccept = event.target.closest('[data-adapt-accept]')
       if (adaptAccept) { acceptAdapt(adaptAccept.dataset.adaptAccept); return }
       const adaptAsNew = event.target.closest('[data-adapt-as-new]')
@@ -1440,24 +2334,18 @@
         return
       }
       if (action === 'download') {
-        const pending = activeDraft.questions.some((q) => q.status === 'draft' || q.status === 'adapt')
-        if (pending) showToast('还有待确认题，请先采纳或丢弃后再下载')
-        else downloadPaperBundle()
+        const adaptPending = activeDraft.questions.some((q) => q.status === 'adapt')
+        if (adaptPending) showToast('请先处理画布中的 AI 改编待确认项后再下载')
+        else openDownloadDialog()
         return
       }
 
-      const richCommand = event.target.closest('[data-rich-command]')
-      if (richCommand) {
-        document.execCommand(richCommand.dataset.richCommand, false, richCommand.dataset.richValue || null)
-        richCommand.classList.toggle('active', document.queryCommandState(richCommand.dataset.richCommand))
-        persistDraft()
-        return
-      }
     })
 
     root.addEventListener('input', (event) => {
       if (event.target.id === 'wb3TreeSearch') {
         treeSearchQuery = event.target.value
+        saveBankSearchToStorage()
         officialPage = 1
         const caret = treeSearchQuery.length
         render()
@@ -1494,13 +2382,44 @@
       render()
     })
 
+    root.addEventListener('focusin', (event) => {
+      const field = sheetEditableField(event.target)
+      if (!field) return
+      activeRichEditorQuestionId = event.target.closest('[data-sheet-id]')?.dataset.sheetId || ''
+      activeRichEditorField = field
+      refreshRichFloatVisibility(event)
+    })
+
+    root.addEventListener('focusout', (event) => {
+      const field = sheetEditableField(event.target)
+      if (!field) return
+      const related = event.relatedTarget
+      if (related?.closest?.('.wb3-rich-float, .wb3-math-modal, .wb3-symbol-modal, .wb3-rich-editable')) return
+      const sheetId = event.target.closest('[data-sheet-id]')?.dataset.sheetId
+      const question = activeDraft?.questions.find((item) => item.id === sheetId)
+      if (!question || question.status !== 'confirmed') return
+      const result = syncSheetEditableFromDom(question, field, event.target)
+      if (result === 'empty-stem') {
+        hideRichFloat()
+        removeSheetQuestionById(sheetId)
+        return
+      }
+      if (result === 'changed' || result === 'format') {
+        if (result === 'changed') activeRichEditorQuestionId = question.id
+        persistDraft()
+      }
+      hideRichFloat()
+      render()
+    })
+
     root.addEventListener('change', (event) => {
       if (event.target.classList.contains('wb3-subject-switch')) {
+        saveBankSearchToStorage()
         curriculumKey = event.target.value
         questionSource = 'official'
         activeDraft.subject = currentCurriculum().subject
         activeKnowledge = '全部知识点'
-        treeSearchQuery = ''
+        applyBankSearchFromStorage()
         filterType = '全部题型'
         filterDifficulty = '全部难度'
         officialPage = 1
@@ -1509,7 +2428,22 @@
         showToast(`已切换到${event.target.value}`)
         return
       }
-      if (event.target.id === 'wb3FileInput') handleUpload(event.target.files?.[0])
+      if (event.target.id === 'wb3FileInput') {
+        handleUploadFiles(event.target.files)
+        event.target.value = ''
+      }
+      if (event.target.id === 'wb3AiCreateFileInput') {
+        captureAiCreateInputDraft()
+        ;[...(event.target.files || [])].forEach((file) => {
+          aiCreateAttachments.push({ id: makeId('aif'), name: file.name })
+        })
+        event.target.value = ''
+        render()
+      }
+    })
+
+    root.addEventListener('input', (event) => {
+      if (event.target.id === 'wb3AiCreateInput') aiCreateInputDraft = event.target.value
     })
 
     document.addEventListener('click', (event) => {
@@ -1567,17 +2501,19 @@
   }
 
   const api = {
+    prepareKnowledgeEditSwitch,
     open(options = {}) {
       ensureRoot()
       standalone = Boolean(options.standalone)
       questionSource = 'official'
       curriculumKey = '小学数学'
+      syncNewDraftNavigationStateFromSession()
       const restoredDraft = options.newDraft ? null : loadActiveDraft()
       if (restoredDraft?.curriculumKey && curriculumCatalog[restoredDraft.curriculumKey]) curriculumKey = restoredDraft.curriculumKey
       activeDraft = restoredDraft || createBlankDraft()
       autoSavedAt = activeDraft.updatedAt || 0
-      treeSearchQuery = ''
       activeKnowledge = '全部知识点'
+      applyBankSearchFromStorage()
       filterType = '全部题型'
       filterDifficulty = '全部难度'
       selectedQuestionId = ''

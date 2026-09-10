@@ -144,6 +144,8 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-ai-entry-copy { padding: 6px 4px 18px; }
 .wb3-ai-entry-copy > span { width: 38px; height: 38px; display: grid; place-items: center; float: left; margin-right: 10px; border-radius: 10px; background: #e8f4ee; color: var(--wb3-green); }
 .wb3-ai-entry-copy svg { width: 20px; }
+.wb3-knowledge-path { margin: 8px 0 0 !important; color: #4a6b5c !important; font-size: 12px !important; font-weight: 650; }
+.wb3-knowledge-page .wb3-import-page-title small { display: block; margin-top: 6px; color: #7a8780; font-size: 12px; line-height: 1.6; }
 .wb3-ai-entry-copy h2,.wb3-import-page-title h2 { margin: 0; color: #263d33; font-size: 18px; }
 .wb3-ai-entry-copy p,.wb3-import-page-title p { margin: 6px 0 0; color: #7a8780; font-size: 12px; line-height: 1.6; }
 .wb3-inline-record-link { margin-top: 8px; padding: 0; border: 0; background: transparent; color: var(--wb3-green); font-size: 11px; font-weight: 650; }
@@ -188,7 +190,17 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-record-row small { margin-top: 4px; color: #87938d; font-size: 10px; }
 .wb3-record-row em { margin-top: 5px; color: #64766d; font-size: 11px; font-style: normal; }
 .wb3-record-status { padding: 3px 7px; border-radius: 5px; background: #e6f3ec; color: #287258; font-size: 10px; }
+.wb3-record-empty {
+  margin: 8px 0 0;
+  padding: 28px 12px;
+  border: 1px dashed #d9e4de;
+  border-radius: 11px;
+  color: #909c96;
+  font-size: 12px;
+  text-align: center;
+}
 .wb3-record-row.processing .wb3-record-status { background: #fff3df; color: #a36a21; }
+.wb3-record-row.failed .wb3-record-status { background: #fdeeee; color: #b44a4a; }
 .wb3-record-row > button,.wb3-knowledge-grid article > div:last-child button { height: 32px; padding: 0 11px; border: 1px solid #d8e3de; border-radius: 8px; background: #fff; color: #52675d; font-size: 11px; }
 .wb3-record-row > button:hover { border-color: #8fbea8; color: var(--wb3-green); }
 .wb3-processing-card { min-height: 280px; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 30px; border: 1px dashed #d8c59e; border-radius: 12px; background: #fffcf7; color: #68776f; text-align: center; }
@@ -404,6 +416,14 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-source-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 0 2px 12px; padding: 3px; border-radius: 9px; background: #f1f5f3; }
 .wb3-source-tabs button { height: 32px; justify-content: center; padding: 0 6px !important; border-radius: 7px; color: #687870; font-size: 12px; font-weight: 650; text-align: center; }
 .wb3-source-tabs button.active { background: #fff; color: var(--wb3-green); box-shadow: 0 1px 4px rgba(27,64,48,.1); }
+.wb3-personal-tab-meta {
+  margin: -4px 2px 10px;
+  padding: 0 9px;
+  color: #687870;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: left;
+}
 .wb3-tree-list { min-height: 0; }
 .wb3-tree-empty { margin: 22px 8px; color: #909c96; font-size: 12px; line-height: 1.6; text-align: center; }
 .wb3-tree button {
@@ -505,6 +525,12 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-unlock-dialog > span svg { width:19px; }
 .wb3-unlock-dialog h3 { margin:0; color:#233e32; font-size:17px; }.wb3-unlock-dialog p { margin:9px 0 20px; color:#718179; font-size:12px; }
 .wb3-unlock-dialog > div { display:flex; justify-content:center; gap:8px; }.wb3-unlock-dialog button { height:34px; padding:0 15px; border:1px solid #d5e1db; border-radius:8px; background:#fff; color:#566960; }.wb3-unlock-dialog button.primary { border-color:var(--wb3-green); background:var(--wb3-green); color:#fff; }
+.wb3-confirm-dialog > span { background:#fdeeee; color:#b44a4a; }
+.wb3-download-dialog > span { background:#e8f5ef; color:var(--wb3-green); }
+.wb3-download-dialog-meta { margin:0 0 4px; text-align:center; }
+.wb3-download-dialog-meta b { display:block; font-size:14px; color:#253d33; }
+.wb3-download-dialog-meta small { color:#7a8780; font-size:12px; }
+.wb3-unlock-dialog button.primary.danger { border-color:#d85c5c; background:#d85c5c; }
 
 .wb3-paper-card {
   width: 100%;
@@ -632,9 +658,28 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-ai-create-prompts { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
 .wb3-ai-create-prompts button,.wb3-ai-continue span button { height: 28px; padding: 0 10px; border: 1px solid #d6e4dd; border-radius: 999px; background: #fff; color: #587066; font-size: 10px; }
 .wb3-ai-create-input { padding: 12px; border: 1px solid #cfe0d8; border-radius: 12px; background: #f8fbf9; }
+.wb3-ai-create-attachments { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.wb3-ai-create-file { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 4px 8px 4px 10px; border-radius: 999px; background: #edf5f1; color: #205c45; font-size: 11px; }
+.wb3-ai-create-file-name { border: 0; background: transparent; padding: 0; color: inherit; font: inherit; cursor: default; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: min(240px, 52vw); text-align: left; }
+.wb3-ai-create-file button[data-remove-ai-create-file] { border: 0; background: transparent; color: #7a9288; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; }
 .wb3-ai-create-input textarea { width: 100%; min-height: 116px; resize: vertical; padding: 10px; border: 0; outline: 0; background: transparent; color: #31473d; font: inherit; font-size: 13px; line-height: 1.6; }
-.wb3-ai-create-input > button { height: 34px; display: flex; align-items: center; gap: 6px; margin-left: auto; padding: 0 13px; border: 0; border-radius: 8px; background: var(--wb3-green); color: #fff; font-size: 11px; font-weight: 650; }
-.wb3-ai-create-input > button svg { width: 14px; }
+.wb3-ai-create-toolbar { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.wb3-ai-create-add,.wb3-ai-create-voice { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border: 1px solid #d6e4dd; border-radius: 10px; background: #fff; color: #587066; font-size: 18px; cursor: pointer; }
+.wb3-ai-create-voice { font-size: 20px; }
+.wb3-ai-create-voice.listening { border-color: #7fd3a6; background: #e8f8ef; color: var(--wb3-green); box-shadow: 0 0 0 2px rgba(42, 140, 96, .12); }
+.wb3-ai-create-send { height: 34px; display: flex; align-items: center; gap: 6px; margin-left: auto; padding: 0 13px; border: 0; border-radius: 8px; background: var(--wb3-green); color: #fff; font-size: 11px; font-weight: 650; cursor: pointer; }
+.wb3-ai-create-send svg { width: 14px; }
+.wb3-ai-compose-history { margin-top: 28px; padding-top: 4px; }
+.wb3-ai-compose-history h3 { margin: 0 0 12px; color: #263d33; font-size: 14px; font-weight: 650; }
+.wb3-ai-history-list { display: flex; flex-direction: column; }
+.wb3-ai-history-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 4px; border: 0; border-bottom: 1px solid #eef3f0; background: transparent; text-align: left; cursor: pointer; }
+.wb3-ai-history-row:last-child { border-bottom: 0; }
+.wb3-ai-history-row:hover .wb3-ai-history-text b { color: var(--wb3-green); }
+.wb3-ai-history-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.wb3-ai-history-text b { color: #333; font-size: 14px; font-weight: 600; line-height: 1.45; }
+.wb3-ai-history-text small { color: #999; font-size: 12px; }
+.wb3-ai-history-arrow { flex-shrink: 0; display: grid; place-items: center; width: 20px; color: #c5ccc8; }
+.wb3-ai-history-arrow svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
 .wb3-ai-continue { margin-top: 14px; padding: 11px; border: 1px solid #d9e6e0; border-radius: 11px; background: #f8fbf9; }
 .wb3-ai-continue > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .wb3-ai-continue b { display: inline-flex; align-items: center; gap: 5px; color: #355044; font-size: 11px; }
@@ -673,6 +718,49 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-chat-ai details .wb3-ai-generated-toolbar { margin-top: 6px; padding: 8px 0; }
 .wb3-chat-turn.history { padding-bottom: 12px; border-bottom: 1px solid #e7edea; }
 
+.wb3-personal-count {
+  margin: 0 0 10px;
+  padding: 0 2px;
+  color: #687870;
+  font-size: 12px;
+}
+.wb3-empty-results.wb3-empty-personal b {
+  display: block;
+  margin-bottom: 6px;
+  color: #3f564c;
+  font-size: 14px;
+}
+.wb3-empty-results.wb3-empty-personal p {
+  margin: 0 0 16px;
+  color: #718179;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.wb3-empty-results.wb3-empty-personal .wb3-empty-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 132px;
+  height: 36px;
+  margin-top: 0;
+  padding: 0 16px;
+  border: 1px solid #7fb89f;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #f6fbf8 0%, #e8f3ed 100%);
+  color: var(--wb3-green);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.wb3-empty-results.wb3-empty-personal .wb3-empty-upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.wb3-empty-results.wb3-empty-personal .wb3-empty-upload-btn:hover {
+  border-color: #5fa888;
+  background: #eef7f2;
+}
 .wb3-empty-results {
   padding: 40px 20px;
   text-align: center;
@@ -812,12 +900,6 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
   box-shadow: 0 8px 24px rgba(24,50,40,.07);
 }
 
-.wb3-paper-meta {
-  margin-bottom: 16px;
-  color: #8a9690;
-  font-size: 10px;
-  text-align: center;
-}
 .wb3-paper-title {
   width: 100%;
   border: 0;
@@ -828,17 +910,98 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
   font-weight: 700;
   text-align: center;
 }
-.wb3-paper-sub {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 8px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e8eeeb;
-  color: #7a8780;
-  font-size: 10px;
+.wb3-formula {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #eef5f1;
+  color: #1e4a38;
+  font-family: "Times New Roman", "Noto Serif", serif;
+  font-style: italic;
 }
+.wb3-rich-float {
+  position: fixed;
+  z-index: 6200;
+  display: none;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #d6e4dd;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(20, 50, 38, .12);
+}
+.wb3-rich-float.is-visible {
+  display: flex;
+}
+.wb3-rich-float button {
+  min-width: 36px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: #f3f7f5;
+  color: #2a4a3c;
+  font-size: 14px;
+  cursor: pointer;
+}
+.wb3-rich-float button:hover { background: #e6f2ec; color: var(--wb3-green); }
+.wb3-rich-float button sub { font-size: 10px; }
+.wb3-rich-float-sep { width: 1px; height: 24px; margin: 4px 2px; background: #dfeae4; }
+.wb3-rich-editable:focus { outline: 1px dashed #91bea9; outline-offset: 2px; border-radius: 4px; }
+.wb3-sheet-q-options.wb3-rich-editable { white-space: pre-wrap; outline: none; }
+.wb3-sheet-q-answer-text.wb3-rich-editable { display: inline; min-width: 4em; outline: none; }
+.wb3-answer-row { display: block; }
+.wb3-math-modal,.wb3-symbol-modal {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(86vh, 720px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(18, 46, 35, .2);
+}
+.wb3-math-modal header,.wb3-symbol-modal header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5ece8;
+}
+.wb3-math-modal header b,.wb3-symbol-modal header b { font-size: 16px; color: #18382b; }
+.wb3-math-modal header button,.wb3-symbol-modal header button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: #eef4f1;
+  font-size: 20px;
+  cursor: pointer;
+}
+.wb3-math-tabs { display: flex; gap: 20px; padding: 0 16px; border-bottom: 1px solid #e5ece8; }
+.wb3-math-tabs button { height: 40px; border: 0; background: transparent; color: #829088; font-size: 13px; font-weight: 650; cursor: pointer; }
+.wb3-math-tabs button.active { color: var(--wb3-green); box-shadow: inset 0 -2px 0 var(--wb3-green); }
+.wb3-math-tabs button:disabled { opacity: .45; cursor: not-allowed; }
+.wb3-math-toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid #eef3f0; }
+.wb3-math-toolbar button { height: 30px; padding: 0 10px; border: 1px solid #d6e4dd; border-radius: 6px; background: #fff; font-size: 12px; cursor: pointer; }
+.wb3-math-body { display: grid; grid-template-columns: 1fr 200px; gap: 0; min-height: 220px; flex: 1; overflow: hidden; }
+.wb3-math-preview { padding: 20px 16px; font-size: 22px; color: #1e392e; font-family: "Times New Roman", serif; overflow: auto; }
+.wb3-math-presets { padding: 10px 12px; border-left: 1px solid #eef3f0; overflow: auto; background: #fafcfb; }
+.wb3-math-presets > b { display: block; margin-bottom: 8px; font-size: 11px; color: #6d8177; }
+.wb3-math-presets button { width: 100%; display: block; margin-bottom: 6px; padding: 8px; border: 1px solid #e1e9e5; border-radius: 8px; background: #fff; text-align: left; cursor: pointer; }
+.wb3-math-presets button span { display: block; font-size: 11px; color: #405c50; font-weight: 650; }
+.wb3-math-presets button em { display: block; margin-top: 4px; font-size: 11px; color: #7a8780; font-style: normal; }
+.wb3-math-modal footer,.wb3-symbol-modal footer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e5ece8; }
+.wb3-math-modal footer button,.wb3-symbol-modal footer button { height: 34px; padding: 0 14px; border: 1px solid #d6e4dd; border-radius: 8px; background: #fff; cursor: pointer; }
+.wb3-math-modal footer button.primary { border-color: var(--wb3-green); background: var(--wb3-green); color: #fff; }
+.wb3-symbol-tabs { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 10px 16px; border-bottom: 1px solid #e5ece8; }
+.wb3-symbol-tabs button { border: 0; background: transparent; color: #829088; font-size: 13px; font-weight: 650; cursor: pointer; padding: 6px 0; }
+.wb3-symbol-tabs button.active { color: var(--wb3-green); box-shadow: inset 0 -2px 0 var(--wb3-green); }
+.wb3-symbol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 6px; padding: 14px 16px 18px; max-height: 360px; overflow: auto; }
+.wb3-symbol-grid button { height: 38px; border: 1px solid #e6ede9; border-radius: 6px; background: #fff; font-size: 15px; cursor: pointer; }
+.wb3-symbol-grid button:hover { border-color: #91bea9; background: #f4faf7; }
+.wb3-math-overlay,.wb3-symbol-overlay { z-index: 6300; align-items: center; justify-content: center; }
 
 .wb3-empty-sheet {
   min-height: 700px;

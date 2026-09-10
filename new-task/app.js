@@ -891,7 +891,24 @@
       const editComposePaper=id=>{
         ensureComposeDraft(id)
         sessionStorage.removeItem('feixiang-question-workbench-open-paper')
-        localStorage.setItem('feixiang-question-workbench-v3-active-draft',id)
+        if(window.FxQuestionWorkbenchV3?.prepareKnowledgeEditSwitch){
+          window.FxQuestionWorkbenchV3.prepareKnowledgeEditSwitch(id)
+        }else{
+          let drafts=[]
+          try{drafts=JSON.parse(localStorage.getItem('feixiang-question-workbench-v3-drafts')||'[]')}catch{}
+          const prevId=localStorage.getItem('feixiang-question-workbench-v3-active-draft')
+          const prev=drafts.find(item=>item.id===prevId)
+          const prevCount=(prev?.questions||[]).filter(q=>q.status==='confirmed').length
+          sessionStorage.removeItem('feixiang-wb-suspended-draft-id')
+          sessionStorage.removeItem('feixiang-wb-plus-creates-new')
+          if(prevId&&prevId!==id&&prevCount>0){
+            if(prev){prev.updatedAt=Date.now();drafts=[prev,...drafts.filter(item=>item.id!==prevId)];localStorage.setItem('feixiang-question-workbench-v3-drafts',JSON.stringify(drafts.slice(0,20)))}
+            sessionStorage.setItem('feixiang-wb-suspended-draft-id',prevId)
+          }else if(prevId!==id){
+            sessionStorage.setItem('feixiang-wb-plus-creates-new','1')
+          }
+          localStorage.setItem('feixiang-question-workbench-v3-active-draft',id)
+        }
         window.location.href='./workbench.html'
       }
       const renderComposePreview=id=>{
