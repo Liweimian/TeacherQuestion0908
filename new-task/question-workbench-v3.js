@@ -31,6 +31,8 @@
     download: svg('<path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M5 20h14"/>'),
     workbench: svg('<rect x="4" y="5" width="7" height="6" rx="1.5"/><rect x="13" y="5" width="7" height="6" rx="1.5"/><rect x="4" y="13" width="7" height="6" rx="1.5"/><path d="M16.5 13v6M13.5 16h6"/>'),
     trash: svg('<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/>'),
+    grip: svg('<circle cx="9" cy="5" r="1.35"/><circle cx="9" cy="12" r="1.35"/><circle cx="9" cy="19" r="1.35"/><circle cx="15" cy="5" r="1.35"/><circle cx="15" cy="12" r="1.35"/><circle cx="15" cy="19" r="1.35"/>'),
+    save: svg('<path d="M5 4h12l2 2v14H5z"/><path d="M8 4v5h8V4M8 18h8"/>'),
   }
 
   const defaultPaperFormat = { fontSize: 13, lineHeight: 1.65, answerHeight: 28, questionGap: 8 }
@@ -227,6 +229,7 @@
   let previewKnowledgePaperId = ''
   let adaptRequest = null
   let adaptPicker = null
+  let sheetDragId = ''
   let adaptThinkingTimer = null
   const ADAPT_THINKING_LINES = [
     '理解原题考点与题型结构',
@@ -245,7 +248,6 @@
   let downloadDialogOpen = false
   let suspendedDraftIdForNewButton = ''
   let plusCreatesBlankOnNew = false
-  let autoSavedAt = 0
   let aiCreateInputDraft = ''
   let aiCreateAttachments = []
   let aiCreateListening = false
@@ -351,7 +353,39 @@
   }
 
   function createBlankDraft() {
-    return { id: makeId('draft'), title: nextUntitledDraftName(), subject: currentCurriculum().subject, curriculumKey, questions: [], createdAt: Date.now(), updatedAt: Date.now() }
+    return { id: makeId('draft'), title: nextUntitledDraftName(), subject: currentCurriculum().subject, curriculumKey, questions: [], createdAt: Date.now(), updatedAt: Date.now(), savedAt: 0 }
+  }
+
+  function formatManualSavedLabel(timestamp) {
+    if (!timestamp) return ''
+    const date = new Date(timestamp)
+    const yy = String(date.getFullYear()).slice(-2)
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const dd = String(date.getDate()).padStart(2, '0')
+    const hh = String(date.getHours()).padStart(2, '0')
+    const mi = String(date.getMinutes()).padStart(2, '0')
+    return `${yy}/${mm}/${dd} ${hh}:${mi}已保存`
+  }
+
+  function hasUnsavedCanvasChanges() {
+    if (!activeDraft) return false
+    const savedAt = Number(activeDraft.savedAt || 0)
+    const updatedAt = Number(activeDraft.updatedAt || 0)
+    if (!savedAt) return updatedAt > Number(activeDraft.createdAt || 0)
+    return updatedAt > savedAt
+  }
+
+  function canvasSaveStatusMarkup() {
+    const savedAt = Number(activeDraft?.savedAt || 0)
+    const dirty = hasUnsavedCanvasChanges()
+    if (dirty) return '<span class="wb3-canvas-save-status dirty">未保存</span>'
+    if (!savedAt) return ''
+    return `<span class="wb3-canvas-save-status">${escapeHtml(formatManualSavedLabel(savedAt))}</span>`
+  }
+
+  function canvasSaveButtonTitle() {
+    if (!hasUnsavedCanvasChanges()) return '已保存，暂无新的更改'
+    return Number(activeDraft?.savedAt || 0) > 0 ? '有未保存的更改，点击保存到「我的组题」' : '保存到「我的组题」'
   }
 
   function loadActiveDraft() {
@@ -366,9 +400,10 @@
 
   function savedDraftPapers() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((draft) => draft.questions?.some((question) => question.status === 'confirmed')).map((draft) => {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((draft) => draft.savedAt && draft.questions?.some((question) => question.status === 'confirmed')).map((draft) => {
         const questions = draft.questions.filter((question) => question.status === 'confirmed')
-        return { id: `saved-${draft.id}`, draftId: draft.id, title: draft.title || '未命名题单', type: '我的组题', meta: `自动保存 · ${questions.length} 题`, questions }
+        const savedLabel = formatManualSavedLabel(draft.savedAt).replace(/已保存$/, '').trim()
+        return { id: `saved-${draft.id}`, draftId: draft.id, title: draft.title || '未命名题单', type: '我的组题', meta: `${savedLabel} · ${questions.length} 题`, questions }
       })
     } catch { return [] }
   }
@@ -406,6 +441,23 @@
       if (q.sourceId) map.set(q.sourceId, index + 1)
     })
     return map
+  }
+
+  function reorderSheetQuestions(dragId, targetId, insertBefore) {
+    if (!activeDraft || !dragId || !targetId || dragId === targetId) return false
+    const questions = activeDraft.questions
+    const fromIndex = questions.findIndex((q) => q.id === dragId)
+    const targetIndex = questions.findIndex((q) => q.id === targetId)
+    if (fromIndex < 0 || targetIndex < 0) return false
+    if (questions[fromIndex].status !== 'confirmed' || questions[targetIndex].status !== 'confirmed') return false
+    const [moved] = questions.splice(fromIndex, 1)
+    let insertIndex = questions.findIndex((q) => q.id === targetId)
+    if (insertIndex < 0) return false
+    if (!insertBefore) insertIndex += 1
+    questions.splice(insertIndex, 0, moved)
+    if (answerEditorQuestionId) answerEditorQuestionId = ''
+    persistDraft()
+    return true
   }
 
   function rewireSheetQuestionId(question, prevId) {
@@ -732,8 +784,23 @@
       drafts.unshift(activeDraft)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
       localStorage.setItem(ACTIVE_DRAFT_KEY, activeDraft.id)
-      autoSavedAt = activeDraft.updatedAt
     } catch { /* ignore */ }
+  }
+
+  function saveDraftManually() {
+    if (!activeDraft || !hasUnsavedCanvasChanges()) return
+    const isResave = Number(activeDraft.savedAt || 0) > 0
+    persistDraft()
+    activeDraft.savedAt = Date.now()
+    activeDraft.updatedAt = activeDraft.savedAt
+    try {
+      const drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((d) => d.id !== activeDraft.id)
+      drafts.unshift(activeDraft)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
+      localStorage.setItem(ACTIVE_DRAFT_KEY, activeDraft.id)
+    } catch { /* ignore */ }
+    render()
+    showToast(isResave ? '已更新保存到「我的组题」' : '已保存到「我的组题」')
   }
 
   function syncNewDraftNavigationStateFromSession() {
@@ -772,7 +839,7 @@
     activeDraft = draft
     if (draft.curriculumKey && curriculumCatalog[draft.curriculumKey]) curriculumKey = draft.curriculumKey
     activeDraft.subject = activeDraft.subject || currentCurriculum().subject
-    autoSavedAt = draft.updatedAt || 0
+    if (!activeDraft.savedAt) activeDraft.savedAt = 0
     selectedQuestionId = ''
     revealedAnswerIds = new Set()
     adaptRequest = null
@@ -838,7 +905,6 @@
     activeImportRecordId = ''
     activeAiComposeRecordId = ''
     previewKnowledgePaperId = ''
-    autoSavedAt = 0
     persistDraft()
     render()
     showToast('已新建空白题单')
@@ -1354,7 +1420,7 @@
     } else if (importWorkspaceView === 'knowledge' && previewPaper) {
       content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)} · ${previewPaper.questions.length} 题 · 可逐题选用</p></div><button type="button" class="primary" data-import-knowledge-all="${previewPaper.id}">全部选用</button></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
     } else {
-      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>从我的知识库添加</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>仅展示该文件夹下由组题画布自动保存的题单。先查看，再逐题或全部选用。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">我的组题中还没有题单，请先在右侧画布组题并自动保存</p>'}</div></div>`
+      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>从我的知识库添加</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>仅展示该文件夹下由组题画布<strong>手动保存</strong>的题单。先查看，再逐题或全部选用。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">我的组题中还没有题单，请先在右侧画布组题并点击保存</p>'}</div></div>`
     }
 
     return `<section class="wb3-library wb3-import-workspace">${workspaceTabsMarkup()}<div class="wb3-import-center-body">${content}</div></section>`
@@ -1436,6 +1502,7 @@
     </span>`
     const displayIndex = confirmedSheetIndex(question.id) || index + 1
     return `<article class="wb3-sheet-q ${selectedQuestionId === question.id ? 'selected' : ''} ${answerShown ? 'answer-open' : ''} ${answerEditorOpen ? 'answer-editor-open' : ''}" data-sheet-id="${question.id}" data-question-id="${question.id}">
+      <button type="button" class="wb3-sheet-q-drag" data-sheet-drag-handle="${question.id}" title="拖动排序" aria-label="拖动排序">${icons.grip}</button>
       <span class="wb3-sheet-q-num">${displayIndex}</span>
       <div class="wb3-sheet-q-main">
         <div class="wb3-sheet-q-tags"><span>${escapeHtml(question.type)}</span><span>${escapeHtml(question.knowledge)}</span><span>${escapeHtml(question.difficulty)}</span><span>${Number(question.score || 0)} 分</span></div>
@@ -1456,8 +1523,8 @@
     const meta = draftMeta()
     const questions = activeDraft?.questions || []
     const confirmed = questions.filter((q) => q.status === 'confirmed')
-    const savedTime = autoSavedAt ? new Date(autoSavedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''
     const selectedIndex = questions.findIndex((q) => q.id === selectedQuestionId && q.status === 'confirmed')
+    const saveDirty = hasUnsavedCanvasChanges()
 
     const sheetQuestions = questions.filter((q) => q.status === 'confirmed' || q.status === 'adapt')
     const sheetBody = sheetQuestions.length
@@ -1475,10 +1542,10 @@
     return `<aside class="wb3-sheet">
       <header class="wb3-sheet-head">
         <div class="wb3-sheet-head-top">
-          <div><b>组题画布</b><span id="wb3AutoSaveStatus">${savedTime ? `已自动保存 ${savedTime}` : '草稿将自动保存'}</span></div>
+          <div><b>组题画布</b>${canvasSaveStatusMarkup()}</div>
           <div class="wb3-sheet-head-right"><div class="wb3-sheet-stats">
               <strong>共 ${meta.count} 题</strong>
-            </div><button type="button" class="wb3-new-draft" data-new-draft aria-label="新建组题" title="新建组题">${icons.plus}</button><button type="button" class="wb3-new-draft" data-action="download" aria-label="下载题单" title="下载题单">${icons.download}</button>
+            </div><button type="button" class="wb3-new-draft" data-new-draft aria-label="新建组题" title="新建组题">${icons.plus}</button><button type="button" class="wb3-new-draft wb3-save-btn ${saveDirty ? 'dirty' : 'saved'}" data-action="save" aria-label="保存题单" title="${escapeHtml(canvasSaveButtonTitle())}" ${saveDirty ? '' : 'disabled'}>${icons.save}</button><button type="button" class="wb3-new-draft" data-action="download" aria-label="下载题单" title="下载题单">${icons.download}</button>
           </div>
         </div>
       </header>
@@ -1486,7 +1553,7 @@
       <div class="wb3-sheet-scroll">
         <div class="wb3-paper" style="--wb3-paper-font-size:${paperFormat().fontSize}px;--wb3-paper-line-height:${paperFormat().lineHeight};--wb3-answer-height:${paperFormat().answerHeight}px;--wb3-question-gap:${paperFormat().questionGap}px">
           <input class="wb3-paper-title" id="wb3PaperTitle" value="${escapeHtml(activeDraft?.title || DEFAULT_DRAFT_TITLE)}" placeholder="${escapeHtml(DEFAULT_DRAFT_TITLE)}">
-          ${sheetBody}
+          <div class="wb3-sheet-q-list">${sheetBody}</div>
         </div>
       </div>
     </aside>`
@@ -2377,6 +2444,10 @@
         window.dispatchEvent(new CustomEvent('fx-question-workbench-v3-exit'))
         return
       }
+      if (action === 'save') {
+        saveDraftManually()
+        return
+      }
       if (action === 'download') {
         const adaptPending = activeDraft.questions.some((q) => q.status === 'adapt')
         if (adaptPending) showToast('请先处理画布中的 AI 改编待确认项后再下载')
@@ -2435,6 +2506,12 @@
     })
 
     root.addEventListener('focusout', (event) => {
+      if (event.target.id === 'wb3PaperTitle') {
+        activeDraft.title = event.target.value
+        persistDraft()
+        render()
+        return
+      }
       const field = sheetEditableField(event.target)
       if (!field) return
       const related = event.relatedTarget
@@ -2488,6 +2565,68 @@
 
     root.addEventListener('input', (event) => {
       if (event.target.id === 'wb3AiCreateInput') aiCreateInputDraft = event.target.value
+    })
+
+    root.addEventListener('mousedown', (event) => {
+      const handle = event.target.closest('[data-sheet-drag-handle]')
+      if (!handle) return
+      const article = handle.closest('.wb3-sheet-q')
+      if (article) article.draggable = true
+    })
+
+    root.addEventListener('dragstart', (event) => {
+      const article = event.target.closest('.wb3-sheet-q')
+      if (!article?.draggable) {
+        event.preventDefault()
+        return
+      }
+      sheetDragId = article.dataset.sheetId || ''
+      if (!sheetDragId) {
+        event.preventDefault()
+        return
+      }
+      if (answerEditorQuestionId) answerEditorQuestionId = ''
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData('text/plain', sheetDragId)
+      window.requestAnimationFrame(() => article.classList.add('wb3-sheet-q-dragging'))
+    })
+
+    root.addEventListener('dragend', (event) => {
+      const article = event.target.closest('.wb3-sheet-q')
+      if (article) article.draggable = false
+      $$('.wb3-sheet-q', root).forEach((el) => el.classList.remove('wb3-sheet-q-dragging', 'wb3-sheet-q-drop-before', 'wb3-sheet-q-drop-after'))
+      sheetDragId = ''
+    })
+
+    root.addEventListener('dragover', (event) => {
+      if (!sheetDragId) return
+      const article = event.target.closest('.wb3-sheet-q')
+      if (!article || article.dataset.sheetId === sheetDragId) return
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'move'
+      const before = event.clientY < article.getBoundingClientRect().top + article.offsetHeight / 2
+      $$('.wb3-sheet-q', root).forEach((el) => el.classList.remove('wb3-sheet-q-drop-before', 'wb3-sheet-q-drop-after'))
+      article.classList.add(before ? 'wb3-sheet-q-drop-before' : 'wb3-sheet-q-drop-after')
+    })
+
+    root.addEventListener('dragleave', (event) => {
+      const article = event.target.closest('.wb3-sheet-q')
+      if (!article) return
+      const related = event.relatedTarget
+      if (related && article.contains(related)) return
+      article.classList.remove('wb3-sheet-q-drop-before', 'wb3-sheet-q-drop-after')
+    })
+
+    root.addEventListener('drop', (event) => {
+      if (!sheetDragId) return
+      const article = event.target.closest('.wb3-sheet-q')
+      if (!article) return
+      event.preventDefault()
+      const targetId = article.dataset.sheetId
+      const before = event.clientY < article.getBoundingClientRect().top + article.offsetHeight / 2
+      reorderSheetQuestions(sheetDragId, targetId, before)
+      sheetDragId = ''
+      render()
     })
 
     document.addEventListener('click', (event) => {
@@ -2555,7 +2694,7 @@
       const restoredDraft = options.newDraft ? null : loadActiveDraft()
       if (restoredDraft?.curriculumKey && curriculumCatalog[restoredDraft.curriculumKey]) curriculumKey = restoredDraft.curriculumKey
       activeDraft = restoredDraft || createBlankDraft()
-      autoSavedAt = activeDraft.updatedAt || 0
+      if (activeDraft && !activeDraft.savedAt) activeDraft.savedAt = 0
       activeKnowledge = '全部知识点'
       applyBankSearchFromStorage()
       filterType = '全部题型'
