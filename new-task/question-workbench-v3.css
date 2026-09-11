@@ -852,7 +852,19 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
   color: #9a6b1f;
   box-shadow: 0 0 0 1px rgba(176,120,42,.12);
 }
+.wb3-new-draft:disabled {
+  border-color: #e3e8e5;
+  background: #f4f6f5;
+  color: #b8c3bd;
+  cursor: default;
+  box-shadow: none;
+}
 .wb3-new-draft:hover { border-color: var(--wb3-green); background: #f3faf6; }
+.wb3-new-draft:disabled:hover {
+  border-color: #e3e8e5;
+  background: #f4f6f5;
+  color: #b8c3bd;
+}
 .wb3-save-btn.saved:hover,
 .wb3-save-btn:disabled:hover {
   border-color: #e3e8e5;

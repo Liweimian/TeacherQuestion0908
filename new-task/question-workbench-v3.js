@@ -246,6 +246,7 @@
   }
   let personalDeletePromptId = ''
   let downloadDialogOpen = false
+  let saveBeforeNewDialogOpen = false
   let suspendedDraftIdForNewButton = ''
   let plusCreatesBlankOnNew = false
   let aiCreateInputDraft = ''
@@ -386,6 +387,17 @@
   function canvasSaveButtonTitle() {
     if (!hasUnsavedCanvasChanges()) return '已保存，暂无新的更改'
     return Number(activeDraft?.savedAt || 0) > 0 ? '有未保存的更改，点击保存到「我的组题」' : '保存到「我的组题」'
+  }
+
+  function canvasHasQuestions() {
+    return confirmedSheetQuestions().length > 0
+  }
+
+  function newDraftButtonTitle() {
+    if (!canvasHasQuestions()) return '画布为空，请先添加题目'
+    if (hasUnsavedCanvasChanges()) return '请先保存当前组题'
+    if (suspendedDraftIdForNewButton && !plusCreatesBlankOnNew) return '切回上一题单'
+    return '新建组题'
   }
 
   function loadActiveDraft() {
@@ -775,10 +787,9 @@
     return { count: confirmed.length, score, minutes, pendingCount: pending.length, pendingScore, typeCount, diffCount, knowledgeCount: knowledgeSet.size }
   }
 
-  function persistDraft() {
+  function saveDraftToLocalStorage() {
     if (!activeDraft) return
     activeDraft.curriculumKey = curriculumKey
-    activeDraft.updatedAt = Date.now()
     try {
       const drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((d) => d.id !== activeDraft.id)
       drafts.unshift(activeDraft)
@@ -787,18 +798,18 @@
     } catch { /* ignore */ }
   }
 
+  function persistDraft() {
+    if (!activeDraft) return
+    activeDraft.updatedAt = Date.now()
+    saveDraftToLocalStorage()
+  }
+
   function saveDraftManually() {
     if (!activeDraft || !hasUnsavedCanvasChanges()) return
     const isResave = Number(activeDraft.savedAt || 0) > 0
-    persistDraft()
     activeDraft.savedAt = Date.now()
     activeDraft.updatedAt = activeDraft.savedAt
-    try {
-      const drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((d) => d.id !== activeDraft.id)
-      drafts.unshift(activeDraft)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
-      localStorage.setItem(ACTIVE_DRAFT_KEY, activeDraft.id)
-    } catch { /* ignore */ }
+    saveDraftToLocalStorage()
     render()
     showToast(isResave ? '已更新保存到「我的组题」' : '已保存到「我的组题」')
   }
@@ -876,8 +887,16 @@
   }
 
   function startNewDraft() {
-    persistDraft()
+    if (!canvasHasQuestions()) return
     syncNewDraftNavigationStateFromSession()
+
+    if (hasUnsavedCanvasChanges()) {
+      saveBeforeNewDialogOpen = true
+      render()
+      return
+    }
+
+    saveDraftToLocalStorage()
 
     if (suspendedDraftIdForNewButton && !plusCreatesBlankOnNew) {
       const suspended = loadDraftById(suspendedDraftIdForNewButton)
@@ -1525,6 +1544,7 @@
     const confirmed = questions.filter((q) => q.status === 'confirmed')
     const selectedIndex = questions.findIndex((q) => q.id === selectedQuestionId && q.status === 'confirmed')
     const saveDirty = hasUnsavedCanvasChanges()
+    const newDraftDisabled = !canvasHasQuestions()
 
     const sheetQuestions = questions.filter((q) => q.status === 'confirmed' || q.status === 'adapt')
     const sheetBody = sheetQuestions.length
@@ -1545,7 +1565,7 @@
           <div><b>组题画布</b>${canvasSaveStatusMarkup()}</div>
           <div class="wb3-sheet-head-right"><div class="wb3-sheet-stats">
               <strong>共 ${meta.count} 题</strong>
-            </div><button type="button" class="wb3-new-draft" data-new-draft aria-label="新建组题" title="新建组题">${icons.plus}</button><button type="button" class="wb3-new-draft wb3-save-btn ${saveDirty ? 'dirty' : 'saved'}" data-action="save" aria-label="保存题单" title="${escapeHtml(canvasSaveButtonTitle())}" ${saveDirty ? '' : 'disabled'}>${icons.save}</button><button type="button" class="wb3-new-draft" data-action="download" aria-label="下载题单" title="下载题单">${icons.download}</button>
+            </div><button type="button" class="wb3-new-draft" data-new-draft aria-label="${escapeHtml(newDraftButtonTitle())}" title="${escapeHtml(newDraftButtonTitle())}" ${newDraftDisabled ? 'disabled' : ''}>${icons.plus}</button><button type="button" class="wb3-new-draft wb3-save-btn ${saveDirty ? 'dirty' : 'saved'}" data-action="save" aria-label="保存题单" title="${escapeHtml(canvasSaveButtonTitle())}" ${saveDirty ? '' : 'disabled'}>${icons.save}</button><button type="button" class="wb3-new-draft" data-action="download" aria-label="下载题单" title="下载题单">${icons.download}</button>
           </div>
         </div>
       </header>
@@ -1561,6 +1581,16 @@
 
   function personalQuestionOnCanvas(id) {
     return (activeDraft?.questions || []).some((q) => q.status === 'confirmed' && q.sourceId === id)
+  }
+
+  function saveBeforeNewDialogMarkup() {
+    if (!saveBeforeNewDialogOpen) return ''
+    return `<div class="wb3-overlay" data-save-before-new-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3SaveBeforeNewTitle"><span>${icons.blank}</span><h3 id="wb3SaveBeforeNewTitle">无法新建</h3><p>请先保存当前组题，以防数据丢失。</p><div><button type="button" data-save-before-new-cancel>取消</button><button type="button" class="primary" data-save-before-new-save>保存</button></div></div></div>`
+  }
+
+  function closeSaveBeforeNewDialog() {
+    saveBeforeNewDialogOpen = false
+    render()
   }
 
   function downloadDialogMarkup() {
@@ -1601,6 +1631,7 @@
     root.innerHTML = `<div class="wb3-shell">${leftPanelMarkup()}${rightPanelMarkup()}</div>
     ${knowledgeModalMarkup()}
     ${personalDeletePromptMarkup()}
+    ${saveBeforeNewDialogMarkup()}
     ${downloadDialogMarkup()}
     ${mathEditorModalMarkup()}
     ${symbolModalMarkup()}
@@ -2110,7 +2141,19 @@
       }
 
       if (event.target.closest('[data-new-draft]')) {
+        const newDraftBtn = event.target.closest('[data-new-draft]')
+        if (newDraftBtn?.disabled) return
         startNewDraft()
+        return
+      }
+
+      if (event.target.closest('[data-save-before-new-cancel]') || (event.target.closest('[data-save-before-new-overlay]') && !event.target.closest('.wb3-confirm-dialog'))) {
+        closeSaveBeforeNewDialog()
+        return
+      }
+      if (event.target.closest('[data-save-before-new-save]')) {
+        closeSaveBeforeNewDialog()
+        saveDraftManually()
         return
       }
 

@@ -374,13 +374,16 @@
           <li><strong>离开</strong>：允许直接离开；未保存表示尚未写入「我的组题」，下次进入仍恢复同一份题单与最新编辑内容（规则不变，界面不重复提示）。</li>
           <li>保存后<strong>不跳转</strong>；再次保存覆盖同一条题单记录。</li>
           <li>顶栏按钮顺序：<strong>＋ 新建</strong> → <strong>保存</strong> → <strong>下载</strong>；「我的组题」列表<strong>仅含曾保存</strong>的题单。</li>
-          <li><strong>＋ 新建</strong> / 知识库「编辑」切换题单：不替用户保存；各题单编辑进度可切回（见原 §9.9 切换规则）。</li>
+          <li><strong>＋ 新建 · 空画布置灰</strong>：当前画布<strong>没有任何题目</strong>时，顶栏「＋」置灰不可点；tooltip「画布为空，请先添加题目」。</li>
+          <li><strong>＋ 新建 · 未保存拦截</strong>：画布有题且相对最后一次保存有改动时，点击「＋」弹出提示「<strong>请先保存当前组题，以防数据丢失</strong>」；用户须<strong>保存成功</strong>后再次点击「＋」才允许新建空白题单或切回暂存题单（见下方切换规则）。弹窗提供「保存」与「取消」。</li>
+          <li><strong>知识库「编辑」切换题单</strong>：不替用户自动保存到「我的组题」；切换前将当前画布编辑进度写入本地草稿。从列表打开另一题单后，满足「＋」可用条件时可通过「＋」切回上一份暂存题单（见 §9.9.1）。</li>
+          <li><strong>§9.9.1 题单切换（知识库编辑 ↔ ＋）</strong>：从「我的组题」点<strong>编辑</strong>打开题单 A 时，若工作台当前题单 B 已有题目，系统保留 B 的本地编辑进度并暂存关联，画布打开 A。在 A 上点击「＋」须<strong>画布至少有 1 题</strong>且<strong>当前题单已保存、无未保存改动</strong>；满足时若存在暂存的 B 则<strong>切回 B</strong>，否则<strong>新建空白题单</strong>。</li>
           <li><strong>下载题单（本期唯一导出）</strong>：顶栏下载 icon → 确认弹窗 → 下载<strong>一份 Word（.doc）</strong>；<strong>题目、答案、解析合并在同一文件</strong>；卷首含学校/班级/姓名栏。以当前画布内容为准，<strong>不要求</strong>先保存。</li>
           <li><strong>本期不做</strong>：PDF 导出、学生版/教师版分册、多格式选择、题单分享链接等；需求与 Demo 均不得出现上述能力描述。</li>
           <li>保存失败：§10 提示并可重试；保存按钮不得置灰。</li>
         </ul>
 
-        <div class="prd-note">Demo 已实现：整卷排版工具栏、浮动富文本条、公式/符号模态框、删空即删题、未命名题单递增、<strong>Word 合并下载</strong>（卷首学籍栏）、画布<strong>手柄拖拽排序</strong>（§9.2）、<strong>保存按钮置灰/高亮 + 保存时间</strong>（§9.9）。<strong>表格模式公式、完整 LaTeX 渲染</strong>仍待对齐。</div>
+        <div class="prd-note">Demo 已实现：整卷排版工具栏、浮动富文本条、公式/符号模态框、删空即删题、未命名题单递增、<strong>Word 合并下载</strong>（卷首学籍栏）、画布<strong>手柄拖拽排序</strong>（§9.2）、<strong>保存按钮置灰/高亮 + 保存时间</strong>、<strong>＋ 空画布置灰 + 未保存弹窗拦截</strong>（§9.9）。<strong>表格模式公式、完整 LaTeX 渲染</strong>仍待对齐。</div>
       </section>
       <section class="prd-section">
         <h3>10. 工作台状态与异常</h3>
@@ -424,7 +427,7 @@
         <h3>4. 列表按钮与跳转</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>按钮</th><th>目标行为</th><th>验收规则</th></tr></thead><tbody>
           <tr><td>查看</td><td>仍停留在我的知识库，打开该题单的只读文档预览。</td><td>URL/状态保留paperId；浏览器返回回到原列表位置。</td></tr>
-          <tr><td>编辑</td><td>跳转组题工作台，以 <code>paperId</code> 载入，<strong>右侧组题画布直接打开该题单</strong>（非左侧预览）。若工作台当前画布另有题单且<strong>已有题目</strong>，先保留该题单编辑进度再切换；并支持通过画布 <strong>＋</strong> 切回（规则见工作台 §9.9）。</td><td>不得打开错误题单；进入前保存知识库列表状态。</td></tr>
+          <tr><td>编辑</td><td>跳转组题工作台，以 <code>paperId</code> 载入，<strong>右侧组题画布直接打开该题单</strong>（非左侧预览）。若工作台当前画布另有题单且<strong>已有题目</strong>，先保留该题单编辑进度再切换；当前题单<strong>保存且无未保存改动</strong>、画布有题时，可通过画布 <strong>＋</strong> 切回（规则见工作台 §9.9.1）。</td><td>不得打开错误题单；进入前保存知识库列表状态。</td></tr>
           <tr><td>删除</td><td>二次确认后移入回收站或软删除。</td><td>成功后移除并更新数量；失败恢复；当前打开题单被删除时给出提示。</td></tr>
         </tbody></table></div>
       </section>
@@ -433,7 +436,7 @@
         <p>顶部从左到右：返回、面包屑、搜索、<strong>编辑、下载</strong>（<strong>本期无分享</strong>）。</p>
         <ul>
           <li>返回：回“我的组题”列表，并恢复搜索、滚动位置和排序。</li>
-          <li>编辑：跳转工作台，右侧组题画布打开当前题单（与列表「编辑」同一套切换与 ＋ 规则）。</li>
+          <li>编辑：跳转工作台，右侧组题画布打开当前题单（与列表「编辑」同一套切换与 ＋ 规则；切回须先保存当前题单，见 §9.9.1）。</li>
           <li>下载：与组题工作台 §9.9 相同——仅<strong>一份 Word（.doc）</strong>，题目/答案/解析合并；无 PDF、无学生版/教师版分册、无格式选择弹层。</li>
           <li>预览正文：显示题单标题、元信息、题目与选项；只读，不展示画布编辑控件。</li>
         </ul>
