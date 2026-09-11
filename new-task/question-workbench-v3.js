@@ -227,6 +227,20 @@
   let previewKnowledgePaperId = ''
   let adaptRequest = null
   let adaptPicker = null
+  let adaptThinkingTimer = null
+  const ADAPT_THINKING_LINES = [
+    '理解原题考点与题型结构',
+    '按改编要求调整情境与数据',
+    '生成 2–3 道候选变式',
+    '校验难度与作答区格式',
+  ]
+
+  function stopAdaptThinkingTimer() {
+    if (adaptThinkingTimer !== null) {
+      window.clearInterval(adaptThinkingTimer)
+      adaptThinkingTimer = null
+    }
+  }
   let personalDeletePromptId = ''
   let downloadDialogOpen = false
   let suspendedDraftIdForNewButton = ''
@@ -984,12 +998,29 @@
     </article>`
   }
 
+  function inlineAdaptThinkingMarkup() {
+    const step = Math.min(adaptPicker?.thinkingStep ?? 0, ADAPT_THINKING_LINES.length - 1)
+    const body = ADAPT_THINKING_LINES.map((line, index) => {
+      if (index > step) return ''
+      const state = index === step && adaptPicker?.loading ? 'current' : 'done'
+      return `<p class="${state}">${escapeHtml(line)}${state === 'current' ? '…' : ''}</p>`
+    }).join('')
+    return `<div class="wb3-inline-adapt-thinking"><div class="wb3-inline-adapt-thinking-head"><i></i><b>思考过程</b><span>生成完成后自动收起</span></div><div class="wb3-inline-adapt-thinking-body">${body}</div></div>`
+  }
+
+  function inlineAdaptCandidateMarkup(candidate, index) {
+    return `<article><div><span>AI 改编 ${index + 1}</span></div><p>${escapeHtml(candidate.text)}</p>${candidate.options?.length ? `<small>${candidate.options.map((option) => escapeHtml(option)).join('　')}</small>` : ''}<button type="button" class="wb3-inline-adapt-add" data-use-adapt-candidate="${candidate.id}" title="选用题目" aria-label="选用题目">${icons.plus}</button></article>`
+  }
+
   function inlineAdaptMarkup(question) {
     const isRequesting = adaptRequest?.inline && adaptRequest.source.id === question.id
     const isGenerating = adaptPicker?.source.id === question.id
     if (!isRequesting && !isGenerating) return ''
     if (isRequesting) return `<section class="wb3-inline-adapt"><header><span>${icons.sparkle}</span><b>AI 改编</b><div class="wb3-inline-adapt-prompts"><button type="button" data-inline-adapt-prompt="换成生活情境，保持知识点和难度不变">换情境</button><button type="button" data-inline-adapt-prompt="降低难度，保持知识点不变">降低难度</button><button type="button" data-inline-adapt-prompt="生成同考点、不同数据的变式题">同考点变式</button></div><button type="button" data-close-inline-adapt aria-label="关闭AI改编" title="关闭">×</button></header><div class="wb3-inline-adapt-input"><textarea id="wb3InlineAdaptInput" rows="1" placeholder="描述改编要求"></textarea><button type="button" data-inline-adapt-submit>生成</button></div></section>`
-    return `<section class="wb3-inline-adapt results"><header><span>${icons.sparkle}</span><b>AI 改编候选题</b><button type="button" data-close-inline-adapt aria-label="关闭AI改编" title="关闭">×</button></header>${adaptPicker.loading ? '<div class="wb3-inline-adapt-loading"><i></i>正在生成改编题</div>' : `<div class="wb3-inline-adapt-options">${adaptPicker.candidates.map((candidate, index) => `<article><div><span>AI 改编 ${index + 1}</span><em>${escapeHtml(candidate.difficulty)}</em><em>${escapeHtml(candidate.knowledge)}</em></div><p>${escapeHtml(candidate.text)}</p>${candidate.options?.length ? `<small>${candidate.options.map((option) => escapeHtml(option)).join('　')}</small>` : ''}<button type="button" data-use-adapt-candidate="${candidate.id}">选用题目</button></article>`).join('')}</div>`}</section>`
+    const candidates = adaptPicker.loading
+      ? inlineAdaptThinkingMarkup()
+      : `<div class="wb3-inline-adapt-options">${adaptPicker.candidates.map((candidate, index) => inlineAdaptCandidateMarkup(candidate, index)).join('')}</div>`
+    return `<section class="wb3-inline-adapt results"><header><span>${icons.sparkle}</span><b>AI 改编候选题</b><button type="button" data-close-inline-adapt aria-label="关闭AI改编" title="关闭">×</button></header>${candidates}</section>`
   }
 
   function importMenuMarkup() {
@@ -1028,20 +1059,32 @@
   function adaptPickerMarkup() {
     if (!adaptPicker) return ''
     const source = adaptPicker.source
-    return `<div class="wb3-adapt-side-mask" data-close-adapt-picker><section class="wb3-adapt-picker" role="dialog" aria-label="AI改编候选题"><header><div><span>${icons.sparkle} AI改编</span><h2>选择一道改编题</h2><p>按照“${escapeHtml(adaptPicker.requirement)}”生成 · 原题不会加入题单。</p></div><button type="button" data-close-adapt-picker aria-label="关闭">×</button></header><div class="wb3-adapt-picker-original"><b>原题</b><p>${escapeHtml(source.text)}</p></div><div class="wb3-adapt-picker-body">${adaptPicker.loading ? `<div class="wb3-processing-card"><i></i><b>正在生成改编题</b><p>保持“${escapeHtml(source.knowledge)}”考点不变，正在按您的要求调整题目。</p></div>` : adaptPicker.candidates.map((question, index) => `<article class="wb3-adapt-option"><div><span>方案 ${index + 1}</span><em>${escapeHtml(question.difficulty)}</em><em>${escapeHtml(question.knowledge)}</em></div><p>${escapeHtml(question.text)}</p>${question.options?.length ? `<small>${question.options.map((option) => escapeHtml(option)).join('　')}</small>` : ''}<button type="button" data-use-adapt-candidate="${question.id}">${adaptPicker.targetId ? '选用并替换原题' : '选用此题'}</button></article>`).join('')}</div></section></div>`
+    const pickerBody = adaptPicker.loading
+      ? inlineAdaptThinkingMarkup()
+      : adaptPicker.candidates.map((question, index) => `<article class="wb3-adapt-option"><div><span>方案 ${index + 1}</span></div><p>${escapeHtml(question.text)}</p>${question.options?.length ? `<small>${question.options.map((option) => escapeHtml(option)).join('　')}</small>` : ''}<button type="button" class="wb3-inline-adapt-add" data-use-adapt-candidate="${question.id}" title="${adaptPicker.targetId ? '选用并替换原题' : '选用题目'}" aria-label="${adaptPicker.targetId ? '选用并替换原题' : '选用题目'}">${icons.plus}</button></article>`).join('')
+    return `<div class="wb3-adapt-side-mask" data-close-adapt-picker><section class="wb3-adapt-picker" role="dialog" aria-label="AI改编候选题"><header><div><span>${icons.sparkle} AI改编</span><h2>选择一道改编题</h2><p>按照“${escapeHtml(adaptPicker.requirement)}”生成 · 原题不会加入题单。</p></div><button type="button" data-close-adapt-picker aria-label="关闭">×</button></header><div class="wb3-adapt-picker-original"><b>原题</b><p>${escapeHtml(source.text)}</p></div><div class="wb3-adapt-picker-body">${pickerBody}</div></section></div>`
   }
 
   function openAdaptPicker(source, targetId = '', requirement = '') {
     if (!source) return
+    stopAdaptThinkingTimer()
     adaptRequest = null
-    adaptPicker = { source: { ...source }, targetId, requirement, loading: true, candidates: [] }
+    adaptPicker = { source: { ...source }, targetId, requirement, loading: true, candidates: [], thinkingStep: 0 }
     render()
+    adaptThinkingTimer = window.setInterval(() => {
+      if (!adaptPicker || adaptPicker.source.id !== source.id || !adaptPicker.loading) return
+      if (adaptPicker.thinkingStep < ADAPT_THINKING_LINES.length - 1) {
+        adaptPicker.thinkingStep += 1
+        render()
+      }
+    }, 850)
     window.setTimeout(() => {
+      stopAdaptThinkingTimer()
       if (!adaptPicker || adaptPicker.source.id !== source.id) return
       adaptPicker.loading = false
       adaptPicker.candidates = buildAdaptCandidates(source, requirement)
       render()
-    }, 700)
+    }, 3400)
   }
 
   const workspaceTabCatalog = {
@@ -1957,6 +2000,7 @@
       }
 
       if (event.target.closest('[data-close-inline-adapt]')) {
+        stopAdaptThinkingTimer()
         adaptRequest = null
         adaptPicker = null
         render()
