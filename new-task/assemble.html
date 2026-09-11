@@ -478,9 +478,9 @@ function meta() {
   return { n: state.sheet.length, score, minutes, types, kps }
 }
 function cloneQ(src, extra = {}) {
-  return { ...src, id: uid(), sourceId: src.id, source: extra.source || '官方题库', ...extra }
+  return { ...src, id: uid(), sourceId: src.id, source: extra.source || '飞象题库', ...extra }
 }
-function addFromBank(ids, source = '官方题库') {
+function addFromBank(ids, source = '飞象题库') {
   let n = 0
   ids.forEach((id) => {
     if (addedIndex(id)) return
@@ -509,7 +509,7 @@ function groupedSheet() {
 
 function tabsMarkup() {
   const tabs = [
-    ['bank', 'source-tab source-tab--hero', '主路径 · 1,280 题', '官方题库'],
+    ['bank', 'source-tab source-tab--hero', '主路径 · 1,280 题', '飞象题库'],
     ['knowledge', 'source-tab', '按章节规划覆盖', '知识点'],
     ['upload', 'source-tab', '文件转结构化题', 'AI 录题'],
     ['mine', 'source-tab', '校本 / 收藏 / 历史', '我的知识库'],
@@ -576,7 +576,7 @@ function knowledgeMarkup() {
         const count = BANK.filter((q) => q.kp === name).length
         const inSheet = state.sheet.filter((q) => q.kp === name).length
         return `<div class="kp-row">
-          <div><b>${name}</b><span>${count} 道官方题${inSheet ? ` · 题单已有 ${inSheet}` : ''}</span></div>
+          <div><b>${name}</b><span>${count} 道飞象题${inSheet ? ` · 题单已有 ${inSheet}` : ''}</span></div>
           <em class="cover ${inSheet ? '' : 'off'}">${inSheet ? '已覆盖' : '未覆盖'}</em>
           <div>
             <button class="mini" data-goto-kp="${name}">看题库</button>
@@ -621,8 +621,8 @@ function paperMarkup() {
     return `<div class="empty-paper">
       <div>
         <b>空白题单画布</b>
-        <p>从左侧官方题库点「＋」或把题目拖到这张纸上。<br>上传试卷、知识库导入也会落到这里。</p>
-        <button class="mini primary" data-tab="bank">去官方题库选题</button>
+        <p>从左侧飞象题库点「＋」或把题目拖到这张纸上。<br>上传试卷、知识库导入也会落到这里。</p>
+        <button class="mini primary" data-tab="bank">去飞象题库选题</button>
       </div>
     </div>`
   }
@@ -666,7 +666,7 @@ function render() {
     <div class="workspace">
       <section class="picker">
         <div class="picker-head">
-          <div><h1>加题</h1><p>官方题库是主路径，其余三个入口只在需要时切换</p></div>
+          <div><h1>加题</h1><p>飞象题库是主路径，其余三个入口只在需要时切换</p></div>
           <select class="subject-select"><option>五年级 · 数学</option><option>五年级 · 语文</option><option>七年级 · 数学</option></select>
         </div>
         ${tabsMarkup()}

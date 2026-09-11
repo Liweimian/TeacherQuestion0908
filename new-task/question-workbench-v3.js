@@ -1533,7 +1533,7 @@
         <aside class="wb3-tree">
           <label class="wb3-tree-subject"><select class="wb3-subject-switch" aria-label="当前学段和学科">${Object.keys(curriculumCatalog).map((key) => `<option ${curriculumKey === key ? 'selected' : ''}>${key}</option>`).join('')}</select></label>
           <div class="wb3-source-tabs" role="tablist" aria-label="题目来源">
-            <button type="button" role="tab" data-question-source="official" aria-selected="${questionSource === 'official'}" class="${questionSource === 'official' ? 'active' : ''}">官方题库</button>
+            <button type="button" role="tab" data-question-source="official" aria-selected="${questionSource === 'official'}" class="${questionSource === 'official' ? 'active' : ''}">飞象题库</button>
             <button type="button" role="tab" data-question-source="personal" aria-selected="${questionSource === 'personal'}" class="${questionSource === 'personal' ? 'active' : ''}">我的题库</button>
           </div>
           ${personalTabMeta}

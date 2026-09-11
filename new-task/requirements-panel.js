@@ -9,7 +9,7 @@
           <tr><td>首页输入框左下角“＋”菜单</td><td>新增“从题库中添加”按钮，文案固定，不使用“从题库中加题”。</td><td>点击后在当前首页上方打开题库选择弹窗。</td></tr>
           <tr><td>首页激活“AI组题”后，再点击“＋”</td><td>同样新增“从题库中添加”按钮。</td><td>复用同一个题库选择弹窗，选题关联当前AI组题对话。</td></tr>
           <tr><td>首页输入区域</td><td>新增已选题附件状态。</td><td>完成选择后显示“已选N道题”，用户仍停留首页。</td></tr>
-          <tr><td>题库选择弹窗</td><td>新增官方题库/我的题库、知识点、题型、难度、搜索、答、AI改编、添加及积分解锁。</td><td>作为首页覆盖层出现，不改变原页面路由。</td></tr>
+          <tr><td>题库选择弹窗</td><td>新增飞象题库/我的题库、知识点、题型、难度、搜索、答、AI改编、添加及积分解锁。</td><td>作为首页覆盖层出现，不改变原页面路由。</td></tr>
         </tbody></table></div>
         <h4>新增功能主流程</h4>
         <div class="prd-flow"><span>首页点击＋</span><i>→</i><span>从题库中添加</span><i>→</i><span>选择题目</span><i>→</i><span>加入对话</span><i>→</i><span>首页显示“已选N道题”</span></div>
@@ -29,14 +29,14 @@
       <section class="prd-section">
         <h3>3. 从题库中添加：结构与筛选</h3>
         <ul>
-          <li>左侧：学段学科、官方题库/我的题库、知识点树（官方树节点<strong>不</strong>展示题量；我的题库树节点展示题量）。</li>
-          <li>右侧：题型、难度、关键词搜索、题目卡片、分页或解锁提示；搜索词写入本地存储，离开题库页签或刷新后再回到题库仍恢复上次搜索（按「学段学科 + 官方/我的题库」分别记忆）。</li>
+          <li>左侧：学段学科、飞象题库/我的题库、知识点树（飞象树节点<strong>不</strong>展示题量；我的题库树节点展示题量）。</li>
+          <li>右侧：题型、难度、关键词搜索、题目卡片、分页或解锁提示；搜索词写入本地存储，离开题库页签或刷新后再回到题库仍恢复上次搜索（按「学段学科 + 飞象/我的题库」分别记忆）。</li>
           <li>切换学科、题库来源、知识点、题型、难度或关键词后回到第1页；已选题保持，除非题目已失效。</li>
-          <li>“我的题库”不消耗积分；是否分页由实际数据量决定，不复用官方题库的付费解锁逻辑。</li>
+          <li>“我的题库”不消耗积分；是否分页由实际数据量决定，不复用飞象题库的付费解锁逻辑。</li>
         </ul>
       </section>
       <section class="prd-section">
-        <h3>4. 官方题库数量边界（研发必读） <span class="prd-status">P0</span></h3>
+        <h3>4. 飞象题库数量边界（研发必读） <span class="prd-status">P0</span></h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>服务端总数</th><th>页面展示</th><th>底部行为</th></tr></thead><tbody>
           <tr><td>0题</td><td>展示空状态“暂无符合条件的题目”，给出“清除筛选/切换知识点”。</td><td>不展示分页、不展示积分解锁；加入对话仅在全局已选数为0时禁用。</td></tr>
           <tr><td>1–19题</td><td>一次展示全部实际题目。</td><td>不展示解锁和分页；不得补假数据凑20。</td></tr>
@@ -107,7 +107,7 @@
         <h3>3. 进入组题工作台后的规则复用 <span class="prd-status">P0</span></h3>
         <p>用户从 AI 组题任务进入<strong>组题工作台</strong>（或直接在 Demo 工作台组题）后，题库、更多题源、右侧画布、自动保存、下载等<strong>一律以《组题工作台》PRD 为准</strong>，本 Tab 不重复展开：</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>能力</th><th>复用章节</th></tr></thead><tbody>
-          <tr><td>官方/我的题库、知识点树、筛选、积分解锁、空状态</td><td>组题工作台 §4–§6</td></tr>
+          <tr><td>飞象/我的题库、知识点树、筛选、积分解锁、空状态</td><td>组题工作台 §4–§6</td></tr>
           <tr><td>题目卡片「答 / AI 改编 / 选用」与画布联动</td><td>组题工作台 §7</td></tr>
         </tbody></table></div>
         <p class="prd-note">上传文件、知识库、AI 组题对话历史、右侧画布、下载、自动保存与知识库「编辑」等，见<strong>组题工作台</strong> Tab 与<strong>我的知识库</strong> Tab，本 Tab 不重复列表。</p>
@@ -119,7 +119,7 @@
       <section class="prd-section">
         <h3>1. 页面定位与信息架构 <span class="prd-status">P0</span></h3>
         <p>组题工作台为新增页面。左侧负责找题、预览题源与 AI 组题过程，右侧为当前题单画布。左侧顶部为<strong>来源页签栏</strong>：固定「题库」「更多题源」，以及由更多题源衍生的<strong>可关闭动态页签</strong>（规则见 §2）。</p>
-        <ul><li>题库：官方题库、我的题库，支持学科/知识点/题型/难度/搜索。</li><li>更多题源：上传文件、从我的知识库添加、让AI帮我组题。</li><li>右侧画布：展示已选题目、答案解析及作答区；须点击<strong>保存</strong>才写入「我的组题」。</li></ul>
+        <ul><li>题库：飞象题库、我的题库，支持学科/知识点/题型/难度/搜索。</li><li>更多题源：上传文件、从我的知识库添加、让AI帮我组题。</li><li>右侧画布：展示已选题目、答案解析及作答区；须点击<strong>保存</strong>才写入「我的组题」。</li></ul>
       </section>
       <section class="prd-section">
         <h3>2. 左侧来源页签与动态 Tab <span class="prd-status">P0</span></h3>
@@ -157,14 +157,14 @@
       <section class="prd-section">
         <h3>3. 进入与退出</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>入口</th><th>打开结果</th><th>返回</th></tr></thead><tbody>
-          <tr><td>首页明确进入工作台</td><td>新建或恢复最近草稿；左侧默认官方题库，右侧显示当前画布。</td><td>退出回首页，先保存草稿。</td></tr>
+          <tr><td>首页明确进入工作台</td><td>新建或恢复最近草稿；左侧默认飞象题库，右侧显示当前画布。</td><td>退出回首页，先保存草稿。</td></tr>
           <tr><td>知识库“编辑”</td><td>从「我的云盘 → 我的组题」对题单 A 点<strong>编辑</strong>：进入组题工作台，<strong>右侧画布直接打开题单 A</strong>（见知识库 PRD §4 与 §9.9）。</td><td>若切换前画布 B <strong>有未保存改动</strong>，<strong>不保存 B</strong>，直接打开 A（B 回退至最后一次手动保存或丢弃未入库草稿）；若 B 已保存且无新改动且已有题目，可暂存 B 供「＋」切回（§9.9.1）。</td></tr>
           <tr><td>历史AI组题/上传记录</td><td>左侧打开对应记录页；右侧保留当前画布。</td><td>关闭对应动态页签（§2）；必要时回到「更多题源」或「题库」。</td></tr>
         </tbody></table></div>
       </section>
       <section class="prd-section">
-        <h3>4. 官方题库：知识树、科目与选题范围 <span class="prd-status">P0</span></h3>
-        <p>左侧「官方题库」知识树数据来自飞象题库<strong>全部已上线</strong>的知识树（按当前用户可见范围与接口返回为准），不在前端写死 Demo 树。切换学段学科后，拉取对应学科上线树并渲染。</p>
+        <h3>4. 飞象题库：知识树、科目与选题范围 <span class="prd-status">P0</span></h3>
+        <p>左侧「飞象题库」知识树数据来自飞象题库<strong>全部已上线</strong>的知识树（按当前用户可见范围与接口返回为准），不在前端写死 Demo 树。切换学段学科后，拉取对应学科上线树并渲染。</p>
         <h4>开放学科（本期）</h4>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>学段</th><th>学科</th><th>说明</th></tr></thead><tbody>
           <tr><td>小学</td><td>语文、数学、英语、科学、道德与法治</td><td>五科均展示完整上线知识树（学科范围见产品图2）。</td></tr>
@@ -174,30 +174,30 @@
         <ul>
           <li><strong>父节点选题范围</strong>：选中知识树<strong>父节点</strong>时，题目列表包含该节点下<strong>所有子节点</strong>已关联的上线题目（子节点题目并集，去重后参与筛选与分页）。</li>
           <li><strong>叶子节点</strong>：仅展示绑定在该叶子知识点上的题目。</li>
-          <li><strong>树 UI</strong>：官方题库知识点树节点<strong>不展示题量</strong>（删除节点右侧数量角标）；父/子层级、搜索高亮、选中态保持。</li>
-          <li><strong>排序</strong>：官方题库题目列表默认按题目<strong>上线时间</strong>（<code>onlineAt</code> / 发布至题库时间）<strong>从新到旧</strong>；同秒并列时以 <code>questionId</code> 稳定排序。</li>
+          <li><strong>树 UI</strong>：飞象题库知识点树节点<strong>不展示题量</strong>（删除节点右侧数量角标）；父/子层级、搜索高亮、选中态保持。</li>
+          <li><strong>排序</strong>：飞象题库题目列表默认按题目<strong>上线时间</strong>（<code>onlineAt</code> / 发布至题库时间）<strong>从新到旧</strong>；同秒并列时以 <code>questionId</code> 稳定排序。</li>
         </ul>
         <div class="prd-note">接口需返回：树节点 id、名称、父 id、是否叶子；题目需带 <code>onlineAt</code> 及关联知识点 id 列表，便于父节点聚合与排序。</div>
       </section>
       <section class="prd-section">
         <h3>5. 左侧题库与数量、解锁规则</h3>
-        <p>官方题库严格复用首页题库的数量、积分和分页规则：每页20题、一次消耗20积分、最多3页/60题。不得在两个入口实现两套口径。</p>
+        <p>飞象题库严格复用首页题库的数量、积分和分页规则：每页20题、一次消耗20积分、最多3页/60题。不得在两个入口实现两套口径。</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>数量</th><th>工作台行为</th><th>验收重点</th></tr></thead><tbody>
           <tr><td>0</td><td>空状态；无解锁、无分页。若当前选中知识点在树下<strong>确实无题</strong>（非筛选导致），展示专用提示（见下节）。</td><td>右侧已有题目不受影响。</td></tr>
           <tr><td>1–19</td><td>一次展示全部实际题目。</td><td><strong>不展示</strong>积分解锁与分页；不得凑满 20 条。</td></tr>
           <tr><td>20</td><td>仅在服务端 <code>total&gt;20</code> 或 <code>hasMore=true</code> 时显示解锁。</td><td>不能仅因本页返回 20 条就展示解锁。</td></tr>
           <tr><td>&gt;20</td><td>首屏 20 题；底部解锁文案 + 按钮；解锁后显示页码。</td><td>上限 60 题；<strong>同一自然日</strong>内同范围只扣一次；次日回到仅 20 题可见。</td></tr>
         </tbody></table></div>
-        <p>筛选变化回第1页并重置官方分页至第 1 页；解锁权益按<strong>自然日</strong>读取服务端；翻页不清空已选或右侧画布。「我的题库」不走积分解锁；左侧树节点<strong>展示题量</strong>；选中「我的题库」时，在官方/我的页签下方左对齐展示<strong>共N道</strong>（N=用户个人题库题目总数，含上传、录题等入库题目）。</p>
-        <p>题库搜索框内容需持久化到本地（如 <code>localStorage</code>），用户切换到「更多题源」等其它左侧页签再返回「题库」时，搜索词与筛选结果状态保持一致；切换学段学科或官方/我的题库时，分别恢复该维度下上次保存的搜索词。</p>
+        <p>筛选变化回第1页并重置飞象分页至第 1 页；解锁权益按<strong>自然日</strong>读取服务端；翻页不清空已选或右侧画布。「我的题库」不走积分解锁；左侧树节点<strong>展示题量</strong>；选中「我的题库」时，在飞象/我的页签下方左对齐展示<strong>共N道</strong>（N=用户个人题库题目总数，含上传、录题等入库题目）。</p>
+        <p>题库搜索框内容需持久化到本地（如 <code>localStorage</code>），用户切换到「更多题源」等其它左侧页签再返回「题库」时，搜索词与筛选结果状态保持一致；切换学段学科或飞象/我的题库时，分别恢复该维度下上次保存的搜索词。</p>
       </section>
       <section class="prd-section">
         <h3>6. 空状态与提示文案</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>场景</th><th>展示</th><th>操作</th></tr></thead><tbody>
-          <tr><td>官方 · 当前知识点下无题（total=0，且非题型/难度/关键词筛空）</td><td>提示：<strong>暂无题目</strong>。</td><td>可引导切换知识点或清除搜索。</td></tr>
-          <tr><td>官方 · 有题但被筛选/搜索筛空</td><td>「没有符合当前筛选或搜索条件的题目」。</td><td>清除筛选或调整条件。</td></tr>
+          <tr><td>飞象 · 当前知识点下无题（total=0，且非题型/难度/关键词筛空）</td><td>提示：<strong>暂无题目</strong>。</td><td>可引导切换知识点或清除搜索。</td></tr>
+          <tr><td>飞象 · 有题但被筛选/搜索筛空</td><td>「没有符合当前筛选或搜索条件的题目」。</td><td>清除筛选或调整条件。</td></tr>
           <tr><td>我的题库 · 当前学科下无任何个人题（total=0）</td><td>中间区域居中展示：标题<strong>还没有题目</strong>；说明<strong>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</strong>；主按钮<strong>上传文件</strong>（带上传图标）。</td><td>点击按钮进入「更多题源 → 上传文件」页（Demo 直达上传页）；上传完成后题目进入我的题库。</td></tr>
-          <tr><td>我的题库 · 有题但当前知识点/筛选无结果</td><td>同官方筛空文案。</td><td>切换知识点或清除筛选。</td></tr>
+          <tr><td>我的题库 · 有题但当前知识点/筛选无结果</td><td>同飞象筛空文案。</td><td>切换知识点或清除筛选。</td></tr>
         </tbody></table></div>
         <div class="prd-note">研发按上表区分「整库为空」与「当前节点/筛选为空」两类，不得共用同一套误导性文案。</div>
       </section>
@@ -209,7 +209,7 @@
           <li>我的题库可额外提供删除：点击删除后弹出<strong>二次确认</strong>（标题「从我的题库删除？」+ 一句说明 +「取消 / 确认删除」），<strong>不展示题干预览</strong>。若该题已通过来源关联加入当前画布，弹窗须额外提示「确认后将从我的题库与当前画布一并移除」；确认后同步删除画布中 <code>sourceId</code> 对应的已确认题并重排题号。</li>
         </ul>
         <h4>7.1 AI 改编（题库单题 · 与左侧卡片一致） <span class="prd-status">P0</span></h4>
-        <p>官方题库、我的题库、上传结果列表中的题目卡片，以及首页题库选择弹窗，<strong>共用同一套 AI 改编交互</strong>（工作台左侧已实现的内联样式为准）。</p>
+        <p>飞象题库、我的题库、上传结果列表中的题目卡片，以及首页题库选择弹窗，<strong>共用同一套 AI 改编交互</strong>（工作台左侧已实现的内联样式为准）。</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>步骤</th><th>交互</th><th>规则</th></tr></thead><tbody>
           <tr><td>1. 点击「AI改编」</td><td>在当前题目卡片下方展开内联改编区；再次点击或点「×」收起。</td><td>展开改编区时收起「答」面板；原题不自动加入画布/已选。</td></tr>
           <tr><td>2. 快捷要求</td><td>提供固定 chips，如「换情境」「降低难度」「同考点变式」。</td><td>点击 chip 可填入或触发一次生成（与 Demo 一致）。</td></tr>
@@ -246,7 +246,7 @@
         <h4>8.2 上传文件 · AI 解析进度</h4>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>状态</th><th>列表展示</th><th>操作</th></tr></thead><tbody>
           <tr><td>处理中</td><td>状态标签「处理中」、文件名、提交时间、当前阶段文案。</td><td><strong>不展示</strong>「查看进度」等按钮；用户可离开页面，后台继续解析。</td></tr>
-          <tr><td>解析完成</td><td>「解析完成」、题量、完成时间。</td><td>「查看题目」进入题目列表；列表内每题为<strong>结构化题目</strong>（与官方/我的题库卡片一致），可逐题或全部选用加入画布。</td></tr>
+          <tr><td>解析完成</td><td>「解析完成」、题量、完成时间。</td><td>「查看题目」进入题目列表；列表内每题为<strong>结构化题目</strong>（与飞象/我的题库卡片一致），可逐题或全部选用加入画布。</td></tr>
           <tr><td>解析失败</td><td>「解析失败」、失败原因摘要。</td><td>展示<strong>「重新解析」</strong>；点击后任务回到处理中并重新走解析链路，不重复创建个人题库脏数据。</td></tr>
           <tr><td>无任何上传任务</td><td>「AI解析进度」列表区域展示空状态文案<strong>暂无记录</strong>（不展示表头占位行）。</td><td>保留上传区，引导用户上传首张图片或文件。</td></tr>
         </tbody></table></div>
@@ -276,7 +276,7 @@
           <li>题单加载失败：列表/预览原位提示并可重试；不影响右侧已有画布。</li>
           <li>题单内部分题目失效/下架：失效题不可选用，其余题正常；已在画布中的副本按 §10「题目失效」处理。</li>
           <li>切换当前草稿/题单后，「已加入 · 第 N 题」联动规则同 §7.2（以当前激活画布为准）。</li>
-          <li>不走官方题库积分解锁；无 20 题分页限制。</li>
+          <li>不走飞象题库积分解锁；无 20 题分页限制。</li>
         </ul>
       </section>
       <section class="prd-section">
@@ -285,7 +285,7 @@
 
         <h4>9.1 题目类型与加入方式</h4>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>类型</th><th>定义（来源与数据形态）</th><th>进入画布</th></tr></thead><tbody>
-          <tr><td><strong>结构化题目</strong></td><td><strong>来源</strong>：① <strong>题库</strong>（官方题库、我的题库）；② <strong>上传文件</strong>经 AI 解析<strong>成功</strong>后入库「我的题库」的题目（默认可视为结构化，见 §8.2）；③ <strong>AI 组题</strong>产出中<strong>具备完整结构化数据</strong>的部分；④ <strong>我的知识库 → 我的云盘 → 我的组题</strong>中选用、且带题型/选项/答案等等价模型的题目。<br><strong>形态</strong>：带题型、知识点、难度、分值及选项/答案结构（JSON 或等价模型）。</td><td>左侧或预览页「＋」/「全部选用」后以<strong>已确认题</strong>插入；保留 <code>sourceId</code> 与入库快照（见 §7.2）。</td></tr>
+          <tr><td><strong>结构化题目</strong></td><td><strong>来源</strong>：① <strong>题库</strong>（飞象题库、我的题库）；② <strong>上传文件</strong>经 AI 解析<strong>成功</strong>后入库「我的题库」的题目（默认可视为结构化，见 §8.2）；③ <strong>AI 组题</strong>产出中<strong>具备完整结构化数据</strong>的部分；④ <strong>我的知识库 → 我的云盘 → 我的组题</strong>中选用、且带题型/选项/答案等等价模型的题目。<br><strong>形态</strong>：带题型、知识点、难度、分值及选项/答案结构（JSON 或等价模型）。</td><td>左侧或预览页「＋」/「全部选用」后以<strong>已确认题</strong>插入；保留 <code>sourceId</code> 与入库快照（见 §7.2）。</td></tr>
           <tr><td><strong>非结构化题目</strong></td><td><strong>来源（仅此两类）</strong>：① <strong>AI 组题</strong>产出中<strong>未能解析为结构化模型</strong>的部分；② <strong>我的知识库 → 我的组题</strong>中选用、仅为题干/自由排版、<strong>无固定选项结构</strong>的题目。<strong>不</strong>包含用户在画布内凭空新建空白题作为独立来源。<br><strong>形态</strong>：以题干 + 手动排版为主，可补作答区、公式；画布侧使用仅绑定当前 <code>draftId</code> 的实例 ID，不强制对应题库 <code>questionId</code>。</td><td>同左栏「＋」/「全部选用」或 AI 组题结果选用，<strong>直接进入画布</strong>并参与题号；可在画布内继续富文本编辑（§9.3）。</td></tr>
         </tbody></table></div>
         <p>同一题单可<strong>结构化与非结构化题目混排</strong>；题号从 1 连续编号。结构化 / 非结构化以<strong>进入画布时</strong>服务端或题单快照中的数据形态为准，而非用户是否在画布内改过字。</p>
