@@ -158,7 +158,7 @@
         <h3>3. 进入与退出</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>入口</th><th>打开结果</th><th>返回</th></tr></thead><tbody>
           <tr><td>首页明确进入工作台</td><td>新建或恢复最近草稿；左侧默认官方题库，右侧显示当前画布。</td><td>退出回首页，先保存草稿。</td></tr>
-          <tr><td>知识库“编辑”</td><td>从「我的云盘 → 我的组题」对题单 A 点<strong>编辑</strong>：进入组题工作台，<strong>右侧画布直接打开题单 A</strong>（见知识库 PRD §4 与 §9.9）。</td><td>若切换前画布 B 已有题，先保留 B 的编辑进度再打开 A；返回知识库时仍定位「我的组题」。</td></tr>
+          <tr><td>知识库“编辑”</td><td>从「我的云盘 → 我的组题」对题单 A 点<strong>编辑</strong>：进入组题工作台，<strong>右侧画布直接打开题单 A</strong>（见知识库 PRD §4 与 §9.9）。</td><td>若切换前画布 B <strong>有未保存改动</strong>，<strong>不保存 B</strong>，直接打开 A（B 回退至最后一次手动保存或丢弃未入库草稿）；若 B 已保存且无新改动且已有题目，可暂存 B 供「＋」切回（§9.9.1）。</td></tr>
           <tr><td>历史AI组题/上传记录</td><td>左侧打开对应记录页；右侧保留当前画布。</td><td>关闭对应动态页签（§2）；必要时回到「更多题源」或「题库」。</td></tr>
         </tbody></table></div>
       </section>
@@ -376,14 +376,14 @@
           <li>顶栏按钮顺序：<strong>＋ 新建</strong> → <strong>保存</strong> → <strong>下载</strong>；「我的组题」列表<strong>仅含曾保存</strong>的题单。</li>
           <li><strong>＋ 新建 · 空画布置灰</strong>：当前画布<strong>没有任何题目</strong>时，顶栏「＋」置灰不可点；tooltip「画布为空，请先添加题目」。</li>
           <li><strong>＋ 新建 · 未保存拦截</strong>：画布有题且相对最后一次保存有改动时，点击「＋」弹出提示「<strong>请先保存当前组题，以防数据丢失</strong>」；用户须<strong>保存成功</strong>后再次点击「＋」才允许新建空白题单或切回暂存题单（见下方切换规则）。弹窗提供「保存」与「取消」。</li>
-          <li><strong>知识库「编辑」切换题单</strong>：不替用户自动保存到「我的组题」；切换前将当前画布编辑进度写入本地草稿。从列表打开另一题单后，满足「＋」可用条件时可通过「＋」切回上一份暂存题单（见 §9.9.1）。</li>
-          <li><strong>§9.9.1 题单切换（知识库编辑 ↔ ＋）</strong>：从「我的组题」点<strong>编辑</strong>打开题单 A 时，若工作台当前题单 B 已有题目，系统保留 B 的本地编辑进度并暂存关联，画布打开 A。在 A 上点击「＋」须<strong>画布至少有 1 题</strong>且<strong>当前题单已保存、无未保存改动</strong>；满足时若存在暂存的 B 则<strong>切回 B</strong>，否则<strong>新建空白题单</strong>。</li>
-          <li><strong>下载题单（本期唯一导出）</strong>：顶栏下载 icon → 确认弹窗 → 下载<strong>一份 Word（.doc）</strong>；<strong>题目、答案、解析合并在同一文件</strong>；卷首含学校/班级/姓名栏。以当前画布内容为准，<strong>不要求</strong>先保存。</li>
+          <li><strong>知识库「编辑」切换题单</strong>：从「我的组题」打开另一份题单编辑时，<strong>不替用户保存</strong>当前题单。若当前题单<strong>有未保存改动</strong>，直接切换并<strong>丢弃</strong>这些改动（曾手动保存过的回退至最后一次保存内容；从未保存过的本地草稿不再保留）；<strong>不提供</strong>「＋」切回。若当前题单已保存且无新改动，仍按 §9.9.1 暂存供「＋」切回。</li>
+          <li><strong>§9.9.1 题单切换（知识库编辑 ↔ ＋）</strong>：从「我的组题」点<strong>编辑</strong>打开题单 A 时，若工作台当前题单 B <strong>已保存且无未保存改动</strong>且已有题目，系统保留 B 的本地进度并暂存关联，画布打开 A。在 A 上点击「＋」须<strong>画布至少有 1 题</strong>且<strong>当前题单已保存、无未保存改动</strong>；满足时若存在暂存的 B 则<strong>切回 B</strong>，否则<strong>新建空白题单</strong>。</li>
+          <li><strong>下载题单（本期唯一导出）</strong>：顶栏下载 icon → 确认弹窗 → 下载<strong>一份 Word（.doc）</strong>；<strong>题目、答案、解析合并在同一文件</strong>；卷首含学校/班级/姓名栏。以当前画布内容为准；若存在未保存改动，在打开下载确认或确认下载时<strong>自动执行保存</strong>（写入「我的组题」），无需用户先点保存。</li>
           <li><strong>本期不做</strong>：PDF 导出、学生版/教师版分册、多格式选择、题单分享链接等；需求与 Demo 均不得出现上述能力描述。</li>
           <li>保存失败：§10 提示并可重试；保存按钮不得置灰。</li>
         </ul>
 
-        <div class="prd-note">Demo 已实现：整卷排版工具栏、浮动富文本条、公式/符号模态框、删空即删题、未命名题单递增、<strong>Word 合并下载</strong>（卷首学籍栏）、画布<strong>手柄拖拽排序</strong>（§9.2）、<strong>保存按钮置灰/高亮 + 保存时间</strong>、<strong>＋ 空画布置灰 + 未保存弹窗拦截</strong>（§9.9）。<strong>表格模式公式、完整 LaTeX 渲染</strong>仍待对齐。</div>
+        <div class="prd-note">Demo 已实现：整卷排版工具栏、浮动富文本条、公式/符号模态框、删空即删题、未命名题单递增、<strong>Word 合并下载</strong>（卷首学籍栏）、画布<strong>手柄拖拽排序</strong>（§9.2）、<strong>保存按钮置灰/高亮 + 保存时间</strong>、<strong>＋ 空画布置灰 + 未保存弹窗拦截</strong>、<strong>下载前自动保存</strong>、<strong>云盘编辑切换丢弃未保存题单</strong>（§9.9）。<strong>表格模式公式、完整 LaTeX 渲染</strong>仍待对齐。</div>
       </section>
       <section class="prd-section">
         <h3>10. 工作台状态与异常</h3>

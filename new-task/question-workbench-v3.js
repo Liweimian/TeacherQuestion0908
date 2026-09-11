@@ -368,12 +368,50 @@
     return `${yy}/${mm}/${dd} ${hh}:${mi}已保存`
   }
 
-  function hasUnsavedCanvasChanges() {
-    if (!activeDraft) return false
-    const savedAt = Number(activeDraft.savedAt || 0)
-    const updatedAt = Number(activeDraft.updatedAt || 0)
-    if (!savedAt) return updatedAt > Number(activeDraft.createdAt || 0)
+  function isDraftDirty(draft) {
+    if (!draft) return false
+    const savedAt = Number(draft.savedAt || 0)
+    const updatedAt = Number(draft.updatedAt || 0)
+    if (!savedAt) return updatedAt > Number(draft.createdAt || 0)
     return updatedAt > savedAt
+  }
+
+  function hasUnsavedCanvasChanges() {
+    return isDraftDirty(activeDraft)
+  }
+
+  function captureDraftSnapshot(draft) {
+    return {
+      title: draft.title,
+      curriculumKey: draft.curriculumKey,
+      subject: draft.subject,
+      questions: JSON.parse(JSON.stringify(draft.questions || [])),
+    }
+  }
+
+  function applyDraftSnapshot(draft, snapshot) {
+    if (!draft || !snapshot) return
+    draft.title = snapshot.title
+    draft.curriculumKey = snapshot.curriculumKey
+    draft.subject = snapshot.subject
+    draft.questions = JSON.parse(JSON.stringify(snapshot.questions || []))
+  }
+
+  function ensureDraftSavedSnapshot(draft) {
+    if (!draft?.savedAt || draft.savedSnapshot || isDraftDirty(draft)) return
+    draft.savedSnapshot = captureDraftSnapshot(draft)
+  }
+
+  /** @returns {'clean'|'reverted'|'discarded'} */
+  function discardUnsavedDraftChanges(draft) {
+    if (!draft || !isDraftDirty(draft)) return 'clean'
+    ensureDraftSavedSnapshot(draft)
+    if (Number(draft.savedAt || 0) > 0 && draft.savedSnapshot) {
+      applyDraftSnapshot(draft, draft.savedSnapshot)
+      draft.updatedAt = draft.savedAt
+      return 'reverted'
+    }
+    return 'discarded'
   }
 
   function canvasSaveStatusMarkup() {
@@ -804,14 +842,22 @@
     saveDraftToLocalStorage()
   }
 
-  function saveDraftManually() {
-    if (!activeDraft || !hasUnsavedCanvasChanges()) return
+  function saveDraftManually(options = {}) {
+    const { silent = false } = options
+    if (!activeDraft || !hasUnsavedCanvasChanges()) return false
     const isResave = Number(activeDraft.savedAt || 0) > 0
     activeDraft.savedAt = Date.now()
     activeDraft.updatedAt = activeDraft.savedAt
+    activeDraft.savedSnapshot = captureDraftSnapshot(activeDraft)
     saveDraftToLocalStorage()
     render()
-    showToast(isResave ? '已更新保存到「我的组题」' : '已保存到「我的组题」')
+    if (!silent) showToast(isResave ? '已更新保存到「我的组题」' : '已保存到「我的组题」')
+    return true
+  }
+
+  function saveDraftManuallyIfDirty(options = {}) {
+    if (!hasUnsavedCanvasChanges()) return false
+    return saveDraftManually(options)
   }
 
   function syncNewDraftNavigationStateFromSession() {
@@ -865,19 +911,32 @@
     try { drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') } catch { drafts = [] }
     const previousActiveId = localStorage.getItem(ACTIVE_DRAFT_KEY)
     const previousDraft = previousActiveId ? drafts.find((item) => item.id === previousActiveId) : null
-    const previousCount = confirmedQuestionCount(previousDraft)
 
     clearNewDraftNavigationState()
 
-    if (previousActiveId && previousActiveId !== targetDraftId && previousCount > 0) {
-      if (previousDraft) {
-        previousDraft.updatedAt = Date.now()
+    if (previousActiveId && previousActiveId !== targetDraftId && previousDraft) {
+      const discardOutcome = discardUnsavedDraftChanges(previousDraft)
+
+      if (discardOutcome === 'discarded') {
+        drafts = drafts.filter((item) => item.id !== previousActiveId)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
+      } else if (discardOutcome === 'reverted') {
         drafts = [previousDraft, ...drafts.filter((item) => item.id !== previousActiveId)]
         localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
+      } else {
+        const previousCount = confirmedQuestionCount(previousDraft)
+        if (previousCount > 0) {
+          previousDraft.updatedAt = Date.now()
+          drafts = [previousDraft, ...drafts.filter((item) => item.id !== previousActiveId)]
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
+          suspendedDraftIdForNewButton = previousActiveId
+          plusCreatesBlankOnNew = false
+          try { sessionStorage.setItem(SUSPENDED_DRAFT_SESSION_KEY, previousActiveId) } catch { /* ignore */ }
+        } else {
+          plusCreatesBlankOnNew = true
+          try { sessionStorage.setItem(PLUS_BLANK_SESSION_KEY, '1') } catch { /* ignore */ }
+        }
       }
-      suspendedDraftIdForNewButton = previousActiveId
-      plusCreatesBlankOnNew = false
-      try { sessionStorage.setItem(SUSPENDED_DRAFT_SESSION_KEY, previousActiveId) } catch { /* ignore */ }
     } else if (previousActiveId !== targetDraftId) {
       plusCreatesBlankOnNew = true
       try { sessionStorage.setItem(PLUS_BLANK_SESSION_KEY, '1') } catch { /* ignore */ }
@@ -1749,6 +1808,7 @@
       showToast('题单还没有题目，无法下载')
       return
     }
+    saveDraftManuallyIfDirty({ silent: true })
     downloadDialogOpen = true
     render()
   }
@@ -1759,6 +1819,7 @@
   }
 
   function downloadPaperWordWithAnswers() {
+    saveDraftManuallyIfDirty({ silent: true })
     const html = buildPaperExportHtml(true)
     const baseName = sanitizeExportFilename(activeDraft?.title || DEFAULT_DRAFT_TITLE)
     downloadExportBlob(`${baseName}.doc`, html, 'application/msword')
