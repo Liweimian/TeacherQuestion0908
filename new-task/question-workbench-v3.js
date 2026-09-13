@@ -1061,7 +1061,7 @@
 
   function emptyResultsMarkup(filteredCount, treeScopedCount) {
     if (questionSource === 'personal' && currentBankQuestions().length === 0) {
-      return `<div class="wb3-empty-results wb3-empty-personal"><b>还没有题目</b><p>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</p><button type="button" class="wb3-empty-upload-btn primary" data-empty-import="upload">${icons.upload}AI录题</button></div>`
+      return `<div class="wb3-empty-results wb3-empty-personal"><b>还没有题目</b><p>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</p><button type="button" class="wb3-empty-upload-btn primary" data-empty-import="upload">${icons.upload}上传文件 AI录题</button></div>`
     }
     if (treeScopedCount === 0 && !treeSearchQuery.trim()) {
       return `<div class="wb3-empty-results">暂无题目</div>`

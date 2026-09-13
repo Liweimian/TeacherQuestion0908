@@ -196,7 +196,7 @@
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>场景</th><th>展示</th><th>操作</th></tr></thead><tbody>
           <tr><td>飞象 · 当前知识点下无题（total=0，且非题型/难度/关键词筛空）</td><td>提示：<strong>暂无题目</strong>。</td><td>可引导切换知识点或清除搜索。</td></tr>
           <tr><td>飞象 · 有题但被筛选/搜索筛空</td><td>「没有符合当前筛选或搜索条件的题目」。</td><td>清除筛选或调整条件。</td></tr>
-          <tr><td>我的题库 · 当前学科下无任何个人题（total=0）</td><td>中间区域居中展示：标题<strong>还没有题目</strong>；说明<strong>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</strong>；主按钮<strong>上传文件</strong>（带上传图标）。</td><td>点击按钮进入「快捷组题 → AI录题」页（Demo 直达上传页）；上传完成后题目进入我的题库。</td></tr>
+          <tr><td>我的题库 · 当前学科下无任何个人题（total=0）</td><td>中间区域居中展示：标题<strong>还没有题目</strong>；说明<strong>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</strong>；主按钮<strong>上传文件 AI录题</strong>（带上传图标）。</td><td>点击按钮进入「快捷组题 → AI录题」页（Demo 直达上传页）；上传完成后题目进入我的题库。</td></tr>
           <tr><td>我的题库 · 有题但当前知识点/筛选无结果</td><td>同飞象筛空文案。</td><td>切换知识点或清除筛选。</td></tr>
         </tbody></table></div>
         <div class="prd-note">研发按上表区分「整库为空」与「当前节点/筛选为空」两类，不得共用同一套误导性文案。</div>
