@@ -1234,7 +1234,7 @@
   const workspaceTabCatalog = {
     'ai-create': { label: 'AI组题', view: 'ai-entry' },
     upload: { label: '上传文件', view: 'ai-upload' },
-    knowledge: { label: '我的知识库', view: 'knowledge' },
+    knowledge: { label: '我的题单', view: 'knowledge' },
     'ai-compose': { label: '历史AI组题', view: 'ai-compose' },
   }
 
@@ -1298,7 +1298,7 @@
   }
 
   function aiGeneratedQuestionsMarkup(record, addedMap) {
-    return `<details class="wb3-ai-generated" open><summary><span>${icons.sparkle}<b>AI 生成题目</b><em>${record.questions.length} 道</em></span><small>点击折叠 / 展开</small></summary><div class="wb3-ai-generated-toolbar"><span>可以逐题选用，也可以一次全部加入组题画布</span><button type="button" data-compose-record-all="${record.id}">${record.allAdded ? '已全部加入' : '全部加入组题画布'}</button></div><div class="wb3-import-question-list">${record.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></details>`
+    return `<details class="wb3-ai-generated" open><summary><span>${icons.sparkle}<b>AI 生成题目</b><em>${record.questions.length} 道</em></span><small>点击折叠 / 展开</small></summary><div class="wb3-ai-generated-toolbar"><span>可以逐题选用，也可以一次全部加入当前题单</span><button type="button" data-compose-record-all="${record.id}">${record.allAdded ? '已全部加入' : '全部加入当前题单'}</button></div><div class="wb3-import-question-list">${record.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></details>`
   }
 
   function composeConversationHistoryMarkup(record, addedMap) {
@@ -1319,13 +1319,13 @@
       turns = [...parents, record]
     }
     const history = turns.filter((item) => item.id !== record.id)
-    return `${history.map((item, index) => `<section class="wb3-chat-turn history"><div class="wb3-chat-user"><span>我</span><p>${escapeHtml(item.prompt)}</p></div><div class="wb3-chat-ai"><span>${icons.sparkle}</span><div><b>第 ${index + 1} 轮 · AI 已完成组题</b><p>生成 ${item.questions.length} 道题目，本轮记录已保留。</p><details><summary>展开本轮 ${item.questions.length} 道题</summary><div class="wb3-ai-generated-toolbar"><span>展开后仍可逐题选用</span><button type="button" data-compose-record-all="${item.id}">${item.allAdded ? '已全部加入' : '全部加入组题画布'}</button></div><div class="wb3-import-question-list">${item.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></details></div></div></section>`).join('')}<section class="wb3-chat-turn current"><div class="wb3-chat-user"><span>我</span><p>${escapeHtml(record.prompt)}</p></div><div class="wb3-chat-ai"><span>${icons.sparkle}</span><div><b>第 ${history.length + 1} 轮 · ${record.status === 'completed' ? 'AI 已完成组题' : 'AI 正在组题'}</b><p>${record.status === 'completed' ? `已生成 ${record.questions.length} 道题，可在下方查看和选用。` : '正在理解要求并执行专业组题流程…'}</p></div></div></section>`
+    return `${history.map((item, index) => `<section class="wb3-chat-turn history"><div class="wb3-chat-user"><span>我</span><p>${escapeHtml(item.prompt)}</p></div><div class="wb3-chat-ai"><span>${icons.sparkle}</span><div><b>第 ${index + 1} 轮 · AI 已完成组题</b><p>生成 ${item.questions.length} 道题目，本轮记录已保留。</p><details><summary>展开本轮 ${item.questions.length} 道题</summary><div class="wb3-ai-generated-toolbar"><span>展开后仍可逐题选用</span><button type="button" data-compose-record-all="${item.id}">${item.allAdded ? '已全部加入' : '全部加入当前题单'}</button></div><div class="wb3-import-question-list">${item.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></details></div></div></section>`).join('')}<section class="wb3-chat-turn current"><div class="wb3-chat-user"><span>我</span><p>${escapeHtml(record.prompt)}</p></div><div class="wb3-chat-ai"><span>${icons.sparkle}</span><div><b>第 ${history.length + 1} 轮 · ${record.status === 'completed' ? 'AI 已完成组题' : 'AI 正在组题'}</b><p>${record.status === 'completed' ? `已生成 ${record.questions.length} 道题，可在下方查看和选用。` : '正在理解要求并执行专业组题流程…'}</p></div></div></section>`
   }
 
   function appendAssistMarkup(record) {
     if (record.status !== 'completed') return `<section class="wb3-append-assist processing"><span>${icons.sparkle}</span><div><b>正在分析当前题单</b><p>我已看到画布中有 ${record.existingCount || 0} 道题，正在检查知识点、题型和难度缺口，并匹配不重复的补充题目…</p></div></section>`
-    if (record.autoAdded) return `<section class="wb3-append-assist added"><span>${icons.check}</span><div><b>${record.questions.length} 道补充题已加入组题画布</b><p>已补充当前题单的知识点与难度梯度，你可以继续在右侧调整或删除题目。</p></div></section>`
-    return `<section class="wb3-append-assist"><span>${icons.sparkle}</span><div><b>已为当前题单准备好 ${record.questions.length} 道补充题</b><p>这些题目补充了当前题单的知识点与难度梯度，并尽量避开已有题目。你可以全部加入，也可以在下方逐题选用。</p><div class="wb3-append-confirm"><strong>是否将这 ${record.questions.length} 道题直接加入当前题单？</strong><button type="button" data-compose-record-all="${record.id}">全部加入组题画布</button></div></div></section>`
+    if (record.autoAdded) return `<section class="wb3-append-assist added"><span>${icons.check}</span><div><b>${record.questions.length} 道补充题已加入当前题单</b><p>已补充当前题单的知识点与难度梯度，你可以继续在右侧调整或删除题目。</p></div></section>`
+    return `<section class="wb3-append-assist"><span>${icons.sparkle}</span><div><b>已为当前题单准备好 ${record.questions.length} 道补充题</b><p>这些题目补充了当前题单的知识点与难度梯度，并尽量避开已有题目。你可以全部加入，也可以在下方逐题选用。</p><div class="wb3-append-confirm"><strong>是否将这 ${record.questions.length} 道题直接加入当前题单？</strong><button type="button" data-compose-record-all="${record.id}">全部加入当前题单</button></div></div></section>`
   }
 
   function importRecordActionMarkup(record) {
@@ -1470,9 +1470,9 @@
     let content = ''
 
     if (importWorkspaceView === 'ai-entry') {
-      content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI 组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入组题画布；支持添加文件与语音输入。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div>${aiCreateInputBlockMarkup()}${aiComposeHistoryListMarkup()}</div>`
+      content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI 组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入当前题单；支持添加文件与语音输入。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div>${aiCreateInputBlockMarkup()}${aiComposeHistoryListMarkup()}</div>`
     } else if (importWorkspaceView === 'add-more') {
-      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>从我的知识库添加</b><small>打开我在组题画布中保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>让 AI 帮我组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
+      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>我的题单</b><small>打开已保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>让 AI 帮我组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
     } else if (importWorkspaceView === 'ai-upload') {
       content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击上传 / 拖动文件到此处</b><span>优先支持一次选择多张 PNG、JPG 图片；亦可上传 PDF、DOCX，单文件 20M 内</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI解析进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；处理中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
     } else if (importWorkspaceView === 'ai-history') {
@@ -1498,7 +1498,7 @@
     } else if (importWorkspaceView === 'knowledge' && previewPaper) {
       content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)} · ${previewPaper.questions.length} 题 · 可逐题选用</p></div><button type="button" class="primary" data-import-knowledge-all="${previewPaper.id}">全部选用</button></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
     } else {
-      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>从我的知识库添加</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>仅展示该文件夹下由组题画布<strong>手动保存</strong>的题单。先查看，再逐题或全部选用。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">我的组题中还没有题单，请先在右侧画布组题并点击保存</p>'}</div></div>`
+      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>我的题单</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>仅展示该文件夹下由当前题单<strong>手动保存</strong>的题单。先查看，再逐题或全部选用。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">我的组题中还没有题单，请先在右侧画布组题并点击保存</p>'}</div></div>`
     }
 
     return `<section class="wb3-library wb3-import-workspace">${workspaceTabsMarkup()}<div class="wb3-import-center-body">${content}</div></section>`
@@ -1611,7 +1611,7 @@
       : `<div class="wb3-empty-sheet">
           <span class="wb3-empty-icon">${icons.blank}</span>
           <b>空白题单</b>
-          <p>从左侧题库逐题选用，或通过「更多题源」上传文件、从知识库选择题单、让 AI 组题。</p>
+          <p>从左侧题库逐题选用，或通过「更多题源」上传文件、从我的题单选用、让 AI 组题。</p>
           <div class="wb3-empty-actions">
             <button type="button" data-empty-import="library">${icons.knowledge}去题库选题</button>
             <button type="button" data-empty-import="add-more">${icons.plus}更多题源</button>
@@ -1621,7 +1621,7 @@
     return `<aside class="wb3-sheet">
       <header class="wb3-sheet-head">
         <div class="wb3-sheet-head-top">
-          <div><b>组题画布</b>${canvasSaveStatusMarkup()}</div>
+          <div><b>当前题单</b>${canvasSaveStatusMarkup()}</div>
           <div class="wb3-sheet-head-right"><div class="wb3-sheet-stats">
               <strong>共 ${meta.count} 题</strong>
             </div><button type="button" class="wb3-new-draft" data-new-draft aria-label="${escapeHtml(newDraftButtonTitle())}" title="${escapeHtml(newDraftButtonTitle())}" ${newDraftDisabled ? 'disabled' : ''}>${icons.plus}</button><button type="button" class="wb3-new-draft wb3-save-btn ${saveDirty ? 'dirty' : 'saved'}" data-action="save" aria-label="保存题单" title="${escapeHtml(canvasSaveButtonTitle())}" ${saveDirty ? '' : 'disabled'}>${icons.save}</button><button type="button" class="wb3-new-draft" data-action="download" aria-label="下载题单" title="下载题单">${icons.download}</button>
@@ -1663,7 +1663,7 @@
     if (!personalDeletePromptId) return ''
     const onCanvas = personalQuestionOnCanvas(personalDeletePromptId)
     const hint = onCanvas
-      ? '该题已加入右侧组题画布，确认删除后将从<strong>我的题库与当前画布</strong>中一并移除。'
+      ? '该题已加入右侧当前题单，确认删除后将从<strong>我的题库与当前画布</strong>中一并移除。'
       : '删除后无法再从「我的题库」选用。'
     return `<div class="wb3-overlay" data-personal-delete-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3PersonalDeleteTitle"><span>${icons.trash}</span><h3 id="wb3PersonalDeleteTitle">从我的题库删除？</h3><p>${hint}</p><div><button type="button" data-personal-delete-cancel>取消</button><button type="button" class="primary danger" data-personal-delete-confirm>确认删除</button></div></div></div>`
   }
@@ -1681,7 +1681,7 @@
     if (adaptPicker?.source?.id === id) adaptPicker = null
     personalDeletePromptId = ''
     render()
-    showToast(removedFromCanvas ? '已从我的题库删除，并同步移出组题画布' : '已从“我的题库”删除')
+    showToast(removedFromCanvas ? '已从我的题库删除，并同步移出当前题单' : '已从“我的题库”删除')
   }
 
   function render() {
@@ -1943,7 +1943,7 @@
       composeRecord.questions = list.map((question, index) => ({ ...question, id: `${composeRecord.id}-q${index + 1}`, source: 'ai-compose' }))
       composeRecord.status = 'completed'
       render()
-      showToast(`AI 已生成 ${list.length} 道题，可逐题选用或全部加入组题画布`)
+      showToast(`AI 已生成 ${list.length} 道题，可逐题选用或全部加入当前题单`)
     }, 1200)
   }
 
@@ -2294,7 +2294,7 @@
         if (record?.status === 'completed') {
           if (record.mode === 'append') record.autoAdded = true
           else record.allAdded = true
-          addConfirmedQuestionsFromSources(record.questions, `已将 ${record.questions.length} 道题加入组题画布`)
+          addConfirmedQuestionsFromSources(record.questions, `已将 ${record.questions.length} 道题加入当前题单`)
         }
         return
       }

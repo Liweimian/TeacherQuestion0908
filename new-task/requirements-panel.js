@@ -119,11 +119,11 @@
       <section class="prd-section">
         <h3>1. 页面定位与信息架构 <span class="prd-status">P0</span></h3>
         <p>飞象题库为新增页面。左侧负责找题、预览题源与 AI 组题过程，右侧为当前题单画布。左侧顶部为<strong>来源页签栏</strong>：固定「题库」「更多题源」，以及由更多题源衍生的<strong>可关闭动态页签</strong>（规则见 §2）。</p>
-        <ul><li>题库：飞象题库、我的题库，支持学科/知识点/题型/难度/搜索。</li><li>更多题源：上传文件、从我的知识库添加、让AI帮我组题。</li><li>右侧画布：展示已选题目、答案解析及作答区；须点击<strong>保存</strong>才写入「我的组题」。</li></ul>
+        <ul><li>题库：飞象题库、我的题库，支持学科/知识点/题型/难度/搜索。</li><li>更多题源：上传文件、我的题单、让AI帮我组题。</li><li>右侧画布：展示已选题目、答案解析及作答区；须点击<strong>保存</strong>才写入「我的组题」。</li></ul>
       </section>
       <section class="prd-section">
         <h3>2. 左侧来源页签与动态 Tab <span class="prd-status">P0</span></h3>
-        <p>用户在「更多题源」内进入具体能力，或继续「查看」某条上传记录 / 知识库题单 / AI 组题对话时，在「更多题源」<strong>右侧依次追加</strong>动态页签。切换页签只改变<strong>左侧内容区</strong>，右侧组题画布始终保留。</p>
+        <p>用户在「更多题源」内进入具体能力，或继续「查看」某条上传记录 / 知识库题单 / AI 组题对话时，在「更多题源」<strong>右侧依次追加</strong>动态页签。切换页签只改变<strong>左侧内容区</strong>，右侧当前题单始终保留。</p>
         <h4>页签类型</h4>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>类型</th><th>示例</th><th>关闭</th></tr></thead><tbody>
           <tr><td>固定页签</td><td>题库、更多题源</td><td><strong>不可</strong>关闭；始终位于栏最左侧（「飞象题库」标识之后）。</td></tr>
@@ -134,7 +134,7 @@
         <ul>
           <li>动态页签按<strong>打开时间</strong>从左到右排列在「更多题源」之后，先开的在左、后开的在右。</li>
           <li>点击页签标题切换激活态；激活页签下方绿色指示条与 Demo 一致。</li>
-          <li>从「更多题源」卡片进入「上传文件 / 从我的知识库添加 / 让 AI 帮我组题」时，若对应入口页签不存在则新建，若已存在则<strong>仅切换激活</strong>。</li>
+          <li>从「更多题源」卡片进入「上传文件 / 我的题单 / 让 AI 帮我组题」时，若对应入口页签不存在则新建，若已存在则<strong>仅切换激活</strong>。</li>
           <li>在入口页内点击「查看题目」「查看题单」「查看历史对话」等，为当前上下文<strong>再开一层</strong>子页动态页签，标题取文件名（去后缀）、题单标题或对话摘要（过长省略）。</li>
         </ul>
         <h4>关闭与激活回退（对齐浏览器标签页）</h4>
@@ -232,7 +232,7 @@
         <h3>8. 更多题源</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>入口</th><th>产品定义</th><th>完成态</th></tr></thead><tbody>
           <tr><td>上传文件</td><td>优先支持<strong>一次上传多张图片</strong>（PNG/JPG 等）；亦支持 PDF、DOCX。AI 识别、拆题、提取答案并自动打标，生成个人题库。</td><td>每份上传任务独立进「AI解析进度」；<strong>解析成功后</strong>题目以<strong>结构化题目</strong>写入「我的题库」（题型、知识点、难度、分值、选项/答案结构齐全，见 §9.1），可逐题或全部加入画布。</td></tr>
-          <tr><td>从我的知识库添加</td><td>读取<strong>我的知识库 → 我的云盘 → 我的组题</strong>文件夹下的题单（画布<strong>手动保存</strong>等），支持预览、逐题选用、全部选用。</td><td>题目加入当前画布；原题单不变。</td></tr>
+          <tr><td>我的题单</td><td>读取<strong>我的知识库 → 我的云盘 → 我的组题</strong>文件夹下的题单（画布<strong>手动保存</strong>等），支持预览、逐题选用、全部选用。</td><td>题目加入当前画布；原题单不变。</td></tr>
           <tr><td>让AI帮我组题</td><td>根据题量、知识点、题型、难度和时长生成完整候选题单；输入区支持<strong>文字、附件（＋）、语音</strong>。</td><td>支持逐题/全部加入当前画布；<strong>不</strong>写入「我的云盘 → 我的组题」。</td></tr>
         </tbody></table></div>
         <h4>8.1 让 AI 帮我组题 · 输入区</h4>
@@ -250,8 +250,8 @@
           <tr><td>解析失败</td><td>「解析失败」、失败原因摘要。</td><td>展示<strong>「重新解析」</strong>；点击后任务回到处理中并重新走解析链路，不重复创建个人题库脏数据。</td></tr>
           <tr><td>无任何上传任务</td><td>「AI解析进度」列表区域展示空状态文案<strong>暂无记录</strong>（不展示表头占位行）。</td><td>保留上传区，引导用户上传首张图片或文件。</td></tr>
         </tbody></table></div>
-        <h4>8.3 从我的知识库添加</h4>
-        <p>入口：<strong>更多题源 → 从我的知识库添加</strong>。左侧进入知识库选题流程，<strong>右侧组题画布保持可见</strong>，用户边预览边向当前题单加题。</p>
+        <h4>8.3 我的题单</h4>
+        <p>入口：<strong>更多题源 → 我的题单</strong>。左侧进入知识库选题流程，<strong>右侧当前题单保持可见</strong>，用户边预览边向当前题单加题。</p>
         <h4>数据来源与列表</h4>
         <p>本功能只有<strong>一个数据来源</strong>，对应知识库中的固定路径：<strong>我的知识库 → 我的云盘 → 我的组题</strong>（系统文件夹，与「我的知识库」页内目录一致）。</p>
         <ul>
@@ -270,7 +270,7 @@
           <tr><td>逐题「＋」</td><td>将单题以<strong>已确认题</strong>加入当前题单画布末尾；卡片显示「已加入 · 第 N 题」（规则同 §7.2）。</td><td>同一来源题在当前画布未解除关联前不得重复加入；再次点击为取消选用并从画布移除。</td></tr>
           <tr><td>「全部选用」</td><td>将该预览题单内<strong>全部题目</strong>一次性加入当前画布（已存在的来源题跳过）。</td><td>成功后 toast 提示选用数量；知识库中的<strong>原题单不被修改或删除</strong>（仅复制到画布）。</td></tr>
         </tbody></table></div>
-        <div class="prd-note warn">与知识库「编辑」的区别：「编辑」以 <code>paperId</code> 打开整份题单进入画布<strong>编辑原稿</strong>（切换规则见 §9.9）；「从我的知识库添加」是在<strong>当前正在组题的画布</strong>上追加题目，不改变知识库原题单内容。</div>
+        <div class="prd-note warn">与知识库「编辑」的区别：「编辑」以 <code>paperId</code> 打开整份题单进入画布<strong>编辑原稿</strong>（切换规则见 §9.9）；「我的题单」是在<strong>当前正在组题的画布</strong>上追加题目，不改变知识库原题单内容。</div>
         <h4>异常与边界</h4>
         <ul>
           <li>题单加载失败：列表/预览原位提示并可重试；不影响右侧已有画布。</li>
@@ -280,8 +280,8 @@
         </ul>
       </section>
       <section class="prd-section">
-        <h3>9. 右侧组题画布 <span class="prd-status">P0</span></h3>
-        <p>组题画布是题单的<strong>所见即所得编辑区</strong>：支持<strong>结构化</strong>与<strong>非结构化</strong>题目混排，拖拽排序，富文本与公式排版，作答区与导出。题目均经左侧来源（题库、更多题源）<strong>选用即进入画布</strong>；进入后在右侧改序、改字、改公式、删题。</p>
+        <h3>9. 右侧当前题单 <span class="prd-status">P0</span></h3>
+        <p>当前题单是题单的<strong>所见即所得编辑区</strong>：支持<strong>结构化</strong>与<strong>非结构化</strong>题目混排，拖拽排序，富文本与公式排版，作答区与导出。题目均经左侧来源（题库、更多题源）<strong>选用即进入画布</strong>；进入后在右侧改序、改字、改公式、删题。</p>
 
         <h4>9.1 题目类型与加入方式</h4>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>类型</th><th>定义（来源与数据形态）</th><th>进入画布</th></tr></thead><tbody>
@@ -364,13 +364,13 @@
         </ul>
 
         <h4>9.9 保存、新建与导出</h4>
-        <p>画布为<strong>当前正在编辑的一份题单</strong>。<strong>只有点击保存</strong>才写入「我的知识库 → 我的组题」；「组题画布」旁展示<strong>最后一次保存时间</strong>（如 <strong>26/08/10 10:23已保存</strong>）。</p>
+        <p>画布为<strong>当前正在编辑的一份题单</strong>。<strong>只有点击保存</strong>才写入「我的知识库 → 我的组题」；「当前题单」旁展示<strong>最后一次保存时间</strong>（如 <strong>26/08/10 10:23已保存</strong>）。</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>保存按钮</th><th>含义</th><th>文案/交互</th></tr></thead><tbody>
           <tr><td><strong>置灰（不可点）</strong></td><td>相对<strong>最后一次保存</strong>无新改动</td><td>保存成功后立即置灰；tooltip「已保存，暂无新的更改」。</td></tr>
           <tr><td><strong>高亮（可点）</strong></td><td>自上次保存以来又有修改，<strong>尚未保存</strong></td><td>加删题、改字、排序、改标题等后高亮；点击保存后再次置灰并刷新保存时间。</td></tr>
         </tbody></table></div>
         <ul>
-          <li><strong>未保存态</strong>：相对最后一次保存有改动时，「组题画布」旁仅展示<strong>未保存</strong>（不再展开长说明）；已保存且无新改动时仅展示保存时间（如 <strong>26/08/10 10:23已保存</strong>）。</li>
+          <li><strong>未保存态</strong>：相对最后一次保存有改动时，「当前题单」旁仅展示<strong>未保存</strong>（不再展开长说明）；已保存且无新改动时仅展示保存时间（如 <strong>26/08/10 10:23已保存</strong>）。</li>
           <li><strong>离开</strong>：允许直接离开；未保存表示尚未写入「我的组题」，下次进入仍恢复同一份题单与最新编辑内容（规则不变，界面不重复提示）。</li>
           <li>保存后<strong>不跳转</strong>；再次保存覆盖同一条题单记录。</li>
           <li>顶栏按钮顺序：<strong>＋ 新建</strong> → <strong>保存</strong> → <strong>下载</strong>；「我的组题」列表<strong>仅含曾保存</strong>的题单。</li>
@@ -427,7 +427,7 @@
         <h3>4. 列表按钮与跳转</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>按钮</th><th>目标行为</th><th>验收规则</th></tr></thead><tbody>
           <tr><td>查看</td><td>仍停留在我的知识库，打开该题单的只读文档预览。</td><td>URL/状态保留paperId；浏览器返回回到原列表位置。</td></tr>
-          <tr><td>编辑</td><td>跳转飞象题库，以 <code>paperId</code> 载入，<strong>右侧组题画布直接打开该题单</strong>（非左侧预览）。若工作台当前画布另有题单且<strong>已有题目</strong>，先保留该题单编辑进度再切换；当前题单<strong>保存且无未保存改动</strong>、画布有题时，可通过画布 <strong>＋</strong> 切回（规则见工作台 §9.9.1）。</td><td>不得打开错误题单；进入前保存知识库列表状态。</td></tr>
+          <tr><td>编辑</td><td>跳转飞象题库，以 <code>paperId</code> 载入，<strong>右侧当前题单直接打开该题单</strong>（非左侧预览）。若工作台当前画布另有题单且<strong>已有题目</strong>，先保留该题单编辑进度再切换；当前题单<strong>保存且无未保存改动</strong>、画布有题时，可通过画布 <strong>＋</strong> 切回（规则见工作台 §9.9.1）。</td><td>不得打开错误题单；进入前保存知识库列表状态。</td></tr>
           <tr><td>删除</td><td>二次确认后移入回收站或软删除。</td><td>成功后移除并更新数量；失败恢复；当前打开题单被删除时给出提示。</td></tr>
         </tbody></table></div>
       </section>
@@ -436,7 +436,7 @@
         <p>顶部从左到右：返回、面包屑、搜索、<strong>编辑、下载</strong>（<strong>本期无分享</strong>）。</p>
         <ul>
           <li>返回：回“我的组题”列表，并恢复搜索、滚动位置和排序。</li>
-          <li>编辑：跳转工作台，右侧组题画布打开当前题单（与列表「编辑」同一套切换与 ＋ 规则；切回须先保存当前题单，见 §9.9.1）。</li>
+          <li>编辑：跳转工作台，右侧当前题单打开当前题单（与列表「编辑」同一套切换与 ＋ 规则；切回须先保存当前题单，见 §9.9.1）。</li>
           <li>下载：与飞象题库 §9.9 相同——仅<strong>一份 Word（.doc）</strong>，题目/答案/解析合并；无 PDF、无学生版/教师版分册、无格式选择弹层。</li>
           <li>预览正文：显示题单标题、元信息、题目与选项；只读，不展示画布编辑控件。</li>
         </ul>
