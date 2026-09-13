@@ -1864,7 +1864,7 @@ function buildEditorPayload(tab) {
         answer: resolved.answer || "",
         path: `初中 / 数学 / ${resolved.type || "选择题"} / ${resolved.difficulty || "中等"} / ${meta.minutes} 分钟`,
         tags: [
-          tab.meta?.source || "飞象题库",
+          tab.meta?.source || "平台题库",
           resolved.knowledge
         ].filter(Boolean),
         competency: resolved.competency || meta.competency || "运算能力",

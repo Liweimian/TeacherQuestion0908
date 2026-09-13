@@ -8381,7 +8381,7 @@ body.compose-mode .ai-compose-files {
   border-style: dashed !important;
 }
 
-/* 更多题源之后固定一个同壳的收起入口，不再占用顶栏空间。 */
+/* 快捷组题之后固定一个同壳的收起入口，不再占用顶栏空间。 */
 #collapseBrowsePanel { display: none !important; }
 
 .doc-tab-pinned-collapse {
@@ -8493,7 +8493,7 @@ body.compose-mode .ai-compose-files {
   background: linear-gradient(90deg, rgba(247, 249, 248, 0), #f7f9f8 18px);
 }
 
-/* 收起更多题源/AI 页面时，左侧题单编辑器覆盖临时视图的隐藏规则。 */
+/* 收起快捷组题/AI 页面时，左侧题单编辑器覆盖临时视图的隐藏规则。 */
 .ai-workspace.ai-assistant-view.browse-panel-collapsed.selected-panel-enlarged:not(.selected-panel-collapsed) > .ai-selected-panel {
   display: flex;
 }
