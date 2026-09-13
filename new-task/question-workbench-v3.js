@@ -48,7 +48,7 @@
 
   function paperToolbarMarkup() {
     const format = paperFormat()
-    return `<div class="wb3-paper-toolbar" role="toolbar" aria-label="画布编辑工具">
+    return `<div class="wb3-paper-toolbar" role="toolbar" aria-label="题单排版工具">
       <label class="wb3-tool-select" data-tooltip="字号"><span class="wb3-tool-icon font-size-icon">T</span><select data-paper-format="fontSize" aria-label="字号"><option value="12" ${format.fontSize === 12 ? 'selected' : ''}>小五</option><option value="13" ${format.fontSize === 13 ? 'selected' : ''}>五号</option><option value="14" ${format.fontSize === 14 ? 'selected' : ''}>小四</option><option value="16" ${format.fontSize === 16 ? 'selected' : ''}>四号</option></select></label>
       <i class="wb3-tool-separator"></i>
       <label class="wb3-tool-select" data-tooltip="行间距"><span class="wb3-tool-icon line-height-icon"><i>↕</i><b>≡</b></span><select data-paper-format="lineHeight" aria-label="行间距"><option value="1.4" ${format.lineHeight === 1.4 ? 'selected' : ''}>1.0</option><option value="1.65" ${format.lineHeight === 1.65 ? 'selected' : ''}>1.5</option><option value="2" ${format.lineHeight === 2 ? 'selected' : ''}>2.0</option></select></label>
@@ -126,10 +126,10 @@
 
   const KNOWLEDGE_COMPOSE_FOLDER = '我的知识库 / 我的云盘 / 我的题单'
   const knowledgePapers = [
-    { id: 'k1', title: '四年级数学错题集', type: '我的题单', meta: '3 题 · 自动保存 · 04-12', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3]] },
-    { id: 'k2', title: '四年级数学期末卷', type: '我的题单', meta: '2 题 · 自动保存 · 04-08', questions: [bankQuestions[2], bankQuestions[4]] },
-    { id: 'k3', title: '长方体单元练习', type: '我的题单', meta: '2 题 · 自动保存 · 04-05', questions: [bankQuestions[2], bankQuestions[4]] },
-    { id: 'k4', title: '四年级计算每日练', type: '我的题单', meta: '3 题 · 自动保存 · 04-01', questions: [bankQuestions[0], bankQuestions[2], bankQuestions[4]] },
+    { id: 'k1', title: '四年级数学错题集', type: '我的题单', meta: '3 题 · 4月12日更新', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3]] },
+    { id: 'k2', title: '四年级数学期末卷', type: '我的题单', meta: '2 题 · 4月8日更新', questions: [bankQuestions[2], bankQuestions[4]] },
+    { id: 'k3', title: '长方体单元练习', type: '我的题单', meta: '2 题 · 4月5日更新', questions: [bankQuestions[2], bankQuestions[4]] },
+    { id: 'k4', title: '四年级计算每日练', type: '我的题单', meta: '3 题 · 4月1日更新', questions: [bankQuestions[0], bankQuestions[2], bankQuestions[4]] },
   ]
 
   const aiHistoryQuestions = bankQuestions.slice(5, 10).map((question) => ({
@@ -433,7 +433,7 @@
 
   function newDraftButtonTitle() {
     if (!canvasHasQuestions()) return '画布为空，请先添加题目'
-    if (hasUnsavedCanvasChanges()) return '请先保存当前组题'
+    if (hasUnsavedCanvasChanges()) return '请先保存当前题单'
     if (suspendedDraftIdForNewButton && !plusCreatesBlankOnNew) return '切回上一题单'
     return '新建组题'
   }
@@ -1066,7 +1066,7 @@
     if (treeScopedCount === 0 && !treeSearchQuery.trim()) {
       return `<div class="wb3-empty-results">暂无题目</div>`
     }
-    return `<div class="wb3-empty-results">没有符合当前筛选或搜索条件的题目</div>`
+    return `<div class="wb3-empty-results"><b>未找到符合条件的题目</b><button type="button" class="wb3-empty-upload-btn" data-clear-bank-filters>清除筛选</button></div>`
   }
 
   function visibleTreeGroups() {
@@ -1149,7 +1149,7 @@
       const state = index === step && adaptPicker?.loading ? 'current' : 'done'
       return `<p class="${state}">${escapeHtml(line)}${state === 'current' ? '…' : ''}</p>`
     }).join('')
-    return `<div class="wb3-inline-adapt-thinking"><div class="wb3-inline-adapt-thinking-head"><i></i><b>思考过程</b><span>生成完成后自动收起</span></div><div class="wb3-inline-adapt-thinking-body">${body}</div></div>`
+    return `<div class="wb3-inline-adapt-thinking"><div class="wb3-inline-adapt-thinking-head"><i></i><b>生成进度</b><span>生成完成后自动收起</span></div><div class="wb3-inline-adapt-thinking-body">${body}</div></div>`
   }
 
   function inlineAdaptCandidateMarkup(candidate, index) {
@@ -1164,14 +1164,14 @@
     const candidates = adaptPicker.loading
       ? inlineAdaptThinkingMarkup()
       : `<div class="wb3-inline-adapt-options">${adaptPicker.candidates.map((candidate, index) => inlineAdaptCandidateMarkup(candidate, index)).join('')}</div>`
-    return `<section class="wb3-inline-adapt results"><header><span>${icons.sparkle}</span><b>AI 改编候选题</b><button type="button" data-close-inline-adapt aria-label="关闭AI改编" title="关闭">×</button></header>${candidates}</section>`
+    return `<section class="wb3-inline-adapt results"><header><span>${icons.sparkle}</span><b>改编结果</b><button type="button" data-close-inline-adapt aria-label="关闭AI改编" title="关闭">×</button></header>${candidates}</section>`
   }
 
   function importMenuMarkup() {
     if (!importMenuOpen) return ''
     return `<div class="wb3-import-menu" role="menu">
       <button type="button" data-import="upload" role="menuitem">${icons.upload}<span><b>AI录题</b><small>AI 录题并自动打标，后台解析约 4–10 分钟</small></span></button>
-      <button type="button" data-import="history" role="menuitem">${icons.blank}<span><b>AI录题记录</b><small>${aiImportRecords.filter((record) => record.status === 'processing').length} 个处理中 · 可复用历史结果</small></span></button>
+      <button type="button" data-import="history" role="menuitem">${icons.blank}<span><b>AI录题记录</b><small>${aiImportRecords.filter((record) => record.status === 'processing').length} 个解析中 · 可复用历史结果</small></span></button>
       <button type="button" data-import="knowledge" role="menuitem">${icons.knowledge}<span><b>我的知识库</b><small>按整份题单预览或导入</small></span></button>
       <button type="button" data-import="ai-compose" role="menuitem">${icons.sparkle}<span><b>AI组题记录</b><small>查看 AI 生成的整套题目</small></span></button>
     </div>`
@@ -1329,13 +1329,13 @@
   }
 
   function importRecordActionMarkup(record) {
-    if (record.status === 'completed') return `<button type="button" data-open-record="${record.id}">查看题目</button>`
+    if (record.status === 'completed') return `<button type="button" data-open-record="${record.id}">查看并选题</button>`
     if (record.status === 'failed') return `<button type="button" data-reparse-record="${record.id}">重新解析</button>`
     return ''
   }
 
   function importRecordRowMarkup(record) {
-    return `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.blank}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '解析完成' : record.status === 'failed' ? '解析失败' : '处理中'}</span><b>${escapeHtml(record.filename)}</b><small>提交于 ${escapeHtml(record.submittedAt)}${record.completedAt ? ` · 完成于 ${escapeHtml(record.completedAt)}` : ''}${record.questions?.length ? ` · ${record.questions.length} 题` : ''}</small><em>${escapeHtml(record.stage)}${record.eta ? ` · ${escapeHtml(record.eta)}` : ''}</em></div>${importRecordActionMarkup(record)}</article>`
+    return `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.blank}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '解析完成' : record.status === 'failed' ? '解析失败' : '解析中'}</span><b>${escapeHtml(record.filename)}</b><small>提交于 ${escapeHtml(record.submittedAt)}${record.completedAt ? ` · 完成于 ${escapeHtml(record.completedAt)}` : ''}${record.questions?.length ? ` · ${record.questions.length} 题` : ''}</small><em>${escapeHtml(record.stage)}${record.eta ? ` · ${escapeHtml(record.eta)}` : ''}</em></div>${importRecordActionMarkup(record)}</article>`
   }
 
   function importRecordListMarkup() {
@@ -1446,7 +1446,7 @@
       if (!personalQuestions.some((item) => item.id === question.id)) personalQuestions.unshift(question)
     })
     if (root && !root.hidden) render()
-    showToast('AI录题完成，题目已自动关联到“我的题库”')
+    showToast('AI录题完成，已保存到“我的题库”')
   }
 
   function restartImportRecord(recordId) {
@@ -1472,15 +1472,15 @@
     if (importWorkspaceView === 'ai-entry') {
       content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入当前题单；支持添加文件与语音输入。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div>${aiCreateInputBlockMarkup()}${aiComposeHistoryListMarkup()}</div>`
     } else if (importWorkspaceView === 'add-more') {
-      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>快捷组题</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>AI录题</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>我的题单</b><small>打开已保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>AI组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
+      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>快捷组题</h2></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>AI录题</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>我的题单</b><small>选择已保存的题单，支持整份或逐题加入当前题单</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>AI组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
     } else if (importWorkspaceView === 'ai-upload') {
-      content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击上传 / 拖动文件到此处</b><span>优先支持一次选择多张 PNG、JPG 图片；亦可上传 PDF、DOCX，单文件 20M 内</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI解析进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；处理中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
+      content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击选择文件，或拖拽文件到此处</b><span>支持批量上传 PNG、JPG 图片，也支持 PDF、DOCX；单个文件不超过 20 MB</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI录题进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；解析中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
     } else if (importWorkspaceView === 'ai-history') {
-      content = `<div class="wb3-record-page"><div class="wb3-import-page-title"><div><h2>AI录题记录</h2><p>处理中任务可以离开页面，已完成结果可随时重新选题。</p></div></div>
+      content = `<div class="wb3-record-page"><div class="wb3-import-page-title"><div><h2>AI录题记录</h2><p>解析中任务可以离开页面，已完成结果可随时重新选题。</p></div></div>
         <div class="wb3-record-list">${importRecordListMarkup()}</div></div>`
     } else if (importWorkspaceView === 'ai-record' && activeRecord) {
-      content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(activeRecord.filename)}</h2><p>${activeRecord.status === 'completed' ? `${activeRecord.questions.length} 道题 · 已自动关联到我的题库` : `${escapeHtml(activeRecord.stage)} · ${escapeHtml(activeRecord.eta || '')}`}</p></div>${activeRecord.status === 'completed' ? `<button type="button" class="primary" data-import-record-all="${activeRecord.id}">全部选用</button>` : ''}</div>
-        ${activeRecord.status === 'completed' ? `<div class="wb3-library-sync-note compact">${icons.check}<span><b>这些题目已自动进入“我的题库”</b><small>下方卡片与普通题库一致，可逐题显示答案、AI改编或选用。</small></span></div><div class="wb3-import-question-list">${activeRecord.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div>` : `<div class="wb3-processing-card"><i></i><b>${escapeHtml(activeRecord.stage)}</b><p>${escapeHtml(activeRecord.eta || '预计需要 4–10 分钟')}。可以返回题库选题继续组题。</p><span>上传完成　→　识别题目　→　提取答案　→　自动打标　→　关联我的题库</span></div>`}
+      content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(activeRecord.filename)}</h2><p>${activeRecord.status === 'completed' ? `${activeRecord.questions.length} 道题 · 已保存到“我的题库”` : `${escapeHtml(activeRecord.stage)} · ${escapeHtml(activeRecord.eta || '')}`}</p></div>${activeRecord.status === 'completed' ? `<button type="button" class="primary" data-import-record-all="${activeRecord.id}">全部选用</button>` : ''}</div>
+        ${activeRecord.status === 'completed' ? `<div class="wb3-library-sync-note compact">${icons.check}<span><b>已保存到“我的题库”</b><small>下方卡片与普通题库一致，可逐题显示答案、AI改编或选用。</small></span></div><div class="wb3-import-question-list">${activeRecord.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div>` : `<div class="wb3-processing-card"><i></i><b>${escapeHtml(activeRecord.stage)}</b><p>${escapeHtml(activeRecord.eta || '预计需要 4–10 分钟')}。可以返回题库选题继续组题。</p><span>上传完成　→　识别题目　→　提取答案　→　自动打标　→　关联我的题库</span></div>`}
       </div>`
     } else if (importWorkspaceView === 'ai-compose-record' && activeComposeRecord) {
       const isAdaptRecord = activeComposeRecord.mode === 'adapt'
@@ -1496,9 +1496,9 @@
       content = `<div class="wb3-record-page"><div class="wb3-import-page-title"><div><h2>AI组题记录</h2><p>保留每次 AI 协作生成的题单，可再次整份或逐题选用。</p></div></div>
         <div class="wb3-record-list">${aiComposeRecords.map((record) => `<article class="wb3-record-row ${record.status}"><span class="wb3-record-file">${icons.sparkle}</span><div><span class="wb3-record-status">${record.status === 'completed' ? '生成完成' : '生成中'}</span><b>${escapeHtml(record.title)}</b><small>${record.mode === 'append' ? '补充题目' : record.mode === 'adapt' ? '改编单题' : '生成新题单'} · ${escapeHtml(record.createdAt)} · ${record.questions.length} 题</small><em>${escapeHtml(record.prompt)}</em></div><button type="button" data-open-compose-record="${record.id}">${record.status === 'completed' ? '查看题目' : '查看进度'}</button></article>`).join('')}</div></div>`
     } else if (importWorkspaceView === 'knowledge' && previewPaper) {
-      content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)} · ${previewPaper.questions.length} 题 · 可逐题选用</p></div><button type="button" class="primary" data-import-knowledge-all="${previewPaper.id}">全部选用</button></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
+      content = `<div class="wb3-record-detail"><div class="wb3-import-page-title"><div><h2>${escapeHtml(previewPaper.title)}</h2><p>${escapeHtml(previewPaper.meta)}</p></div><button type="button" class="primary" data-import-knowledge-all="${previewPaper.id}">全部选用</button></div><div class="wb3-import-question-list">${previewPaper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div></div>`
     } else {
-      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>我的题单</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>仅展示该文件夹下由当前题单<strong>手动保存</strong>的题单。先查看，再逐题或全部选用。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">还没有保存的题单，请先在右侧画布组题并点击保存</p>'}</div></div>`
+      content = `<div class="wb3-knowledge-page"><div class="wb3-import-page-title"><div><h2>我的题单</h2><p class="wb3-knowledge-path">${escapeHtml(KNOWLEDGE_COMPOSE_FOLDER)}</p><small>这里展示你已保存的题单，可整份或逐题加入当前题单。</small></div></div><div class="wb3-knowledge-grid">${allKnowledgePapers().length ? allKnowledgePapers().map((paper) => `<article><span>${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('') : '<p class="wb3-record-empty">还没有保存的题单，请先在右侧画布组题并点击保存</p>'}</div></div>`
     }
 
     return `<section class="wb3-library wb3-import-workspace">${workspaceTabsMarkup()}<div class="wb3-import-center-body">${content}</div></section>`
@@ -1516,13 +1516,15 @@
     const parentNames = Object.keys(curriculum.parents)
     const difficultyOptions = [...new Set(currentBankQuestions().map((question) => question.difficulty))]
     const showOfficialUnlock = questionSource === 'official' && questions.length > OFFICIAL_PAGE_SIZE
+    const remainingOfficialCount = Math.max(0, questions.length - OFFICIAL_PAGE_SIZE)
+    const remainingOfficialPages = Math.max(0, totalPages - 1)
     const paging = !showOfficialUnlock ? '' : officialMoreUnlocked
-      ? `<footer class="wb3-bank-pagination"><button type="button" data-official-page="${officialPage - 1}" ${officialPage === 1 ? 'disabled' : ''}>上一页</button><span>第 ${officialPage} / ${totalPages} 页 · 每页20题</span><button type="button" data-official-page="${officialPage + 1}" ${officialPage === totalPages ? 'disabled' : ''}>下一页</button></footer>`
-      : `<footer class="wb3-bank-unlock"><span>消耗20积分，可继续查看后2页，共60道题</span><button type="button" data-official-unlock>解锁更多</button></footer>`
-    const unlockPrompt = officialUnlockPromptOpen ? `<div class="wb3-overlay" data-official-unlock-overlay><div class="wb3-unlock-dialog" role="dialog"><span>${icons.sparkle}</span><h3>解锁更多题目</h3><p>本次将消耗 <b>20积分</b>，解锁当前知识点后续2页题目。</p><div><button type="button" data-official-unlock-cancel>暂不解锁</button><button type="button" class="primary" data-official-unlock-confirm>确认解锁</button></div></div></div>` : ''
+      ? `<footer class="wb3-bank-pagination"><button type="button" data-official-page="${officialPage - 1}" ${officialPage === 1 ? 'disabled' : ''}>上一页</button><span>第 ${officialPage} / ${totalPages} 页 · 每页 20 题</span><button type="button" data-official-page="${officialPage + 1}" ${officialPage === totalPages ? 'disabled' : ''}>下一页</button></footer>`
+      : `<footer class="wb3-bank-unlock"><span>还有 ${remainingOfficialCount} 道题，消耗 20 积分可解锁</span><button type="button" data-official-unlock>解锁更多</button></footer>`
+    const unlockPrompt = officialUnlockPromptOpen ? `<div class="wb3-overlay" data-official-unlock-overlay><div class="wb3-unlock-dialog" role="dialog"><span>${icons.sparkle}</span><h3>解锁更多题目</h3><p>本次将消耗 <b>20 积分</b>，解锁当前知识点后续 ${remainingOfficialPages} 页、共 ${remainingOfficialCount} 道题。</p><div><button type="button" data-official-unlock-cancel>暂不解锁</button><button type="button" class="primary" data-official-unlock-confirm>确认解锁</button></div></div></div>` : ''
     const treeScopedCount = questionsInTreeScope().length
     const personalTabMeta = questionSource === 'personal'
-      ? `<p class="wb3-personal-tab-meta">共${personalBankTotalCount()}道</p>`
+      ? `<p class="wb3-personal-tab-meta">共 ${personalBankTotalCount()} 题</p>`
       : ''
     const resultsBody = visibleQuestions.length
       ? visibleQuestions.map((question) => questionCardMarkup(question, addedMap)).join('') + paging
@@ -1537,7 +1539,7 @@
             <button type="button" role="tab" data-question-source="personal" aria-selected="${questionSource === 'personal'}" class="${questionSource === 'personal' ? 'active' : ''}">我的题库</button>
           </div>
           ${personalTabMeta}
-          <div class="wb3-tree-list">${treeGroups.length ? treeGroups.map(([name]) => `<button type="button" class="${activeKnowledge === name ? 'active' : ''} ${parentNames.includes(name) ? 'group' : ''}" data-knowledge="${name}" data-tree-name="${escapeHtml(name.toLowerCase())}"><span>${parentNames.includes(name) ? '⌄ ' : ''}${name}</span>${questionSource === 'personal' ? `<em>${knowledgeCount(name)}</em>` : ''}</button>`).join('') : '<p class="wb3-tree-empty">没有匹配的知识点</p>'}</div>
+          <div class="wb3-tree-list">${treeGroups.length ? treeGroups.map(([name]) => `<button type="button" class="${activeKnowledge === name ? 'active' : ''} ${parentNames.includes(name) ? 'group' : ''}" data-knowledge="${name}" data-tree-name="${escapeHtml(name.toLowerCase())}"><span>${parentNames.includes(name) ? '⌄ ' : ''}${name}</span>${questionSource === 'personal' ? `<em>${knowledgeCount(name)}</em>` : ''}</button>`).join('') : ''}</div>
         </aside>
         <div class="wb3-results">
           <header class="wb3-results-head">
@@ -1575,7 +1577,7 @@
           <button type="button" class="${answerLines && answerStyle === 'blank' ? 'active' : ''}" data-answer-style-set="blank" data-question="${question.id}"><i class="blank"></i><span><b>空白区</b><small>适合计算、画图</small></span></button>
           <button type="button" class="${answerLines && answerStyle === 'lined' ? 'active' : ''}" data-answer-style-set="lined" data-question="${question.id}"><i class="lined"></i><span><b>横线区</b><small>适合文字作答</small></span></button>
         </div>
-        <footer><span>高度</span><button type="button" data-answer-line-remove="${question.id}" ${answerLines < 1 ? 'disabled' : ''}>−</button><em>${answerLines || 2} 行</em><button type="button" data-answer-line-add="${question.id}">＋</button></footer>
+        <footer><span>行数</span><button type="button" data-answer-line-remove="${question.id}" ${answerLines < 1 ? 'disabled' : ''}>−</button><em>${answerLines || 2} 行</em><button type="button" data-answer-line-add="${question.id}">＋</button></footer>
       </div>` : ''}
     </span>`
     const displayIndex = confirmedSheetIndex(question.id) || index + 1
@@ -1610,8 +1612,8 @@
       ? sheetQuestions.map(sheetQuestionMarkup).join('')
       : `<div class="wb3-empty-sheet">
           <span class="wb3-empty-icon">${icons.blank}</span>
-          <b>空白题单</b>
-          <p>从左侧「题库选题」逐题选用，或通过「快捷组题」AI录题、从我的题单选用、AI组题。</p>
+          <b>当前题单还没有题目</b>
+          <p>可以从题库选择，也可以通过AI录题、复用题单或AI组题添加题目。</p>
           <div class="wb3-empty-actions">
             <button type="button" data-empty-import="library">${icons.knowledge}去题库选题</button>
             <button type="button" data-empty-import="add-more">${icons.plus}快捷组题</button>
@@ -1644,7 +1646,7 @@
 
   function saveBeforeNewDialogMarkup() {
     if (!saveBeforeNewDialogOpen) return ''
-    return `<div class="wb3-overlay" data-save-before-new-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3SaveBeforeNewTitle"><span>${icons.blank}</span><h3 id="wb3SaveBeforeNewTitle">无法新建</h3><p>请先保存当前组题，以防数据丢失。</p><div><button type="button" data-save-before-new-cancel>取消</button><button type="button" class="primary" data-save-before-new-save>保存</button></div></div></div>`
+    return `<div class="wb3-overlay" data-save-before-new-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3SaveBeforeNewTitle"><span>${icons.blank}</span><h3 id="wb3SaveBeforeNewTitle">无法新建</h3><p>请先保存当前题单，以防数据丢失。</p><div><button type="button" data-save-before-new-cancel>取消</button><button type="button" class="primary" data-save-before-new-save>保存</button></div></div></div>`
   }
 
   function closeSaveBeforeNewDialog() {
@@ -1656,7 +1658,7 @@
     if (!downloadDialogOpen) return ''
     const title = escapeHtml(activeDraft?.title || DEFAULT_DRAFT_TITLE)
     const count = confirmedSheetQuestions().length
-    return `<div class="wb3-overlay" data-download-dialog-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog wb3-download-dialog" role="dialog" aria-labelledby="wb3DownloadDialogTitle"><span>${icons.download}</span><h3 id="wb3DownloadDialogTitle">下载题单</h3><p>将下载 Word 文件（.doc），<strong>题目与答案、解析</strong>合并在同一文档中；卷首自动含学校 / 班级 / 姓名栏。</p><p class="wb3-download-dialog-meta"><b>${title}</b><small>共 ${count} 题</small></p><div><button type="button" data-download-dialog-cancel>取消</button><button type="button" class="primary" data-download-dialog-confirm>确定</button></div></div></div>`
+    return `<div class="wb3-overlay" data-download-dialog-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog wb3-download-dialog" role="dialog" aria-labelledby="wb3DownloadDialogTitle"><span>${icons.download}</span><h3 id="wb3DownloadDialogTitle">下载题单</h3><p>将先保存当前题单，再下载 Word 文档。<strong>题目、答案和解析</strong>将合并在同一文档中；卷首包含学校、班级和姓名栏。</p><p class="wb3-download-dialog-meta"><b>${title}</b><small>共 ${count} 题</small></p><div><button type="button" data-download-dialog-cancel>取消</button><button type="button" class="primary" data-download-dialog-confirm>下载 Word</button></div></div></div>`
   }
 
   function personalDeletePromptMarkup() {
@@ -2376,6 +2378,17 @@
       if (event.target.closest('[data-official-unlock-confirm]')) { officialMoreUnlocked = true; officialUnlockPromptOpen = false; officialPage = 2; render(); return }
       if (event.target.closest('[data-official-unlock-cancel]')) { officialUnlockPromptOpen = false; render(); return }
       if (event.target.matches('[data-official-unlock-overlay]')) { officialUnlockPromptOpen = false; render(); return }
+
+      if (event.target.closest('[data-clear-bank-filters]')) {
+        treeSearchQuery = ''
+        filterType = '全部题型'
+        filterDifficulty = '全部难度'
+        activeKnowledge = '全部知识点'
+        officialPage = 1
+        saveBankSearchToStorage()
+        render()
+        return
+      }
 
       const quickAdd = event.target.closest('[data-quick-add]')
       if (quickAdd) { toggleQuestionFromBank(quickAdd.dataset.quickAdd); return }

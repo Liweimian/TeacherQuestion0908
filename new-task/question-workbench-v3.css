@@ -530,6 +530,7 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-download-dialog-meta { margin:0 0 4px; text-align:center; }
 .wb3-download-dialog-meta b { display:block; font-size:14px; color:#253d33; }
 .wb3-download-dialog-meta small { color:#7a8780; font-size:12px; }
+.wb3-download-dialog [data-download-dialog-confirm] { min-width: 112px; }
 .wb3-unlock-dialog button.primary.danger { border-color:#d85c5c; background:#d85c5c; }
 
 .wb3-paper-card {
