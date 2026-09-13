@@ -1270,7 +1270,7 @@
 
   function workspaceTabsMarkup() {
     const active = activeWorkspaceTabId()
-    return `<nav class="wb3-workspace-tabs" aria-label="组题来源"><span class="wb3-workspace-brand"><button type="button" data-action="exit" aria-label="退出组题工作台" title="退出组题工作台">${icons.back}</button><i>${icons.workbench}</i><b>组题工作台</b></span><button type="button" class="${active === 'library' ? 'active' : ''}" data-workspace-tab="library">题库</button><button type="button" class="${active === 'add-more' ? 'active' : ''}" data-workspace-tab="add-more">更多题源</button>${openWorkspaceTabs.map((id) => { const tab = workspaceTabInfo(id); return tab ? `<span class="wb3-workspace-dynamic ${active === id ? 'active' : ''}"><button type="button" data-workspace-tab="${id}" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button><button type="button" data-close-workspace-tab="${id}" aria-label="关闭${escapeHtml(tab.label)}">×</button></span>` : '' }).join('')}</nav>`
+    return `<nav class="wb3-workspace-tabs" aria-label="组题来源"><span class="wb3-workspace-brand"><button type="button" data-action="exit" aria-label="退出飞象题库" title="退出飞象题库">${icons.back}</button><i>${icons.workbench}</i><b>飞象题库</b></span><button type="button" class="${active === 'library' ? 'active' : ''}" data-workspace-tab="library">题库</button><button type="button" class="${active === 'add-more' ? 'active' : ''}" data-workspace-tab="add-more">更多题源</button>${openWorkspaceTabs.map((id) => { const tab = workspaceTabInfo(id); return tab ? `<span class="wb3-workspace-dynamic ${active === id ? 'active' : ''}"><button type="button" data-workspace-tab="${id}" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button><button type="button" data-close-workspace-tab="${id}" aria-label="关闭${escapeHtml(tab.label)}">×</button></span>` : '' }).join('')}</nav>`
   }
 
   function openWorkspaceTab(id) {
@@ -1472,7 +1472,7 @@
     if (importWorkspaceView === 'ai-entry') {
       content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI 组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入组题画布；支持添加文件与语音输入。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div>${aiCreateInputBlockMarkup()}${aiComposeHistoryListMarkup()}</div>`
     } else if (importWorkspaceView === 'add-more') {
-      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库，题目可直接选用</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>从我的知识库添加</b><small>打开我在组题画布中保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>让 AI 帮我组题</b><small>告诉 AI 题量、知识点和难度要求，生成题目后添加到当前组题画布</small></div><em>开始组题</em></button></div></div>`
+      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>更多题源</h2><p>通过 AI 录题、已保存题单或 AI 组题，继续向画布添加题目。</p></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>从我的知识库添加</b><small>打开我在组题画布中保存的题单，可整份添加，也可逐题选用</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>让 AI 帮我组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
     } else if (importWorkspaceView === 'ai-upload') {
       content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击上传 / 拖动文件到此处</b><span>优先支持一次选择多张 PNG、JPG 图片；亦可上传 PDF、DOCX，单文件 20M 内</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI解析进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；处理中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
     } else if (importWorkspaceView === 'ai-history') {
@@ -1986,7 +1986,7 @@
     root.hidden = true
     root.setAttribute('role', 'dialog')
     root.setAttribute('aria-modal', 'true')
-    root.setAttribute('aria-label', '组题工作台')
+    root.setAttribute('aria-label', '飞象题库')
     document.body.appendChild(root)
     bindRichFloatPointerTracking()
 

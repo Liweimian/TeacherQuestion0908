@@ -14,7 +14,7 @@
         <h4>新增功能主流程</h4>
         <div class="prd-flow"><span>首页点击＋</span><i>→</i><span>从题库中添加</span><i>→</i><span>选择题目</span><i>→</i><span>加入对话</span><i>→</i><span>首页显示“已选N道题”</span></div>
         <div class="prd-flow"><span>点击AI组题</span><i>→</i><span>再点击＋</span><i>→</i><span>同一题库选择器</span><i>→</i><span>加入当前对话</span></div>
-        <div class="prd-note">从首页打开题库并完成添加后，必须停留在首页；不得自动跳进组题工作台。只有用户发送组题需求或明确点击进入工作台时才跳转。</div>
+        <div class="prd-note">从首页打开题库并完成添加后，必须停留在首页；不得自动跳进飞象题库。只有用户发送组题需求或明确点击进入工作台时才跳转。</div>
       </section>
       <section class="prd-section">
         <h3>2. 新增入口及相关控件交互</h3>
@@ -63,15 +63,15 @@
         <p>默认只展示题干与选项；知识点、题型、难度及操作按钮在鼠标悬浮或键盘聚焦时显示。</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>按钮</th><th>功能</th><th>关键状态</th></tr></thead><tbody>
           <tr><td>答</td><td>在当前卡片内展开/收起“答案”和“解析”。</td><td>不得使用“参考答案”；展开不影响其他卡片。</td></tr>
-          <tr><td>AI改编</td><td>与组题工作台左侧题库卡片<strong>内联交互一致</strong>（见工作台 §7.1）：卡片内展开改编区、快捷要求、自定义输入、生成候选、选用后入已选。</td><td>原题不自动加入；生成中/失败可重试；「答」与「AI改编」面板互斥展开。</td></tr>
+          <tr><td>AI改编</td><td>与飞象题库左侧题库卡片<strong>内联交互一致</strong>（见工作台 §7.1）：卡片内展开改编区、快捷要求、自定义输入、生成候选、选用后入已选。</td><td>原题不自动加入；生成中/失败可重试；「答」与「AI改编」面板互斥展开。</td></tr>
           <tr><td>＋ / ✓</td><td>选择或取消当前题目。</td><td>选中后显示“已加入·第N题”（N 为当前对话/题单内序号，规则同工作台 §7.2）；重复点击为取消。</td></tr>
         </tbody></table></div>
       </section>
       <section class="prd-section"><h3>7. 首页验收场景</h3><ul><li>分别验证首页＋、AI组题后＋均进入同一选择器。</li><li>分别构造0、7、20、21、40、41、60、61题数据检查底部状态。</li><li>验证余额不足、重复确认、接口超时、跨页选题、筛选后返回、取消和加入对话。</li><li>加入完成后仍在首页，正确显示“已选N道题”。</li></ul></section>
-      <div class="prd-note">首页在<strong>未进入</strong> AI 组题教学任务时，以本 Tab 为准。进入「教学技能 · AI 组题」会话后，组题链路规则见<strong>「教学技能·AI组题」</strong> Tab；落地到组题工作台后见<strong>「组题工作台」</strong> Tab。</div>`,
+      <div class="prd-note">首页在<strong>未进入</strong> AI 组题教学任务时，以本 Tab 为准。进入「教学技能 · AI 组题」会话后，组题链路规则见<strong>「教学技能·AI组题」</strong> Tab；落地到飞象题库后见<strong>「飞象题库」</strong> Tab。</div>`,
 
     teachingCompose: `
-      <div class="prd-summary"><span>对齐基准<b>线上飞象老师 · AI 老师</b></span><span>技能<b>AI 组题</b></span><span>组题细则<b>复用组题工作台</b></span></div>
+      <div class="prd-summary"><span>对齐基准<b>线上飞象老师 · AI 老师</b></span><span>技能<b>AI 组题</b></span><span>组题细则<b>复用飞象题库</b></span></div>
       <section class="prd-section">
         <h3>1. 对齐基准 <span class="prd-status">P0</span></h3>
         <p>「教学技能 · AI 组题」在<strong>组题任务页内</strong>的对话推理、右侧题单/详情编辑、多轮改题、附件与题源、导出与任务历史等，<strong>与线上飞象老师（AI 老师）现网 AI 组题一致</strong>；文案与视觉以现网为准，本文不重复展开逐步 UI。</p>
@@ -101,24 +101,24 @@
       </section>
       <section class="prd-section">
         <h3>2. 首页「从题库中添加」（组题对话内）</h3>
-        <p>在 AI 组题任务已激活、用户通过输入区「＋」使用<strong>从题库中添加</strong>时，规则<strong>复用「首页」Tab §1–§7</strong>（同一选择器、积分解锁、已选 N 道题、不自动跳转组题工作台等）。题目卡片「答 / AI 改编 / ＋」与工作台 §7.1–§7.2 口径一致。</p>
+        <p>在 AI 组题任务已激活、用户通过输入区「＋」使用<strong>从题库中添加</strong>时，规则<strong>复用「首页」Tab §1–§7</strong>（同一选择器、积分解锁、已选 N 道题、不自动跳转飞象题库等）。题目卡片「答 / AI 改编 / ＋」与工作台 §7.1–§7.2 口径一致。</p>
       </section>
       <section class="prd-section">
-        <h3>3. 进入组题工作台后的规则复用 <span class="prd-status">P0</span></h3>
-        <p>用户从 AI 组题任务进入<strong>组题工作台</strong>（或直接在 Demo 工作台组题）后，题库、更多题源、右侧画布、自动保存、下载等<strong>一律以《组题工作台》PRD 为准</strong>，本 Tab 不重复展开：</p>
+        <h3>3. 进入飞象题库后的规则复用 <span class="prd-status">P0</span></h3>
+        <p>用户从 AI 组题任务进入<strong>飞象题库</strong>（或直接在 Demo 工作台组题）后，题库、更多题源、右侧画布、自动保存、下载等<strong>一律以《飞象题库》PRD 为准</strong>，本 Tab 不重复展开：</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>能力</th><th>复用章节</th></tr></thead><tbody>
-          <tr><td>飞象/我的题库、知识点树、筛选、积分解锁、空状态</td><td>组题工作台 §4–§6</td></tr>
-          <tr><td>题目卡片「答 / AI 改编 / 选用」与画布联动</td><td>组题工作台 §7</td></tr>
+          <tr><td>飞象/我的题库、知识点树、筛选、积分解锁、空状态</td><td>飞象题库 §4–§6</td></tr>
+          <tr><td>题目卡片「答 / AI 改编 / 选用」与画布联动</td><td>飞象题库 §7</td></tr>
         </tbody></table></div>
-        <p class="prd-note">上传文件、知识库、AI 组题对话历史、右侧画布、下载、自动保存与知识库「编辑」等，见<strong>组题工作台</strong> Tab 与<strong>我的知识库</strong> Tab，本 Tab 不重复列表。</p>
+        <p class="prd-note">上传文件、知识库、AI 组题对话历史、右侧画布、下载、自动保存与知识库「编辑」等，见<strong>飞象题库</strong> Tab 与<strong>我的知识库</strong> Tab，本 Tab 不重复列表。</p>
       </section>
-      <section class="prd-section"><h3>4. 验收要点</h3><ul><li>首次点击 AI组题：出现技能详情层 → 仅「开始使用」后进入就绪态（预填示例、组题「＋」菜单）；关闭弹窗未点开始时不激活任务。</li><li>发送后组题任务页（对话 + 右侧题单）与<strong>现网飞象老师 AI 组题</strong>一致。</li><li>非首次入口不再重复完整介绍弹窗。</li><li>组题对话内「从题库中添加」符合首页 Tab 规则。</li><li>进入组题工作台后的能力符合<strong>组题工作台</strong> Tab。</li></ul></section>`,
+      <section class="prd-section"><h3>4. 验收要点</h3><ul><li>首次点击 AI组题：出现技能详情层 → 仅「开始使用」后进入就绪态（预填示例、组题「＋」菜单）；关闭弹窗未点开始时不激活任务。</li><li>发送后组题任务页（对话 + 右侧题单）与<strong>现网飞象老师 AI 组题</strong>一致。</li><li>非首次入口不再重复完整介绍弹窗。</li><li>组题对话内「从题库中添加」符合首页 Tab 规则。</li><li>进入飞象题库后的能力符合<strong>飞象题库</strong> Tab。</li></ul></section>`,
 
     workbench: `
       <div class="prd-summary"><span>页面目标<b>多来源组题与编排</b></span><span>核心区域<b>左题库 / 右画布</b></span><span>保存目标<b>我的组题</b></span></div>
       <section class="prd-section">
         <h3>1. 页面定位与信息架构 <span class="prd-status">P0</span></h3>
-        <p>组题工作台为新增页面。左侧负责找题、预览题源与 AI 组题过程，右侧为当前题单画布。左侧顶部为<strong>来源页签栏</strong>：固定「题库」「更多题源」，以及由更多题源衍生的<strong>可关闭动态页签</strong>（规则见 §2）。</p>
+        <p>飞象题库为新增页面。左侧负责找题、预览题源与 AI 组题过程，右侧为当前题单画布。左侧顶部为<strong>来源页签栏</strong>：固定「题库」「更多题源」，以及由更多题源衍生的<strong>可关闭动态页签</strong>（规则见 §2）。</p>
         <ul><li>题库：飞象题库、我的题库，支持学科/知识点/题型/难度/搜索。</li><li>更多题源：上传文件、从我的知识库添加、让AI帮我组题。</li><li>右侧画布：展示已选题目、答案解析及作答区；须点击<strong>保存</strong>才写入「我的组题」。</li></ul>
       </section>
       <section class="prd-section">
@@ -126,7 +126,7 @@
         <p>用户在「更多题源」内进入具体能力，或继续「查看」某条上传记录 / 知识库题单 / AI 组题对话时，在「更多题源」<strong>右侧依次追加</strong>动态页签。切换页签只改变<strong>左侧内容区</strong>，右侧组题画布始终保留。</p>
         <h4>页签类型</h4>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>类型</th><th>示例</th><th>关闭</th></tr></thead><tbody>
-          <tr><td>固定页签</td><td>题库、更多题源</td><td><strong>不可</strong>关闭；始终位于栏最左侧（「组题工作台」标识之后）。</td></tr>
+          <tr><td>固定页签</td><td>题库、更多题源</td><td><strong>不可</strong>关闭；始终位于栏最左侧（「飞象题库」标识之后）。</td></tr>
           <tr><td>动态页签 · 入口</td><td>上传文件、我的知识库、AI 组题</td><td>右侧 <strong>×</strong> 可关闭；同一入口全局<strong>最多一个</strong>页签，重复进入则激活已有页签。</td></tr>
           <tr><td>动态页签 · 子页</td><td>某次上传任务详情、某份知识库题单预览、某条 AI 组题对话</td><td>× 可关闭；以 <code>recordId</code> / <code>paperId</code> / <code>composeId</code> 区分，同一 ID 已打开则激活已有页签，不重复创建。</td></tr>
         </tbody></table></div>
@@ -158,7 +158,7 @@
         <h3>3. 进入与退出</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>入口</th><th>打开结果</th><th>返回</th></tr></thead><tbody>
           <tr><td>首页明确进入工作台</td><td>新建或恢复最近草稿；左侧默认飞象题库，右侧显示当前画布。</td><td>退出回首页，先保存草稿。</td></tr>
-          <tr><td>知识库“编辑”</td><td>从「我的云盘 → 我的组题」对题单 A 点<strong>编辑</strong>：进入组题工作台，<strong>右侧画布直接打开题单 A</strong>（见知识库 PRD §4 与 §9.9）。</td><td>若切换前画布 B <strong>有未保存改动</strong>，<strong>不保存 B</strong>，直接打开 A（B 回退至最后一次手动保存或丢弃未入库草稿）；若 B 已保存且无新改动且已有题目，可暂存 B 供「＋」切回（§9.9.1）。</td></tr>
+          <tr><td>知识库“编辑”</td><td>从「我的云盘 → 我的组题」对题单 A 点<strong>编辑</strong>：进入飞象题库，<strong>右侧画布直接打开题单 A</strong>（见知识库 PRD §4 与 §9.9）。</td><td>若切换前画布 B <strong>有未保存改动</strong>，<strong>不保存 B</strong>，直接打开 A（B 回退至最后一次手动保存或丢弃未入库草稿）；若 B 已保存且无新改动且已有题目，可暂存 B 供「＋」切回（§9.9.1）。</td></tr>
           <tr><td>历史AI组题/上传记录</td><td>左侧打开对应记录页；右侧保留当前画布。</td><td>关闭对应动态页签（§2）；必要时回到「更多题源」或「题库」。</td></tr>
         </tbody></table></div>
       </section>
@@ -255,7 +255,7 @@
         <h4>数据来源与列表</h4>
         <p>本功能只有<strong>一个数据来源</strong>，对应知识库中的固定路径：<strong>我的知识库 → 我的云盘 → 我的组题</strong>（系统文件夹，与「我的知识库」页内目录一致）。</p>
         <ul>
-          <li>列表仅展示上述<strong>「我的组题」文件夹内</strong>、由<strong>组题工作台右侧画布手动保存</strong>的题单（以 <code>paperId</code> / <code>draftId</code> 唯一标识）。</li>
+          <li>列表仅展示上述<strong>「我的组题」文件夹内</strong>、由<strong>飞象题库右侧画布手动保存</strong>的题单（以 <code>paperId</code> / <code>draftId</code> 唯一标识）。</li>
           <li>列表页展示：题单<strong>标题</strong>、<strong>元信息</strong>（题量、学科/年级摘要、最近保存/更新时间等）、操作<strong>「查看」</strong>；列表顶部或说明区固定展示路径「我的知识库 / 我的云盘 / 我的组题」。</li>
           <li>列表为空时：提示「我的组题」中尚无题单，引导用户在<strong>右侧画布组题并点击保存</strong>后再来选用。</li>
         </ul>
@@ -396,10 +396,10 @@
         <h3>1. 本次新增内容（基于原有我的知识库） <span class="prd-status">P0</span></h3>
         <p>“我的知识库 / 我的云盘”为已有页面，本需求不改造原有云盘能力。本次围绕组题结果新增一个系统文件夹、一类题单列表、三项列表操作及一个题单预览页面。</p>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>新增位置</th><th>新增内容</th><th>说明</th></tr></thead><tbody>
-          <tr><td>我的云盘文件夹列表</td><td>在“我的工作成果”下面新增“我的组题”文件夹。</td><td>汇总用户在<strong>组题工作台画布</strong>手动保存的题单；不含 AI 组题单独生成的题单。</td></tr>
+          <tr><td>我的云盘文件夹列表</td><td>在“我的工作成果”下面新增“我的组题”文件夹。</td><td>汇总用户在<strong>飞象题库画布</strong>手动保存的题单；不含 AI 组题单独生成的题单。</td></tr>
           <tr><td>我的组题文件夹内</td><td>新增题单列表。</td><td>展示题单名称、学段/学科/题数、更新时间；不展示“来源”列。</td></tr>
           <tr><td>每份题单操作区</td><td>新增“查看、编辑、删除”三个按钮。</td><td>查看留在知识库；编辑跳转工作台右侧画布；删除执行二次确认和软删除。</td></tr>
-          <tr><td>点击“查看”后</td><td>新增知识库内题单预览页。</td><td>顶部新增「编辑、下载」；下载规则与组题工作台 §9.9 一致（仅 Word 合并版）。</td></tr>
+          <tr><td>点击“查看”后</td><td>新增知识库内题单预览页。</td><td>顶部新增「编辑、下载」；下载规则与飞象题库 §9.9 一致（仅 Word 合并版）。</td></tr>
         </tbody></table></div>
         <div class="prd-note">“我的组题”为系统目录：用户可查看内容，但不可重命名、移动或删除文件夹本身。</div>
         <h4>排序</h4><p>系统文件夹顺序固定：我的工作成果 → 我的组题 → 对话中上传的文件。文件夹内题单默认按更新时间倒序。</p>
@@ -407,7 +407,7 @@
       <section class="prd-section">
         <h3>2. 题单入库规则</h3>
         <ul>
-          <li>用户在组题工作台画布<strong>首次手动保存</strong>后写入「我的组题」；后续手动保存更新同一条 <code>draftId</code> 记录，不重复创建。</li>
+          <li>用户在飞象题库画布<strong>首次手动保存</strong>后写入「我的组题」；后续手动保存更新同一条 <code>draftId</code> 记录，不重复创建。</li>
           <li>「让 AI 帮我组题」产出的题目只加入当前画布（及工作台内 AI 生成记录），<strong>不</strong>自动写入「我的组题」文件夹。</li>
           <li>同一 <code>paperId</code> 只保留一条，标题相同但ID不同允许并存。</li>
           <li>列表至少返回：paperId、标题、学段学科、题数、更新时间、状态、权限。</li>
@@ -416,7 +416,7 @@
       <section class="prd-section">
         <h3>3. 文件夹与列表状态</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>状态</th><th>展示</th><th>可执行操作</th></tr></thead><tbody>
-          <tr><td>0份题单</td><td>空状态「还没有组题」，说明在组题工作台画布组题并<strong>点击保存</strong>后会出现在这里。</td><td>「去组题」跳转工作台新建态。</td></tr>
+          <tr><td>0份题单</td><td>空状态「还没有组题」，说明在飞象题库画布组题并<strong>点击保存</strong>后会出现在这里。</td><td>「去组题」跳转工作台新建态。</td></tr>
           <tr><td>有数据</td><td>题单名称、学科/年级/题数、更新时间；不展示“来源”列。</td><td>查看、编辑、删除。</td></tr>
           <tr><td>加载中</td><td>列表骨架屏，保留表头。</td><td>禁用写操作。</td></tr>
           <tr><td>加载失败</td><td>错误说明和重试。</td><td>重试保持搜索词。</td></tr>
@@ -427,7 +427,7 @@
         <h3>4. 列表按钮与跳转</h3>
         <div class="prd-table-wrap"><table class="prd-table"><thead><tr><th>按钮</th><th>目标行为</th><th>验收规则</th></tr></thead><tbody>
           <tr><td>查看</td><td>仍停留在我的知识库，打开该题单的只读文档预览。</td><td>URL/状态保留paperId；浏览器返回回到原列表位置。</td></tr>
-          <tr><td>编辑</td><td>跳转组题工作台，以 <code>paperId</code> 载入，<strong>右侧组题画布直接打开该题单</strong>（非左侧预览）。若工作台当前画布另有题单且<strong>已有题目</strong>，先保留该题单编辑进度再切换；当前题单<strong>保存且无未保存改动</strong>、画布有题时，可通过画布 <strong>＋</strong> 切回（规则见工作台 §9.9.1）。</td><td>不得打开错误题单；进入前保存知识库列表状态。</td></tr>
+          <tr><td>编辑</td><td>跳转飞象题库，以 <code>paperId</code> 载入，<strong>右侧组题画布直接打开该题单</strong>（非左侧预览）。若工作台当前画布另有题单且<strong>已有题目</strong>，先保留该题单编辑进度再切换；当前题单<strong>保存且无未保存改动</strong>、画布有题时，可通过画布 <strong>＋</strong> 切回（规则见工作台 §9.9.1）。</td><td>不得打开错误题单；进入前保存知识库列表状态。</td></tr>
           <tr><td>删除</td><td>二次确认后移入回收站或软删除。</td><td>成功后移除并更新数量；失败恢复；当前打开题单被删除时给出提示。</td></tr>
         </tbody></table></div>
       </section>
@@ -437,7 +437,7 @@
         <ul>
           <li>返回：回“我的组题”列表，并恢复搜索、滚动位置和排序。</li>
           <li>编辑：跳转工作台，右侧组题画布打开当前题单（与列表「编辑」同一套切换与 ＋ 规则；切回须先保存当前题单，见 §9.9.1）。</li>
-          <li>下载：与组题工作台 §9.9 相同——仅<strong>一份 Word（.doc）</strong>，题目/答案/解析合并；无 PDF、无学生版/教师版分册、无格式选择弹层。</li>
+          <li>下载：与飞象题库 §9.9 相同——仅<strong>一份 Word（.doc）</strong>，题目/答案/解析合并；无 PDF、无学生版/教师版分册、无格式选择弹层。</li>
           <li>预览正文：显示题单标题、元信息、题目与选项；只读，不展示画布编辑控件。</li>
         </ul>
       </section>
@@ -548,7 +548,7 @@
     })
   }
 
-  const labels = { home: '首页', teachingCompose: '教学技能·AI组题', workbench: '组题工作台', knowledge: '我的知识库' }
+  const labels = { home: '首页', teachingCompose: '教学技能·AI组题', workbench: '飞象题库', knowledge: '我的知识库' }
   const currentContext = () => {
     if (/workbench\.html$/i.test(location.pathname) || document.body.classList.contains('fx-question-workbench-v3-open')) return 'workbench'
     const knowledge = document.querySelector('#knowledgePanel')

@@ -983,7 +983,7 @@
         : `<div class="practice-card-list" id="practiceCardList">${questionCardsMarkup()}</div>`
     const toolbar = isEmpty
       ? ''
-      : `<div class="practice-sheet-toolbar"><span class="practice-sheet-meta">${questions.length}题 · ${score}分 · 约${minutes}分钟</span><button class="practice-tool-button" data-open-workbench-edit title="进入组题工作台编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg><b>编辑</b></button><button class="practice-tool-button" data-export-student title="下载"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M5 19h14"/></svg><b>下载</b></button></div>`
+      : `<div class="practice-sheet-toolbar"><span class="practice-sheet-meta">${questions.length}题 · ${score}分 · 约${minutes}分钟</span><button class="practice-tool-button" data-open-workbench-edit title="进入飞象题库编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg><b>编辑</b></button><button class="practice-tool-button" data-export-student title="下载"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M5 19h14"/></svg><b>下载</b></button></div>`
     return `<div class="practice-sheet-shell${isEmpty ? ' practice-sheet-shell--empty' : ''}">${toolbar}${body}</div>`
   }
 

@@ -6886,7 +6886,7 @@ if (isHomeShell) {
   bindCanvasSync();
   if (isWorkbenchMode) {
     createBlankQuestionDraft({ expand: true, appendEditor: true });
-    document.title = "组题工作台｜飞象老师";
+    document.title = "飞象题库｜飞象老师";
   }
 }
 initQuestionPickerLibrary();
