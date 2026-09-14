@@ -115,7 +115,7 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-workspace-brand i svg { width: 17px; height: 17px; }
 .wb3-workspace-brand b { font-size: 13px; font-weight: 750; letter-spacing: .01em; white-space: nowrap; }
 .wb3-workspace-subject { display: inline-flex; align-items: center; margin: 0 2px 0 2px; padding-right: 10px; border-right: 1px solid #e4ebe7; }
-.wb3-workspace-subject select { height: 30px; width: 86px; min-width: 86px; padding: 0 20px 0 8px; border: 1px solid #d9e4de; border-radius: 8px; background: #fff; color: #243d32; font-size: 12px; font-weight: 650; }
+.wb3-workspace-subject select { height: 30px; width: 104px; min-width: 104px; padding: 0 22px 0 8px; border: 1px solid #d9e4de; border-radius: 8px; background: #fff; color: #243d32; font-size: 12px; font-weight: 650; }
 .wb3-workspace-tabs > button,.wb3-workspace-dynamic > button:first-child { position: relative; min-width: 76px; height: 43px; padding: 0 13px; border: 0; background: transparent; color: #64756d; font-size: 12px; font-weight: 650; white-space: nowrap; }
 .wb3-workspace-tabs > button svg { width: 14px; margin-right: 4px; vertical-align: -3px; }
 .wb3-workspace-tabs > button.active,.wb3-workspace-dynamic.active > button:first-child { color: var(--wb3-green); }
