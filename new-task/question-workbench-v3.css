@@ -479,9 +479,10 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 }
 .wb3-personal-paper-stage { min-height: 0; flex: 1; margin-top: 8px; }
 .wb3-paper-list-toolbar { min-height: 50px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 20px 6px 14px; color: #687870; font-size: 12px; }
-.wb3-personal-paper-stage .wb3-bank-paper-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.wb3-personal-paper-stage .wb3-bank-paper-list { grid-template-columns: minmax(0,1fr); gap: 10px; }
 .wb3-personal-paper-stage .wb3-bank-paper-card { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-content: center; justify-content: initial; min-height: 78px; padding: 11px 13px; }
 .wb3-personal-paper-stage .wb3-bank-paper-card > div:last-child { grid-column: auto; justify-content: flex-end; margin-top: 0; }
+.wb3-personal-paper-stage .wb3-bank-paper-card button:hover { border-color: #a8c5b7; background: #f6faf8; color: var(--wb3-green); }
 .wb3-paper-results-head { min-height: 58px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .wb3-paper-results-head > div { min-width: 0; flex: 1; }
 .wb3-paper-results-head b,.wb3-paper-results-head small { display: block; }

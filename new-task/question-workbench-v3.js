@@ -340,6 +340,8 @@
     }
   }
   let personalDeletePromptId = ''
+  let pendingPaperEditId = ''
+  let pendingPaperDeleteId = ''
   let downloadDialogOpen = false
   let saveBeforeNewDialogOpen = false
   let suspendedDraftIdForNewButton = ''
@@ -1245,7 +1247,7 @@
 
   function personalPapersListMarkup(papers) {
     if (!papers.length) return '<div class="wb3-empty-results"><b>还没有题单</b><p>在右侧画布组题并点击保存后，会出现在这里。</p></div>'
-    return `<div class="wb3-bank-paper-list">${papers.map((paper) => `<article class="wb3-bank-paper-card"><span class="wb3-paper-card-icon">${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-knowledge="${paper.id}">查看</button></div></article>`).join('')}</div>`
+    return `<div class="wb3-bank-paper-list">${papers.map((paper) => `<article class="wb3-bank-paper-card"><span class="wb3-paper-card-icon">${icons.blank}</span><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-edit-knowledge-paper="${paper.id}">编辑</button><button type="button" data-preview-knowledge="${paper.id}">查看</button><button type="button" data-delete-knowledge-paper="${paper.id}">删除</button></div></article>`).join('')}</div>`
   }
 
   function knowledgePaperPreviewMarkup(previewPaper, addedMap, { showBack = false } = {}) {
@@ -1983,6 +1985,67 @@
     return `<div class="wb3-overlay" data-personal-delete-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3PersonalDeleteTitle"><span>${icons.trash}</span><h3 id="wb3PersonalDeleteTitle">从我的题库删除？</h3><p>${hint}</p><div><button type="button" data-personal-delete-cancel>取消</button><button type="button" class="primary danger" data-personal-delete-confirm>确认删除</button></div></div></div>`
   }
 
+  function paperActionPromptMarkup() {
+    if (pendingPaperEditId) {
+      const paper = allKnowledgePapers().find((item) => item.id === pendingPaperEditId)
+      return `<div class="wb3-overlay" data-paper-edit-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3PaperEditTitle"><span>${icons.blank}</span><h3 id="wb3PaperEditTitle">当前题单尚未保存</h3><p>直接打开“${escapeHtml(paper?.title || '该题单')}”将会丢失当前题单中未保存的编辑内容，是否继续？</p><div><button type="button" data-paper-edit-cancel>取消</button><button type="button" class="primary danger" data-paper-edit-confirm>直接打开</button></div></div></div>`
+    }
+    if (pendingPaperDeleteId) {
+      const paper = allKnowledgePapers().find((item) => item.id === pendingPaperDeleteId)
+      return `<div class="wb3-overlay" data-paper-delete-overlay><div class="wb3-unlock-dialog wb3-confirm-dialog" role="dialog" aria-labelledby="wb3PaperDeleteTitle"><span>${icons.trash}</span><h3 id="wb3PaperDeleteTitle">删除题单？</h3><p>确认删除“${escapeHtml(paper?.title || '该题单')}”？删除后无法恢复。</p><div><button type="button" data-paper-delete-cancel>取消</button><button type="button" class="primary danger" data-paper-delete-confirm>确认删除</button></div></div></div>`
+    }
+    return ''
+  }
+
+  function editKnowledgePaper(id) {
+    const paper = allKnowledgePapers().find((item) => item.id === id)
+    if (!paper) return
+    let targetDraft = paper.draftId ? loadDraftById(paper.draftId) : null
+    if (!targetDraft) {
+      targetDraft = {
+        id: makeId('draft'), title: paper.title || DEFAULT_DRAFT_TITLE,
+        subject: currentCurriculum().subject, curriculumKey,
+        questions: (paper.questions || []).map((question) => cloneQuestion(question)),
+        createdAt: Date.now(), updatedAt: Date.now(), savedAt: Date.now(),
+      }
+      targetDraft.savedSnapshot = captureDraftSnapshot(targetDraft)
+      try {
+        const drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((draft) => draft.id !== targetDraft.id)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([targetDraft, ...drafts].slice(0, 20)))
+      } catch { /* ignore */ }
+    }
+    prepareKnowledgeEditSwitch(targetDraft.id)
+    activateDraft(targetDraft)
+    importWorkspaceView = 'library'
+    questionSource = 'personal'
+    personalLibraryMode = 'papers'
+    previewKnowledgePaperId = ''
+    render()
+    showToast(`已打开「${paper.title}」进行编辑`)
+  }
+
+  function deleteKnowledgePaper(id) {
+    const paper = allKnowledgePapers().find((item) => item.id === id)
+    if (!paper) return
+    if (paper.draftId) {
+      try {
+        const drafts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').filter((draft) => draft.id !== paper.draftId)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts.slice(0, 20)))
+        if (activeDraft?.id === paper.draftId) {
+          activeDraft.savedAt = 0
+          activeDraft.savedSnapshot = null
+          activeDraft.updatedAt = Date.now()
+        }
+      } catch { /* ignore */ }
+    } else {
+      const index = knowledgePapers.findIndex((item) => item.id === id)
+      if (index >= 0) knowledgePapers.splice(index, 1)
+    }
+    pendingPaperDeleteId = ''
+    render()
+    showToast(`已删除「${paper.title}」`)
+  }
+
   function removePersonalQuestion(id) {
     const removedFromCanvas = personalQuestionOnCanvas(id)
     if (removedFromCanvas) {
@@ -2005,6 +2068,7 @@
     root.innerHTML = `<div class="wb3-shell">${leftPanelMarkup()}${rightPanelMarkup()}</div>
     ${knowledgeModalMarkup()}
     ${personalDeletePromptMarkup()}
+    ${paperActionPromptMarkup()}
     ${saveBeforeNewDialogMarkup()}
     ${downloadDialogMarkup()}
     ${mathEditorModalMarkup()}
@@ -2670,6 +2734,44 @@
         personalLibraryMode = personalLibraryTab.dataset.personalLibrary === 'papers' ? 'papers' : 'questions'
         previewKnowledgePaperId = ''
         render()
+        return
+      }
+
+      const editKnowledge = event.target.closest('[data-edit-knowledge-paper]')
+      if (editKnowledge) {
+        const id = editKnowledge.dataset.editKnowledgePaper
+        if (hasUnsavedCanvasChanges()) {
+          pendingPaperEditId = id
+          render()
+        } else editKnowledgePaper(id)
+        return
+      }
+
+      if (event.target.closest('[data-paper-edit-cancel]') || (event.target.closest('[data-paper-edit-overlay]') && !event.target.closest('.wb3-confirm-dialog'))) {
+        pendingPaperEditId = ''
+        render()
+        return
+      }
+      if (event.target.closest('[data-paper-edit-confirm]')) {
+        const id = pendingPaperEditId
+        pendingPaperEditId = ''
+        editKnowledgePaper(id)
+        return
+      }
+
+      const deleteKnowledge = event.target.closest('[data-delete-knowledge-paper]')
+      if (deleteKnowledge) {
+        pendingPaperDeleteId = deleteKnowledge.dataset.deleteKnowledgePaper
+        render()
+        return
+      }
+      if (event.target.closest('[data-paper-delete-cancel]') || (event.target.closest('[data-paper-delete-overlay]') && !event.target.closest('.wb3-confirm-dialog'))) {
+        pendingPaperDeleteId = ''
+        render()
+        return
+      }
+      if (event.target.closest('[data-paper-delete-confirm]')) {
+        deleteKnowledgePaper(pendingPaperDeleteId)
         return
       }
 

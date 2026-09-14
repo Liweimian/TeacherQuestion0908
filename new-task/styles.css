@@ -617,3 +617,9 @@ body{font-size:14px}.sidebar{width:248px;padding-left:13px;padding-right:13px}.a
   .ai-compose-detail .skill-detail-layout{grid-template-columns:1fr}
   .ai-compose-tour{min-height:570px}
 }
+.kb-edit-warning-overlay{position:fixed;inset:0;z-index:5200;display:grid;place-items:center;padding:24px;background:rgba(17,39,31,.28);backdrop-filter:blur(2px)}
+.kb-edit-warning{width:min(420px,calc(100vw - 48px));padding:26px;border:1px solid #dce7e1;border-radius:16px;background:#fff;box-shadow:0 18px 55px rgba(18,48,36,.18);text-align:center}
+.kb-edit-warning-icon{width:42px;height:42px;display:grid;place-items:center;margin:0 auto 12px;border-radius:50%;background:#fff4e5;color:#b97825;font-size:20px;font-weight:750}
+.kb-edit-warning h3{margin:0;color:#213c31;font-size:18px}.kb-edit-warning p{margin:10px 0 22px;color:#687a71;font-size:13px;line-height:1.7}
+.kb-edit-warning>div{display:flex;justify-content:center;gap:10px}.kb-edit-warning button{height:36px;padding:0 18px;border:1px solid #d5e1db;border-radius:8px;background:#fff;color:#4d6258;cursor:pointer}
+.kb-edit-warning button.primary{border-color:#087a55;background:#087a55;color:#fff}
