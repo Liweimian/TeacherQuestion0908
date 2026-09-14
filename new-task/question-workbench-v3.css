@@ -115,17 +115,19 @@ body.fx-question-workbench-v3-open { overflow: hidden; }
 .wb3-workspace-brand i svg { width: 17px; height: 17px; }
 .wb3-workspace-brand i.wb3-brand-elephant svg { width: 18px; height: 18px; }
 .wb3-workspace-brand b { font-size: 13px; font-weight: 750; letter-spacing: .01em; white-space: nowrap; }
-.wb3-personal-subtabs { flex: none; display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 4px 0 0; padding: 3px 7px; border: 1px solid #e1e8e4; border-radius: 11px; background: #eef3f0; }
-.wb3-personal-subtabs button { position: relative; width: 112px; height: 36px; flex: none; border: 0; border-radius: 8px; background: transparent; color: #687870; font-size: 12px; font-weight: 650; text-align: center; white-space: nowrap; }
+.wb3-personal-subtabs { flex: none; display: flex; align-items: center; justify-content: flex-start; gap: 38px; min-height: 48px; margin: 4px 0 0; padding: 0 22px; border-bottom: 1px solid #e1e8e4; background: #fff; }
+.wb3-personal-subtabs button { position: relative; width: auto; height: 47px; flex: none; padding: 0 8px; border: 0; background: transparent; color: #43564d; font-size: 14px; font-weight: 650; text-align: center; white-space: nowrap; }
 .wb3-personal-subtabs button:hover { color: var(--wb3-green); }
-.wb3-personal-subtabs button.active { background: #fff; color: var(--wb3-green); box-shadow: 0 1px 4px rgba(27,64,48,.1); }
+.wb3-personal-subtabs button.active { color: var(--wb3-green); font-weight: 750; }
+.wb3-personal-subtabs button.active::after { content: ''; position: absolute; right: 8px; bottom: -1px; left: 8px; height: 3px; border-radius: 3px 3px 0 0; background: var(--wb3-green); }
 .wb3-library-personal-papers { display: flex; flex-direction: column; min-height: 0; }
 .wb3-personal-papers-body { min-height: 0; flex: 1; overflow: auto; padding: 0 2px 8px; }
 .wb3-personal-papers-body .wb3-knowledge-page,.wb3-personal-papers-body .wb3-record-detail { min-height: 0; }
 .wb3-personal-papers-body .wb3-import-page-title { align-items: flex-start; gap: 10px; }
 .wb3-personal-papers-body .wb3-import-page-title > button[data-back-knowledge] { height: 32px; padding: 0 11px; border: 1px solid #d8e3de; border-radius: 8px; background: #fff; color: #52675d; font-size: 11px; flex: none; }
-.wb3-workspace-subject { display: inline-flex; align-items: center; margin: 0 2px 0 2px; padding-right: 10px; border-right: 1px solid #e4ebe7; }
-.wb3-workspace-subject select { height: 30px; width: 104px; min-width: 104px; padding: 0 22px 0 8px; border: 1px solid #d9e4de; border-radius: 8px; background: #fff; color: #243d32; font-size: 12px; font-weight: 650; }
+.wb3-workspace-subject { display: inline-flex; align-items: center; margin: 0 4px 0 2px; padding: 0 12px 0 4px; border-right: 1px solid #e4ebe7; }
+.wb3-workspace-subject select { height: 32px; width: 104px; min-width: 104px; padding: 0 22px 0 7px; border: 0; border-radius: 7px; outline: 0; background-color: transparent; color: #243d32; font-size: 13px; font-weight: 700; }
+.wb3-workspace-subject select:hover,.wb3-workspace-subject select:focus { background-color: #f2f7f4; color: var(--wb3-green); }
 .wb3-workspace-tabs > button,.wb3-workspace-dynamic > button:first-child { position: relative; min-width: 76px; height: 43px; padding: 0 13px; border: 0; background: transparent; color: #64756d; font-size: 12px; font-weight: 650; white-space: nowrap; }
 .wb3-workspace-tabs > button svg { width: 14px; margin-right: 4px; vertical-align: -3px; }
 .wb3-workspace-tabs > button.active,.wb3-workspace-dynamic.active > button:first-child { color: var(--wb3-green); }
