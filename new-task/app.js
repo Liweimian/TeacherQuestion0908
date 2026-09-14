@@ -1288,7 +1288,7 @@
   function bindAddMenuEvents() {
     $('[data-add-file]',addMenu)?.addEventListener('click', () => { addMenu.hidden=true; getComposerUploadInput().click() })
     $('[data-add-question-source]',addMenu)?.addEventListener('click', () => { addMenu.hidden=true; openQuestionPicker() })
-    $('[data-add-knowledge-source]',addMenu)?.addEventListener('click', () => { addMenu.hidden=true; openQuestionPicker() })
+    $('[data-add-knowledge-source]',addMenu)?.addEventListener('click', () => { addMenu.hidden=true; openQuestionPicker('knowledge') })
     $$('[data-add-skill]',addMenu).forEach(button=>button.addEventListener('click',()=>activateSkill(button.dataset.addSkill)))
     $('.menu-search input',addMenu)?.addEventListener('input',event=>{
       const query=event.target.value.trim().toLowerCase()
@@ -1319,7 +1319,7 @@
   }
   function refreshQuestionPickerCount(){
     const count=selectedQuestionCount()
-    questionPickerCount.textContent=`已选${count}道题`
+    questionPickerCount.textContent=questionPickerIntent==='knowledge'?`已选${count}项`:`已选${count}道题`
     questionPickerConfirm.disabled=!count
   }
   function collectPickerSelection(){
@@ -1340,10 +1340,12 @@
   function openQuestionPicker(intent = 'composer'){
     questionPickerIntent = intent
     addMenu.hidden=true
-    if(!questionPickerFrame.src||!questionPickerFrame.src.includes('picker9'))questionPickerFrame.src='./question-picker.html?v=20260914picker9'
-    questionPicker.classList.remove('question-picker--workbench-v2')
-    $('#questionPickerTitle').textContent='从题库添加'
-    $('.question-picker-header p').textContent='按教材章节或知识点选题，加入当前对话'
+    const pickerSrc=intent==='knowledge'?'./knowledge-picker.html?v=20260914knowledge1':'./question-picker.html?v=20260914picker9'
+    if(!questionPickerFrame.src||!questionPickerFrame.src.endsWith(pickerSrc.replace('./','')))questionPickerFrame.src=pickerSrc
+    questionPicker.classList.remove('question-picker--workbench-v2','question-picker--knowledge')
+    questionPicker.classList.toggle('question-picker--knowledge',intent==='knowledge')
+    $('#questionPickerTitle').textContent=intent==='knowledge'?'从知识库添加':'从题库添加'
+    $('.question-picker-header p').textContent=intent==='knowledge'?'选择个人资料或题单，加入当前对话':'按教材章节或知识点选题，加入当前对话'
     questionPickerConfirm.textContent='加入对话'
     questionPicker.hidden=false
     document.body.classList.add('question-picker-open')
@@ -1362,6 +1364,12 @@
     const count=rawSelection.length||selectedQuestionCount()
     if(!count){closeQuestionPicker();composerInput.focus();return}
     const selection=normalizePickerSelection(rawSelection,count)
+    if(questionPickerIntent==='knowledge'){
+      selection.forEach(item=>addAttachmentChip(item.title||item.name||'知识库资料'))
+      closeQuestionPicker()
+      composerInput.focus()
+      return
+    }
     if (questionPickerIntent === 'sheet') {
       window.FxPracticeDemo.onQuestionsPicked({ selection, count })
       closeQuestionPicker()
