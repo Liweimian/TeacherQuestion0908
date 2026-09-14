@@ -1286,7 +1286,7 @@
 
   function emptyResultsMarkup(filteredCount, treeScopedCount) {
     if (questionSource === 'personal' && currentBankQuestions().length === 0) {
-      return `<div class="wb3-empty-results wb3-empty-personal"><b>还没有题目</b><p>上传题目与答案，AI 识别并打标，生成个人题库后即可在此选用</p><button type="button" class="wb3-empty-upload-btn primary" data-empty-import="upload">${icons.upload}上传文件 AI录题</button></div>`
+      return `<div class="wb3-empty-results wb3-empty-personal"><b>还没有题目</b><p>上传题目和答案文件，AI 识别并打标，自动存入我的题库后即可在此选用</p><button type="button" class="wb3-empty-upload-btn primary" data-empty-import="upload">${icons.upload}上传文件</button></div>`
     }
     if (treeScopedCount === 0 && !treeSearchQuery.trim()) {
       return `<div class="wb3-empty-results">暂无题目</div>`
@@ -1412,7 +1412,7 @@
   function importMenuMarkup() {
     if (!importMenuOpen) return ''
     return `<div class="wb3-import-menu" role="menu">
-      <button type="button" data-import="upload" role="menuitem">${icons.upload}<span><b>AI录题</b><small>AI 录题并自动打标，后台解析约 4–10 分钟</small></span></button>
+      <button type="button" data-import="upload" role="menuitem">${icons.upload}<span><b>上传文件</b><small>上传题目和答案文件，AI 识别并打标，自动存入我的题库</small></span></button>
       <button type="button" data-import="history" role="menuitem">${icons.blank}<span><b>AI录题记录</b><small>${aiImportRecords.filter((record) => record.status === 'processing').length} 个解析中 · 可复用历史结果</small></span></button>
       <button type="button" data-import="knowledge" role="menuitem">${icons.knowledge}<span><b>我的知识库</b><small>按整份题单预览或导入</small></span></button>
       <button type="button" data-import="ai-compose" role="menuitem">${icons.sparkle}<span><b>AI组题记录</b><small>查看 AI 生成的整套题目</small></span></button>
@@ -1475,8 +1475,8 @@
 
   const workspaceTabCatalog = {
     'ai-create': { label: 'AI组题', view: 'ai-entry' },
-    upload: { label: 'AI录题', view: 'ai-upload' },
-    knowledge: { label: '我的题单', view: 'knowledge' },
+    upload: { label: '上传文件', view: 'ai-upload' },
+    knowledge: { label: '复用我的题单', view: 'knowledge' },
     'ai-compose': { label: '历史AI组题', view: 'ai-compose' },
   }
 
@@ -1512,7 +1512,7 @@
 
   function workspaceTabsMarkup() {
     const active = activeWorkspaceTabId()
-    return `<nav class="wb3-workspace-tabs" aria-label="组题来源"><span class="wb3-workspace-brand"><button type="button" data-action="exit" aria-label="退出飞象题库" title="退出飞象题库">${icons.back}</button><i>${icons.workbench}</i><b>飞象题库</b></span><label class="wb3-workspace-subject"><select class="wb3-subject-switch" aria-label="当前学段和学科">${Object.keys(curriculumCatalog).map((key) => `<option ${curriculumKey === key ? 'selected' : ''}>${key}</option>`).join('')}</select></label><button type="button" class="${active === 'library' || active === 'chapter' ? 'active' : ''}" data-workspace-tab="library">题库选题</button><button type="button" class="${active === 'add-more' ? 'active' : ''}" data-workspace-tab="add-more">快捷组题</button><button type="button" class="${active === 'personal' ? 'active' : ''}" data-workspace-tab="personal">我的题库</button>${openWorkspaceTabs.map((id) => { const tab = workspaceTabInfo(id); return tab ? `<span class="wb3-workspace-dynamic ${active === id ? 'active' : ''}"><button type="button" data-workspace-tab="${id}" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button><button type="button" data-close-workspace-tab="${id}" aria-label="关闭${escapeHtml(tab.label)}">×</button></span>` : '' }).join('')}</nav>`
+    return `<nav class="wb3-workspace-tabs" aria-label="组题来源"><span class="wb3-workspace-brand"><button type="button" data-action="exit" aria-label="退出飞象题库" title="退出飞象题库">${icons.back}</button><i>${icons.workbench}</i><b>飞象题库</b></span><label class="wb3-workspace-subject"><select class="wb3-subject-switch" aria-label="当前学段和学科">${Object.keys(curriculumCatalog).map((key) => `<option ${curriculumKey === key ? 'selected' : ''}>${key}</option>`).join('')}</select></label><button type="button" class="${active === 'library' || active === 'chapter' ? 'active' : ''}" data-workspace-tab="library">题库选题</button><button type="button" class="${active === 'add-more' ? 'active' : ''}" data-workspace-tab="add-more">组题工具</button><button type="button" class="${active === 'personal' ? 'active' : ''}" data-workspace-tab="personal">我的题库</button>${openWorkspaceTabs.map((id) => { const tab = workspaceTabInfo(id); return tab ? `<span class="wb3-workspace-dynamic ${active === id ? 'active' : ''}"><button type="button" data-workspace-tab="${id}" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button><button type="button" data-close-workspace-tab="${id}" aria-label="关闭${escapeHtml(tab.label)}">×</button></span>` : '' }).join('')}</nav>`
   }
 
   function openWorkspaceTab(id) {
@@ -1714,9 +1714,9 @@
     if (importWorkspaceView === 'ai-entry') {
       content = `<div class="wb3-ai-create-page"><div class="wb3-import-page-title"><div><h2>AI组题</h2><p>描述需要的题量、知识点和难度，生成结果将进入当前题单；支持添加文件与语音输入。</p></div></div><div class="wb3-ai-create-prompts"><button type="button" data-ai-create-suggestion="生成 10 道基础练习题">10 道基础题</button><button type="button" data-ai-create-suggestion="生成一份难度递进的综合练习">难度递进</button><button type="button" data-ai-create-suggestion="补 3 道中等题，避免与现有题目重复">补充中等题</button></div>${aiCreateInputBlockMarkup()}${aiComposeHistoryListMarkup()}</div>`
     } else if (importWorkspaceView === 'add-more') {
-      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>快捷组题</h2></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>AI录题</b><small>上传题目与答案文件，AI 智能识别并自动打标，一键生成专属个人题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>我的题单</b><small>选择已保存的题单，支持整份或逐题加入当前题单</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>AI组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
+      content = `<div class="wb3-add-more-page"><div class="wb3-import-page-title"><div><h2>组题工具</h2></div></div><div class="wb3-add-source-list"><button type="button" data-open-source="upload"><span>${icons.upload}</span><div><b>上传文件</b><small>上传题目和答案文件，AI 识别并打标，自动存入我的题库</small></div><em>上传文件</em></button><button type="button" data-open-source="knowledge"><span>${icons.knowledge}</span><div><b>复用我的题单</b><small>选择已保存的题单，支持整份或逐题加入当前题单</small></div><em>选择题单</em></button><button type="button" data-start-ai-entry><span>${icons.sparkle}</span><div><b>AI组题</b><small>说出组卷要求，AI 按照「专家命题 6 步法」，几分钟生成高质量试卷</small></div><em>开始组题</em></button></div></div>`
     } else if (importWorkspaceView === 'ai-upload') {
-      content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>点击选择文件，或拖拽文件到此处</b><span>支持批量上传 PNG、JPG 图片，也支持 PDF、DOCX；单个文件不超过 20 MB</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI录题进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；解析中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
+      content = `<div class="wb3-upload-page"><button type="button" class="wb3-ai-dropzone" data-start-upload>${icons.upload}<b>从电脑选择文件，或把文件拖到这里</b><span>把本地试卷、图片或 Word 上传后，AI 会自动录题。支持 PNG、JPG、PDF、DOCX，单个文件不超过 20 MB</span></button><section class="wb3-upload-history"><div class="wb3-import-page-title"><div><h2>AI录题进度</h2><p>上传任务会在后台解析，完成后可查看并选用题目；解析中无需操作，失败可重新解析。</p></div></div><div class="wb3-record-list">${importRecordListMarkup()}</div></section></div>`
     } else if (importWorkspaceView === 'ai-history') {
       content = `<div class="wb3-record-page"><div class="wb3-import-page-title"><div><h2>AI录题记录</h2><p>解析中任务可以离开页面，已完成结果可随时重新选题。</p></div></div>
         <div class="wb3-record-list">${importRecordListMarkup()}</div></div>`
@@ -1865,10 +1865,10 @@
       : `<div class="wb3-empty-sheet">
           <span class="wb3-empty-icon">${icons.blank}</span>
           <b>当前题单还没有题目</b>
-          <p>可以从题库选择，也可以通过AI录题、复用题单或AI组题添加题目。</p>
+          <p>可以从题库选择，也可以通过上传文件、复用我的题单或AI组题添加题目。</p>
           <div class="wb3-empty-actions">
             <button type="button" data-empty-import="library">${icons.knowledge}去题库选题</button>
-            <button type="button" data-empty-import="add-more">${icons.plus}快捷组题</button>
+            <button type="button" data-empty-import="add-more">${icons.plus}组题工具</button>
           </div>
         </div>`
 
