@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>从题库添加</title>
-  <link rel="stylesheet" href="./question-picker.css?v=20260909picker7">
+  <link rel="stylesheet" href="./question-picker.css?v=20260914picker9">
   <style>
     .answer-panel p{margin:0}.answer-panel p+p{margin-top:5px;padding-top:5px;border-top:1px solid #dfeae4}
     .picker-page-info{position:sticky;top:-12px;z-index:8;display:flex;align-items:center;gap:7px;margin:-12px -12px 10px;padding:8px 14px;border-bottom:1px solid #e5ece8;background:rgba(255,255,255,.96);backdrop-filter:blur(5px);color:#718179;font-size:10px}.picker-page-info span{padding:3px 6px;border-radius:4px;background:#e9f4ee;color:#087a55}.picker-page-info b{color:#3e574b;font-size:11px}.picker-page-info em{margin-left:auto;font-style:normal}
@@ -17,19 +17,23 @@
 <body>
   <main class="picker-shell">
     <aside class="picker-sidebar">
-      <select id="curriculum" aria-label="学科"><option>小学数学</option><option>小学语文</option><option>小学英语</option><option>初中数学</option></select>
-      <div class="source-tabs" role="tablist"><button class="active" data-source="official">平台题库</button><button data-source="mine">我的题库</button></div>
-      <nav id="knowledgeTree" aria-label="知识点"></nav>
+      <select id="curriculum" aria-label="学段和学科"></select>
+      <div id="chapterSubtabs" class="chapter-subtabs" role="tablist" aria-label="题库选题方式">
+        <button type="button" role="tab" data-browse="chapter" aria-selected="true" class="active">教材章节</button>
+        <button type="button" role="tab" data-browse="knowledge" aria-selected="false">知识点</button>
+      </div>
+      <div id="textbookPicker"></div>
+      <nav id="knowledgeTree" aria-label="章节或知识点"></nav>
     </aside>
     <section class="picker-main">
       <header class="filter-bar">
         <select id="typeFilter" aria-label="题型"><option>全部题型</option><option>选择题</option><option>填空题</option><option>解答题</option></select>
-        <select id="difficultyFilter" aria-label="难度"><option>全部难度</option><option>较易</option><option>中等</option><option>较难</option></select>
-        <label class="search-box"><span>⌕</span><input id="questionSearch" type="search" placeholder="搜索知识点或题干关键词"></label>
+        <select id="difficultyFilter" aria-label="难度"><option>全部难度</option><option>较易</option><option>基础</option><option>中等</option><option>提高</option><option>较难</option></select>
+        <label class="search-box"><span>⌕</span><input id="questionSearch" type="search" placeholder="搜索教材章节或题干关键词"></label>
       </header>
       <div class="question-list" id="questionList"></div>
     </section>
   </main>
-  <script src="./question-picker.js?v=20260909picker7"></script>
+  <script src="./question-picker.js?v=20260914picker9"></script>
 </body>
 </html>

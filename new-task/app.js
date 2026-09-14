@@ -1255,8 +1255,8 @@
     }
     const composeActive = shouldShowComposeAddMenu()
     const sourceButtons = composeActive
-      ? `<button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中添加</b><small>按学科、知识点和难度选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button><button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button>`
-      : `<button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button><button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中添加</b><small>按学科、知识点和难度选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button>`
+      ? `<button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中添加</b><small>按教材章节或知识点选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button><button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button>`
+      : `<button data-add-file><span class="menu-icon">↥</span><span><b>上传文件</b><small>Word、PDF、图片或文件夹</small></span></button><button data-add-question-source><span class="menu-icon">▤</span><span><b>从题库中添加</b><small>按教材章节或知识点选题</small></span></button><button data-add-knowledge-source><span class="menu-icon">▱</span><span><b>从知识库添加</b><small>复用已有练习、试卷和个人资料</small></span></button>`
     const skillsSection = composeActive
       ? ''
       : `<div class="menu-section-title">教学技能</div>${teachingSkills.map(skill=>`<button data-add-skill="${escapeHtml(skill.name)}"><span class="menu-icon">✦</span><span><b>${escapeHtml(skill.name === '组题' ? 'AI组题' : skill.name)}</b><small>${escapeHtml(skill.description)}</small></span></button>`).join('')}`
@@ -1320,10 +1320,10 @@
   function openQuestionPicker(intent = 'composer'){
     questionPickerIntent = intent
     addMenu.hidden=true
-    if(!questionPickerFrame.src)questionPickerFrame.src='./question-picker.html?v=20260909picker7'
+    if(!questionPickerFrame.src||!questionPickerFrame.src.includes('picker9'))questionPickerFrame.src='./question-picker.html?v=20260914picker9'
     questionPicker.classList.remove('question-picker--workbench-v2')
     $('#questionPickerTitle').textContent='从题库添加'
-    $('.question-picker-header p').textContent='选择试卷、同步练习或专题中的题目'
+    $('.question-picker-header p').textContent='按教材章节或知识点选题，加入当前对话'
     questionPickerConfirm.textContent='加入对话'
     questionPicker.hidden=false
     document.body.classList.add('question-picker-open')
