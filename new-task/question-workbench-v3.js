@@ -4,6 +4,7 @@
   const SUSPENDED_DRAFT_SESSION_KEY = 'feixiang-wb-suspended-draft-id'
   const PLUS_BLANK_SESSION_KEY = 'feixiang-wb-plus-creates-new'
   const BANK_SEARCH_KEY = 'feixiang-question-workbench-v3-bank-search'
+  const TEACHER_CONTEXT_KEY = 'feixiang-question-workbench-v3-teacher-context'
   const $ = (selector, root = document) => root.querySelector(selector)
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
 
@@ -119,9 +120,11 @@
   ])
 
   const bankPapers = [
-    { id: 'paper-1', title: '四年级数学综合练习', subject: '数学', grade: '四年级', paperType: '综合练习', meta: '精选真题 · 5题 · 15分钟', questions: bankQuestions.slice(0, 5) },
-    { id: 'paper-2', title: '四年级数学期中基础练习', subject: '数学', grade: '四年级', paperType: '期中', meta: '校级题库 · 5题 · 15分钟', questions: bankQuestions.slice(0, 5) },
-    { id: 'paper-3', title: '四年级易错题专项卷', subject: '数学', grade: '四年级', paperType: '专项练习', meta: '精选题单 · 4题 · 12分钟', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3], bankQuestions[4]] },
+    { id: 'paper-1', curriculum: '小学数学', edition: '人教版', volume: '四年级上册', title: '四年级数学综合练习', subject: '数学', grade: '四年级', paperType: '综合练习', meta: '精选真题 · 5题 · 15分钟', questions: bankQuestions.slice(0, 5) },
+    { id: 'paper-2', curriculum: '小学数学', edition: '人教版', volume: '四年级上册', title: '四年级数学期中基础练习', subject: '数学', grade: '四年级', paperType: '期中', meta: '校级题库 · 5题 · 15分钟', questions: bankQuestions.slice(0, 5) },
+    { id: 'paper-3', curriculum: '小学数学', edition: '人教版', volume: '四年级上册', title: '四年级易错题专项卷', subject: '数学', grade: '四年级', paperType: '专项练习', meta: '精选题单 · 4题 · 12分钟', questions: [bankQuestions[0], bankQuestions[1], bankQuestions[3], bankQuestions[4]] },
+    { id: 'paper-4', curriculum: '小学数学', edition: '北师大版', volume: '四年级上册', title: '北师大版四年级上册单元卷', subject: '数学', grade: '四年级', paperType: '综合练习', meta: '北师大版配套 · 4题 · 12分钟', questions: [bankQuestions[1], bankQuestions[4], bankQuestions[10], bankQuestions[11]] },
+    { id: 'paper-5', curriculum: '初中数学', edition: '人教版', volume: '七年级上册', title: '七年级上册有理数单元练习', subject: '数学', grade: '七年级', paperType: '专项练习', meta: '人教版配套 · 3题 · 12分钟', questions: bankQuestions.filter((question) => question.curriculum === '初中数学').slice(0, 3) },
   ]
 
   const KNOWLEDGE_COMPOSE_FOLDER = '我的知识库 / 我的云盘 / 我的题单'
@@ -202,6 +205,76 @@
     '高中政治': { subject: '高一 · 政治', groups: [['全部知识点',1],['经济生活',1],['市场经济',1]], parents: { '经济生活':['市场经济'] } },
   }
 
+  const PRIMARY_VOLUME_LABELS = ['一年级上册', '一年级下册', '二年级上册', '二年级下册', '三年级上册', '三年级下册', '四年级上册', '四年级下册', '五年级上册', '五年级下册', '六年级上册', '六年级下册']
+  const JUNIOR_VOLUME_LABELS = ['七年级上册', '七年级下册', '八年级上册', '八年级下册', '九年级上册', '九年级下册']
+  const SENIOR_VOLUME_LABELS = ['必修第一册', '必修第二册', '选择性必修第一册', '选择性必修第二册']
+  const withYearVolumes = (labels, years = [2024, 2019]) => labels.flatMap((label) => years.map((year) => ({ label, year, isNew: year === 2024 })))
+  const textbookBook = (edition, volume, year, editionNames, volumeLabels) => ({
+    edition,
+    volume,
+    year,
+    editions: editionNames.map((name) => ({ name, volumes: withYearVolumes(volumeLabels) })),
+  })
+  const textbookCatalog = {
+    '小学数学': textbookBook('人教版', '四年级上册', 2024, ['人教版', '北师大版', '苏教版', '沪教版', '浙教版', '北京版'], PRIMARY_VOLUME_LABELS),
+    '小学语文': textbookBook('部编版', '五年级上册', 2024, ['部编版', '人教版', '苏教版'], PRIMARY_VOLUME_LABELS),
+    '小学英语': textbookBook('人教PEP', '五年级上册', 2024, ['人教PEP', '外研版', '译林版'], PRIMARY_VOLUME_LABELS),
+    '初中语文': textbookBook('部编版', '八年级上册', 2024, ['部编版', '人教版'], JUNIOR_VOLUME_LABELS),
+    '初中数学': textbookBook('人教版', '七年级上册', 2024, ['人教版', '北师大版', '沪教版', '浙教版', '北京版', '苏科版', '华东师大版', '沪教版(五四制)'], JUNIOR_VOLUME_LABELS),
+    '初中英语': textbookBook('人教版', '八年级上册', 2024, ['人教版', '外研版'], JUNIOR_VOLUME_LABELS),
+    '初中物理': textbookBook('人教版', '八年级上册', 2024, ['人教版', '沪科版', '苏科版'], ['八年级上册', '八年级下册', '九年级上册', '九年级下册']),
+    '初中化学': textbookBook('人教版', '九年级上册', 2024, ['人教版', '沪教版'], ['九年级上册', '九年级下册']),
+    '初中生物': textbookBook('人教版', '七年级上册', 2024, ['人教版', '北师大版'], ['七年级上册', '七年级下册', '八年级上册', '八年级下册']),
+    '高中语文': textbookBook('统编版', '必修第一册', 2024, ['统编版', '人教版'], SENIOR_VOLUME_LABELS),
+    '高中数学': textbookBook('人教A版', '必修第一册', 2024, ['人教A版', '人教B版', '北师大版'], SENIOR_VOLUME_LABELS),
+    '高中英语': textbookBook('人教版', '必修第一册', 2024, ['人教版', '外研版'], SENIOR_VOLUME_LABELS),
+    '高中物理': textbookBook('人教版', '必修第一册', 2024, ['人教版', '粤教版'], SENIOR_VOLUME_LABELS),
+    '高中化学': textbookBook('人教版', '必修第一册', 2024, ['人教版', '鲁科版', '苏教版'], SENIOR_VOLUME_LABELS),
+    '高中生物': textbookBook('人教版', '必修第一册', 2024, ['人教版', '北师大版'], SENIOR_VOLUME_LABELS),
+    '高中历史': textbookBook('统编版', '必修第一册', 2024, ['统编版', '人教版'], SENIOR_VOLUME_LABELS),
+    '高中地理': textbookBook('人教版', '必修第一册', 2024, ['人教版', '中图版'], SENIOR_VOLUME_LABELS),
+    '高中政治': textbookBook('统编版', '必修第一册', 2024, ['统编版', '人教版'], SENIOR_VOLUME_LABELS),
+  }
+
+  const RENJIAO_GRADE4_UP_CHAPTERS = {
+    groups: [
+      ['一 万以上数的认识', 0],
+      ['亿以内数的认识', 0],
+      ['亿以上数的认识', 0],
+      ['数的大小比较', 0],
+      ['数的改写和求近似数', 0],
+      ['整理和复习', 0],
+      ['☆ 1亿有多大', 0],
+      ['二 角的度量', 0],
+      ['直线、射线和角', 0],
+      ['角的分类', 0],
+      ['角的度量', 0],
+      ['画角', 0],
+      ['三 多位数乘两位数', 0],
+      ['口算乘法', 0],
+      ['笔算乘法', 0],
+      ['速度、时间与路程', 0],
+    ],
+    parents: {
+      '一 万以上数的认识': ['亿以内数的认识', '亿以上数的认识', '数的大小比较', '数的改写和求近似数', '整理和复习', '☆ 1亿有多大'],
+      '二 角的度量': ['直线、射线和角', '角的分类', '角的度量', '画角'],
+      '三 多位数乘两位数': ['口算乘法', '笔算乘法', '速度、时间与路程'],
+    },
+    aliases: {
+      '一 万以上数的认识': [],
+      '二 角的度量': ['钟面上的角', '直线、射线和线段', '线段'],
+      '直线、射线和角': ['直线、射线和线段', '线段'],
+      '角的度量': ['钟面上的角'],
+      '三 多位数乘两位数': ['三位数乘两位数', '因数末尾有0'],
+      '口算乘法': ['因数末尾有0'],
+      '笔算乘法': ['三位数乘两位数'],
+      '速度、时间与路程': ['同向追及问题', '部分合作问题'],
+    },
+  }
+  const chapterTreeCatalog = {
+    '小学数学|人教版|四年级上册': RENJIAO_GRADE4_UP_CHAPTERS,
+  }
+
   let root
   let activeDraft
   let questionSource = 'official'
@@ -211,6 +284,12 @@
   let officialMoreUnlocked = false
   let officialUnlockPromptOpen = false
   let curriculumKey = '小学数学'
+  let textbookSelection = {}
+  let textbookPickerOpen = false
+  let textbookPickerEdition = ''
+  let expandedChapterParents = new Set()
+  let chapterBrowseMode = 'chapter'
+  let previewBankPaperId = ''
   let treeSearchQuery = ''
   let activeKnowledge = '全部知识点'
   let filterType = '全部题型'
@@ -325,6 +404,24 @@
       const map = JSON.parse(localStorage.getItem(BANK_SEARCH_KEY) || '{}')
       map[bankSearchStorageKey()] = { treeSearchQuery, savedAt: Date.now() }
       localStorage.setItem(BANK_SEARCH_KEY, JSON.stringify(map))
+    } catch { /* ignore */ }
+  }
+
+  function applyTeacherContextFromStorage() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(TEACHER_CONTEXT_KEY) || '{}')
+      if (saved.curriculumKey && curriculumCatalog[saved.curriculumKey]) curriculumKey = saved.curriculumKey
+      if (saved.textbooks && typeof saved.textbooks === 'object') textbookSelection = { ...saved.textbooks }
+    } catch { /* ignore */ }
+  }
+
+  function saveTeacherContextToStorage() {
+    try {
+      localStorage.setItem(TEACHER_CONTEXT_KEY, JSON.stringify({
+        curriculumKey,
+        textbooks: textbookSelection,
+        savedAt: Date.now(),
+      }))
     } catch { /* ignore */ }
   }
 
@@ -1001,6 +1098,121 @@
     return curriculumCatalog[curriculumKey] || curriculumCatalog['小学数学']
   }
 
+  function currentTextbookSpec() {
+    return textbookCatalog[curriculumKey] || textbookCatalog['小学数学']
+  }
+
+  function currentTextbook() {
+    const spec = currentTextbookSpec()
+    const saved = textbookSelection[curriculumKey]
+    const editionName = spec.editions.some((item) => item.name === saved?.edition) ? saved.edition : spec.edition
+    const edition = spec.editions.find((item) => item.name === editionName) || spec.editions[0]
+    const year = Number(saved?.year || spec.year)
+    const volume = edition.volumes.find((item) => item.label === (saved?.volume || spec.volume) && item.year === year)
+      || edition.volumes.find((item) => item.label === spec.volume)
+      || edition.volumes[0]
+    return { edition: edition.name, volume: volume.label, year: volume.year, isNew: volume.isNew, editions: spec.editions, editionObj: edition }
+  }
+
+  function setCurrentTextbook(edition, volume, year) {
+    const spec = currentTextbookSpec()
+    const editionObj = spec.editions.find((item) => item.name === edition) || spec.editions[0]
+    const picked = editionObj.volumes.find((item) => item.label === volume && item.year === Number(year))
+      || editionObj.volumes.find((item) => item.label === volume)
+      || editionObj.volumes[0]
+    textbookSelection[curriculumKey] = { edition: editionObj.name, volume: picked.label, year: picked.year }
+    saveTeacherContextToStorage()
+  }
+
+  function shortVolumeLabel(volume) {
+    const grade = String(volume || '').match(/^([一二三四五六七八九十]+)年级([上下])册/)
+    if (grade) return `${grade[1]}${grade[2]}`
+    const required = String(volume || '').match(/^必修第([一二三四])册/)
+    if (required) return `必修${required[1]}`
+    const optional = String(volume || '').match(/^选择性必修第([一二三四])册/)
+    if (optional) return `选必${optional[1]}`
+    return volume
+  }
+
+  function textbookLabel(textbook = currentTextbook()) {
+    return `${textbook.edition}/${shortVolumeLabel(textbook.volume)}（${textbook.year}）`
+  }
+
+  function currentChapterTree() {
+    const textbook = currentTextbook()
+    return chapterTreeCatalog[`${curriculumKey}|${textbook.edition}|${textbook.volume}`]
+      || {
+        groups: currentCurriculum().groups,
+        parents: currentCurriculum().parents,
+        aliases: {},
+      }
+  }
+
+  function activeTree() {
+    if (questionSource === 'official' && chapterBrowseMode === 'chapter') return currentChapterTree()
+    return { ...currentCurriculum(), aliases: currentCurriculum().aliases || {} }
+  }
+
+  function questionMatchesTreeNode(question, name, tree = activeTree()) {
+    if (!name || name === '全部知识点') return true
+    const aliases = [name, ...(tree.aliases?.[name] || [])]
+    if (tree.parents[name]) {
+      return aliases.includes(question.knowledge) || tree.parents[name].some((child) => questionMatchesTreeNode(question, child, tree))
+    }
+    return aliases.includes(question.knowledge)
+  }
+
+  function expandDefaultChapters() {
+    const first = Object.keys(currentChapterTree().parents)[0]
+    expandedChapterParents = new Set(first ? [first] : [])
+    if (first && (chapterBrowseMode === 'chapter')) activeKnowledge = first
+  }
+
+  function textbookPickerMarkup() {
+    const current = currentTextbook()
+    const previewEditionName = current.editions.some((item) => item.name === textbookPickerEdition) ? textbookPickerEdition : current.edition
+    const previewEdition = current.editions.find((item) => item.name === previewEditionName) || current.editions[0]
+    return `<div class="wb3-textbook-picker ${textbookPickerOpen ? 'open' : ''}">
+      <button type="button" data-toggle-textbook-picker aria-expanded="${textbookPickerOpen}" aria-label="教材版本"><span>${escapeHtml(textbookLabel(current))}</span><em>${textbookPickerOpen ? '⌃' : '⌄'}</em></button>
+      ${textbookPickerOpen ? `<div class="wb3-textbook-panel" role="listbox" aria-label="选择教材版本">
+        <div class="wb3-textbook-editions">${current.editions.map((item) => `<button type="button" class="${item.name === previewEdition.name ? 'active' : ''}" data-textbook-edition="${escapeHtml(item.name)}">${escapeHtml(item.name)}<i>›</i></button>`).join('')}</div>
+        <div class="wb3-textbook-volumes">${previewEdition.volumes.map((item) => `<button type="button" class="${item.label === current.volume && item.year === current.year && previewEdition.name === current.edition ? 'active' : ''}" data-textbook-pick="${escapeHtml(`${previewEdition.name}|${item.label}|${item.year}`)}">${escapeHtml(`${item.label}(${item.year})`)}${item.isNew ? '<em>新</em>' : ''}</button>`).join('')}</div>
+      </div>` : ''}
+    </div>`
+  }
+
+  function currentBankPapers() {
+    const current = currentTextbook()
+    const query = treeSearchQuery.trim().toLowerCase()
+    return bankPapers.filter((paper) => {
+      if ((paper.curriculum || '小学数学') !== curriculumKey) return false
+      if (paper.edition && paper.edition !== current.edition) return false
+      if (paper.volume && paper.volume !== current.volume) return false
+      if (!query) return true
+      return paper.title.toLowerCase().includes(query) || paper.meta.toLowerCase().includes(query) || paper.paperType.toLowerCase().includes(query)
+    })
+  }
+
+  function switchToLibraryTab(source) {
+    saveBankSearchToStorage()
+    importWorkspaceView = 'library'
+    questionSource = source === 'personal' ? 'personal' : 'official'
+    if (questionSource === 'official') previewBankPaperId = ''
+    applyBankSearchFromStorage()
+    officialPage = 1
+  }
+
+  function bankPaperListMarkup(addedMap) {
+    if (previewBankPaperId) {
+      const paper = bankPapers.find((item) => item.id === previewBankPaperId)
+      if (!paper) return '<div class="wb3-empty-results">暂无试卷</div>'
+      return `<div class="wb3-paper-preview-head"><button type="button" data-back-bank-paper>返回试卷列表</button><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><button type="button" class="primary" data-import-bank-paper="${paper.id}">全部选用</button></div><div class="wb3-import-question-list">${paper.questions.map((question) => questionCardMarkup(question, addedMap)).join('')}</div>`
+    }
+    const papers = currentBankPapers()
+    if (!papers.length) return '<div class="wb3-empty-results"><b>该教材版本下暂无试卷</b><p>可切换教材版本，或回到教材章节选题。</p></div>'
+    return `<div class="wb3-bank-paper-list">${papers.map((paper) => `<article class="wb3-bank-paper-card"><div><b>${escapeHtml(paper.title)}</b><small>${escapeHtml(paper.meta)}</small></div><div><button type="button" data-preview-bank-paper="${paper.id}">查看题目</button><button type="button" class="primary" data-import-bank-paper="${paper.id}">全部选用</button></div></article>`).join('')}</div>`
+  }
+
   function currentBankQuestions() {
     if (questionSource === 'personal') {
       return personalQuestions.filter((question) => question.curriculum === curriculumKey)
@@ -1018,37 +1230,37 @@
   }
 
   function knowledgeCount(name) {
-    const curriculum = currentCurriculum()
+    const tree = activeTree()
     const questions = currentBankQuestions()
     if (name === '全部知识点') return questions.length
-    if (curriculum.parents[name]) return questions.filter((question) => curriculum.parents[name].includes(question.knowledge)).length
-    return questions.filter((question) => question.knowledge === name).length
+    return questions.filter((question) => questionMatchesTreeNode(question, name, tree)).length
   }
 
   function questionsInTreeScope() {
-    const curriculum = currentCurriculum()
+    const tree = activeTree()
     const treeQuery = treeSearchQuery.trim().toLowerCase()
     return currentBankQuestions().filter((question) => {
       if (treeQuery) {
         return question.knowledge.toLowerCase().includes(treeQuery)
           || question.text.toLowerCase().includes(treeQuery)
           || (question.options || []).some((option) => option.toLowerCase().includes(treeQuery))
-          || Object.entries(curriculum.parents).some(([parent, children]) => parent.toLowerCase().includes(treeQuery) && children.includes(question.knowledge))
+          || Object.entries(tree.parents).some(([parent, children]) => parent.toLowerCase().includes(treeQuery) && children.includes(question.knowledge))
+          || questionMatchesTreeNode(question, treeQuery, tree)
       }
-      return activeKnowledge === '全部知识点' || question.knowledge === activeKnowledge || curriculum.parents[activeKnowledge]?.includes(question.knowledge)
+      return questionMatchesTreeNode(question, activeKnowledge, tree)
     })
   }
 
   function filterBankQuestions() {
-    const curriculum = currentCurriculum()
+    const tree = activeTree()
     const treeQuery = treeSearchQuery.trim().toLowerCase()
     const scoped = currentBankQuestions().filter((question) => {
       const scopeMatch = treeQuery
         ? question.knowledge.toLowerCase().includes(treeQuery)
           || question.text.toLowerCase().includes(treeQuery)
           || (question.options || []).some((option) => option.toLowerCase().includes(treeQuery))
-          || Object.entries(curriculum.parents).some(([parent, children]) => parent.toLowerCase().includes(treeQuery) && children.includes(question.knowledge))
-        : activeKnowledge === '全部知识点' || question.knowledge === activeKnowledge || curriculum.parents[activeKnowledge]?.includes(question.knowledge)
+          || Object.entries(tree.parents).some(([parent, children]) => parent.toLowerCase().includes(treeQuery) && children.includes(question.knowledge))
+        : questionMatchesTreeNode(question, activeKnowledge, tree)
       const typeMatch = filterType === '全部题型' || question.type === filterType
       const difficultyMatch = filterDifficulty === '全部难度' || question.difficulty === filterDifficulty
       return scopeMatch && typeMatch && difficultyMatch
@@ -1069,22 +1281,25 @@
     return `<div class="wb3-empty-results"><b>未找到符合条件的题目</b><button type="button" class="wb3-empty-upload-btn" data-clear-bank-filters>清除筛选</button></div>`
   }
 
+  function firstKnowledgeName(tree = activeTree()) {
+    return tree.groups.find(([name]) => name !== '全部知识点')?.[0] || ''
+  }
+
   function visibleTreeGroups() {
-    const curriculum = currentCurriculum()
+    const tree = activeTree()
     const query = treeSearchQuery.trim().toLowerCase()
-    if (!query) return curriculum.groups.filter(([name]) => name !== '全部知识点')
-    const matchedKnowledge = new Set(currentBankQuestions().filter((question) => (
-      question.knowledge.toLowerCase().includes(query)
-      || question.text.toLowerCase().includes(query)
-      || (question.options || []).some((option) => option.toLowerCase().includes(query))
-      || Object.entries(curriculum.parents).some(([parent, children]) => parent.toLowerCase().includes(query) && children.includes(question.knowledge))
-    )).map((question) => question.knowledge))
-    return curriculum.groups.filter(([name]) => name !== '全部知识点' && (
-      name.toLowerCase().includes(query)
-      || curriculum.parents[name]?.some((child) => child.toLowerCase().includes(query))
-      || matchedKnowledge.has(name)
-      || curriculum.parents[name]?.some((child) => matchedKnowledge.has(child))
-    ))
+    const browseByChapter = questionSource === 'official' && chapterBrowseMode === 'chapter'
+    const groups = tree.groups.filter(([name]) => name !== '全部知识点')
+    const visible = !query
+      ? groups
+      : groups.filter(([name]) => (
+        name.toLowerCase().includes(query)
+        || tree.parents[name]?.some((child) => child.toLowerCase().includes(query))
+        || Object.entries(tree.parents).some(([parent, children]) => children.includes(name) && parent.toLowerCase().includes(query))
+      ))
+    return browseByChapter
+      ? visible.filter(([name]) => tree.parents[name] || Object.entries(tree.parents).some(([parent, children]) => children.includes(name) && expandedChapterParents.has(parent)))
+      : visible
   }
 
   function questionAnswerText(question) {
@@ -1239,7 +1454,7 @@
   }
 
   function activeWorkspaceTabId() {
-    if (importWorkspaceView === 'library') return 'library'
+    if (importWorkspaceView === 'library') return questionSource === 'personal' ? 'personal' : 'library'
     if (importWorkspaceView === 'add-more') return 'add-more'
     if (importWorkspaceView === 'ai-entry') return 'ai-create'
     if (importWorkspaceView === 'ai-record') return `record:${activeImportRecordId}`
@@ -1270,7 +1485,7 @@
 
   function workspaceTabsMarkup() {
     const active = activeWorkspaceTabId()
-    return `<nav class="wb3-workspace-tabs" aria-label="组题来源"><span class="wb3-workspace-brand"><button type="button" data-action="exit" aria-label="退出飞象题库" title="退出飞象题库">${icons.back}</button><i>${icons.workbench}</i><b>飞象题库</b></span><button type="button" class="${active === 'library' ? 'active' : ''}" data-workspace-tab="library">题库选题</button><button type="button" class="${active === 'add-more' ? 'active' : ''}" data-workspace-tab="add-more">快捷组题</button>${openWorkspaceTabs.map((id) => { const tab = workspaceTabInfo(id); return tab ? `<span class="wb3-workspace-dynamic ${active === id ? 'active' : ''}"><button type="button" data-workspace-tab="${id}" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button><button type="button" data-close-workspace-tab="${id}" aria-label="关闭${escapeHtml(tab.label)}">×</button></span>` : '' }).join('')}</nav>`
+    return `<nav class="wb3-workspace-tabs" aria-label="组题来源"><span class="wb3-workspace-brand"><button type="button" data-action="exit" aria-label="退出飞象题库" title="退出飞象题库">${icons.back}</button><i>${icons.workbench}</i><b>飞象题库</b></span><label class="wb3-workspace-subject"><select class="wb3-subject-switch" aria-label="当前学段和学科">${Object.keys(curriculumCatalog).map((key) => `<option ${curriculumKey === key ? 'selected' : ''}>${key}</option>`).join('')}</select></label><button type="button" class="${active === 'library' || active === 'chapter' ? 'active' : ''}" data-workspace-tab="library">题库选题</button><button type="button" class="${active === 'add-more' ? 'active' : ''}" data-workspace-tab="add-more">快捷组题</button><button type="button" class="${active === 'personal' ? 'active' : ''}" data-workspace-tab="personal">我的题库</button>${openWorkspaceTabs.map((id) => { const tab = workspaceTabInfo(id); return tab ? `<span class="wb3-workspace-dynamic ${active === id ? 'active' : ''}"><button type="button" data-workspace-tab="${id}" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button><button type="button" data-close-workspace-tab="${id}" aria-label="关闭${escapeHtml(tab.label)}">×</button></span>` : '' }).join('')}</nav>`
   }
 
   function openWorkspaceTab(id) {
@@ -1507,13 +1722,13 @@
   function leftPanelMarkup() {
     if (importWorkspaceView !== 'library') return importWorkspaceMarkup()
     const addedMap = getAddedMap()
-    const curriculum = currentCurriculum()
+    const tree = activeTree()
     const questions = filterBankQuestions()
     const totalPages = Math.min(OFFICIAL_MAX_PAGES, Math.max(1, Math.ceil(questions.length / OFFICIAL_PAGE_SIZE)))
     if (officialPage > totalPages) officialPage = totalPages
     const visibleQuestions = questionSource === 'official' ? questions.slice((officialPage - 1) * OFFICIAL_PAGE_SIZE, officialPage * OFFICIAL_PAGE_SIZE) : questions
     const treeGroups = visibleTreeGroups()
-    const parentNames = Object.keys(curriculum.parents)
+    const parentNames = Object.keys(tree.parents)
     const difficultyOptions = [...new Set(currentBankQuestions().map((question) => question.difficulty))]
     const showOfficialUnlock = questionSource === 'official' && questions.length > OFFICIAL_PAGE_SIZE
     const remainingOfficialCount = Math.max(0, questions.length - OFFICIAL_PAGE_SIZE)
@@ -1523,8 +1738,14 @@
       : `<footer class="wb3-bank-unlock"><span>还有 ${remainingOfficialCount} 道题，消耗 20 积分可解锁</span><button type="button" data-official-unlock>解锁更多</button></footer>`
     const unlockPrompt = officialUnlockPromptOpen ? `<div class="wb3-overlay" data-official-unlock-overlay><div class="wb3-unlock-dialog" role="dialog"><span>${icons.sparkle}</span><h3>解锁更多题目</h3><p>本次将消耗 <b>20 积分</b>，解锁当前知识点后续 ${remainingOfficialPages} 页、共 ${remainingOfficialCount} 道题。</p><div><button type="button" data-official-unlock-cancel>暂不解锁</button><button type="button" class="primary" data-official-unlock-confirm>确认解锁</button></div></div></div>` : ''
     const treeScopedCount = questionsInTreeScope().length
+    const isLibraryTab = questionSource === 'official'
+    const browseByChapter = isLibraryTab && chapterBrowseMode === 'chapter'
     const personalTabMeta = questionSource === 'personal'
       ? `<p class="wb3-personal-tab-meta">共 ${personalBankTotalCount()} 题</p>`
+      : ''
+    const textbookSwitcher = browseByChapter ? textbookPickerMarkup() : ''
+    const chapterSubtabs = isLibraryTab
+      ? `<div class="wb3-chapter-subtabs" role="tablist" aria-label="题库选题方式"><button type="button" role="tab" data-chapter-browse="chapter" aria-selected="${chapterBrowseMode === 'chapter'}" class="${chapterBrowseMode === 'chapter' ? 'active' : ''}">教材章节</button><button type="button" role="tab" data-chapter-browse="knowledge" aria-selected="${chapterBrowseMode === 'knowledge'}" class="${chapterBrowseMode === 'knowledge' ? 'active' : ''}">知识点</button></div>`
       : ''
     const resultsBody = visibleQuestions.length
       ? visibleQuestions.map((question) => questionCardMarkup(question, addedMap)).join('') + paging
@@ -1533,17 +1754,21 @@
       ${workspaceTabsMarkup()}
       <div class="wb3-library-body">
         <aside class="wb3-tree">
-          <label class="wb3-tree-subject"><select class="wb3-subject-switch" aria-label="当前学段和学科">${Object.keys(curriculumCatalog).map((key) => `<option ${curriculumKey === key ? 'selected' : ''}>${key}</option>`).join('')}</select></label>
-          <div class="wb3-source-tabs" role="tablist" aria-label="题目来源">
-            <button type="button" role="tab" data-question-source="official" aria-selected="${questionSource === 'official'}" class="${questionSource === 'official' ? 'active' : ''}">平台题库</button>
-            <button type="button" role="tab" data-question-source="personal" aria-selected="${questionSource === 'personal'}" class="${questionSource === 'personal' ? 'active' : ''}">我的题库</button>
-          </div>
+          ${chapterSubtabs}
+          ${textbookSwitcher}
           ${personalTabMeta}
-          <div class="wb3-tree-list">${treeGroups.length ? treeGroups.map(([name]) => `<button type="button" class="${activeKnowledge === name ? 'active' : ''} ${parentNames.includes(name) ? 'group' : ''}" data-knowledge="${name}" data-tree-name="${escapeHtml(name.toLowerCase())}"><span>${parentNames.includes(name) ? '⌄ ' : ''}${name}</span>${questionSource === 'personal' ? `<em>${knowledgeCount(name)}</em>` : ''}</button>`).join('') : ''}</div>
+          <div class="wb3-tree-list">${treeGroups.length ? treeGroups.map(([name]) => {
+            const isParent = parentNames.includes(name)
+            const expanded = expandedChapterParents.has(name)
+            const icon = browseByChapter && isParent
+              ? `<i data-toggle-chapter="${escapeHtml(name)}">${expanded ? '▾' : '▸'}</i>`
+              : isParent ? '⌄ ' : ''
+            return `<button type="button" class="${activeKnowledge === name ? 'active' : ''} ${isParent ? 'group' : ''} ${name.startsWith('☆') ? 'activity' : ''}" data-knowledge="${escapeHtml(name)}" data-tree-name="${escapeHtml(name.toLowerCase())}"><span>${icon}${escapeHtml(name)}</span>${questionSource === 'personal' ? `<em>${knowledgeCount(name)}</em>` : ''}</button>`
+          }).join('') : ''}</div>
         </aside>
         <div class="wb3-results">
           <header class="wb3-results-head">
-            <div class="wb3-results-filters"><label><select id="wb3FilterType" aria-label="题型"><option value="全部题型" ${filterType === '全部题型' ? 'selected' : ''}>全部题型</option><option ${filterType === '选择题' ? 'selected' : ''}>选择题</option><option ${filterType === '填空题' ? 'selected' : ''}>填空题</option><option ${filterType === '解答题' ? 'selected' : ''}>解答题</option></select></label><label><select id="wb3FilterDifficulty" aria-label="难度"><option value="全部难度" ${filterDifficulty === '全部难度' ? 'selected' : ''}>全部难度</option>${difficultyOptions.map((name) => `<option ${filterDifficulty === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></label><label class="wb3-filter-search"><span class="wb3-main-search">${icons.search}<input id="wb3TreeSearch" type="search" value="${escapeHtml(treeSearchQuery)}" placeholder="搜索知识点或题干关键词"></span></label></div>
+            <div class="wb3-results-filters"><label><select id="wb3FilterType" aria-label="题型"><option value="全部题型" ${filterType === '全部题型' ? 'selected' : ''}>全部题型</option><option ${filterType === '选择题' ? 'selected' : ''}>选择题</option><option ${filterType === '填空题' ? 'selected' : ''}>填空题</option><option ${filterType === '解答题' ? 'selected' : ''}>解答题</option></select></label><label><select id="wb3FilterDifficulty" aria-label="难度"><option value="全部难度" ${filterDifficulty === '全部难度' ? 'selected' : ''}>全部难度</option>${difficultyOptions.map((name) => `<option ${filterDifficulty === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></label><label class="wb3-filter-search"><span class="wb3-main-search">${icons.search}<input id="wb3TreeSearch" type="search" value="${escapeHtml(treeSearchQuery)}" placeholder="${browseByChapter ? '搜索教材章节或题干关键词' : '搜索知识点或题干关键词'}"></span></label></div>
           </header>
           ${uploadParsing ? `<div class="wb3-upload-status"><i></i>正在解析上传文件，完成后题目进入「我的题库」可选用…</div>` : ''}
           <div class="wb3-result-scroll">${resultsBody}</div>${unlockPrompt}
@@ -1993,6 +2218,35 @@
     bindRichFloatPointerTracking()
 
     root.addEventListener('click', (event) => {
+      if (textbookPickerOpen && !event.target.closest('.wb3-textbook-picker')) {
+        textbookPickerOpen = false
+        render()
+        return
+      }
+      if (event.target.closest('[data-toggle-textbook-picker]')) {
+        textbookPickerOpen = !textbookPickerOpen
+        if (textbookPickerOpen) textbookPickerEdition = currentTextbook().edition
+        render()
+        return
+      }
+      const textbookEdition = event.target.closest('[data-textbook-edition]')
+      if (textbookEdition) {
+        textbookPickerEdition = textbookEdition.dataset.textbookEdition
+        render()
+        return
+      }
+      const textbookPick = event.target.closest('[data-textbook-pick]')
+      if (textbookPick) {
+        const [edition, volume, year] = String(textbookPick.dataset.textbookPick || '').split('|')
+        setCurrentTextbook(edition, volume, year)
+        textbookPickerOpen = false
+        expandDefaultChapters()
+        previewBankPaperId = ''
+        officialPage = 1
+        render()
+        showToast(`已切换到${textbookLabel()}`)
+        return
+      }
       if (event.target.classList.contains('wb3-math-overlay') || event.target.closest('button[data-close-math-editor]')) {
         mathEditorOpen = false
         render()
@@ -2076,7 +2330,8 @@
       const workspaceTab = event.target.closest('[data-workspace-tab]')
       if (workspaceTab) {
         const id = workspaceTab.dataset.workspaceTab
-        if (id === 'library') { importWorkspaceView = 'library'; render(); return }
+        if (id === 'library' || id === 'chapter') { switchToLibraryTab('official'); render(); return }
+        if (id === 'personal') { switchToLibraryTab('personal'); render(); return }
         if (id === 'add-more') { importWorkspaceView = 'add-more'; render(); return }
         openWorkspaceTab(id)
         return
@@ -2335,7 +2590,7 @@
 
       const emptyImport = event.target.closest('[data-empty-import]')
       if (emptyImport) {
-        if (emptyImport.dataset.emptyImport === 'library') { importWorkspaceView = 'library'; render(); return }
+        if (emptyImport.dataset.emptyImport === 'library') { switchToLibraryTab('official'); render(); return }
         if (emptyImport.dataset.emptyImport === 'add-more') { importWorkspaceView = 'add-more'; render(); return }
         if (emptyImport.dataset.emptyImport === 'upload') {
           if (!openWorkspaceTabs.includes('upload')) openWorkspaceTabs.push('upload')
@@ -2348,13 +2603,51 @@
 
       const sourceTab = event.target.closest('[data-question-source]')
       if (sourceTab) {
-        saveBankSearchToStorage()
-        questionSource = sourceTab.dataset.questionSource
-        activeKnowledge = '全部知识点'
-        applyBankSearchFromStorage()
+        switchToLibraryTab(sourceTab.dataset.questionSource)
+        activeKnowledge = firstKnowledgeName()
         filterType = '全部题型'
         filterDifficulty = '全部难度'
+        render()
+        return
+      }
+
+      const chapterBrowse = event.target.closest('[data-chapter-browse]')
+      if (chapterBrowse) {
+        chapterBrowseMode = chapterBrowse.dataset.chapterBrowse === 'knowledge' ? 'knowledge' : 'chapter'
+        previewBankPaperId = ''
+        textbookPickerOpen = false
+        if (chapterBrowseMode === 'knowledge') activeKnowledge = firstKnowledgeName()
+        else expandDefaultChapters()
         officialPage = 1
+        render()
+        return
+      }
+
+      const previewBankPaper = event.target.closest('[data-preview-bank-paper]')
+      if (previewBankPaper) {
+        previewBankPaperId = previewBankPaper.dataset.previewBankPaper
+        render()
+        return
+      }
+
+      if (event.target.closest('[data-back-bank-paper]')) {
+        previewBankPaperId = ''
+        render()
+        return
+      }
+
+      const importBankPaper = event.target.closest('[data-import-bank-paper]')
+      if (importBankPaper) {
+        const paper = bankPapers.find((item) => item.id === importBankPaper.dataset.importBankPaper)
+        if (paper) addConfirmedQuestionsFromSources(paper.questions, `已从「${paper.title}」选用 ${paper.questions.length} 道题`)
+        return
+      }
+
+      const toggleChapter = event.target.closest('[data-toggle-chapter]')
+      if (toggleChapter) {
+        const name = toggleChapter.dataset.toggleChapter
+        if (expandedChapterParents.has(name)) expandedChapterParents.delete(name)
+        else expandedChapterParents.add(name)
         render()
         return
       }
@@ -2362,6 +2655,7 @@
       const knowledge = event.target.closest('[data-knowledge]')
       if (knowledge) {
         activeKnowledge = knowledge.dataset.knowledge
+        if (chapterBrowseMode === 'chapter' && activeTree().parents[activeKnowledge]) expandedChapterParents.add(activeKnowledge)
         officialPage = 1
         render()
         return
@@ -2383,7 +2677,9 @@
         treeSearchQuery = ''
         filterType = '全部题型'
         filterDifficulty = '全部难度'
-        activeKnowledge = '全部知识点'
+        activeKnowledge = chapterBrowseMode === 'chapter' && questionSource === 'official'
+          ? (Object.keys(currentChapterTree().parents)[0] || firstKnowledgeName())
+          : firstKnowledgeName()
         officialPage = 1
         saveBankSearchToStorage()
         render()
@@ -2654,9 +2950,13 @@
       if (event.target.classList.contains('wb3-subject-switch')) {
         saveBankSearchToStorage()
         curriculumKey = event.target.value
-        questionSource = 'official'
         activeDraft.subject = currentCurriculum().subject
-        activeKnowledge = '全部知识点'
+        activeDraft.curriculumKey = curriculumKey
+        saveTeacherContextToStorage()
+        textbookPickerOpen = false
+        if (chapterBrowseMode === 'chapter' && questionSource === 'official') expandDefaultChapters()
+        else activeKnowledge = firstKnowledgeName()
+        previewBankPaperId = ''
         applyBankSearchFromStorage()
         filterType = '全部题型'
         filterDifficulty = '全部难度'
@@ -2807,10 +3107,17 @@
       standalone = Boolean(options.standalone)
       questionSource = 'official'
       curriculumKey = '小学数学'
+      applyTeacherContextFromStorage()
       syncNewDraftNavigationStateFromSession()
       const restoredDraft = options.newDraft ? null : loadActiveDraft()
-      if (restoredDraft?.curriculumKey && curriculumCatalog[restoredDraft.curriculumKey]) curriculumKey = restoredDraft.curriculumKey
+      if (!localStorage.getItem(TEACHER_CONTEXT_KEY) && restoredDraft?.curriculumKey && curriculumCatalog[restoredDraft.curriculumKey]) {
+        curriculumKey = restoredDraft.curriculumKey
+      }
       activeDraft = restoredDraft || createBlankDraft()
+      if (activeDraft) {
+        activeDraft.curriculumKey = curriculumKey
+        activeDraft.subject = currentCurriculum().subject
+      }
       if (activeDraft && !activeDraft.savedAt) activeDraft.savedAt = 0
       activeKnowledge = '全部知识点'
       applyBankSearchFromStorage()
@@ -2823,6 +3130,10 @@
       importMenuOpen = false
       knowledgeModalOpen = false
       importWorkspaceView = 'library'
+      chapterBrowseMode = 'chapter'
+      textbookPickerOpen = false
+      expandDefaultChapters()
+      previewBankPaperId = ''
       openWorkspaceTabs = []
       activeImportRecordId = ''
       activeAiComposeRecordId = ''
